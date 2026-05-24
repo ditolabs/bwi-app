@@ -99,12 +99,15 @@
       border-radius:6px;font-size:12px;cursor:pointer;margin-left:auto;
       transition:all .15s}
     .delete-btn:active{background:#f87171;color:#fff}
+    
+    /* Tombol FAB Tambah Data sekarang akan SELALU TAMPIL (display:flex) */
     .fab{position:fixed;bottom:80px;right:16px;z-index:200;
       width:52px;height:52px;border-radius:50%;border:none;
       background:var(--hi);color:#0f172a;font-size:24px;font-weight:700;
       cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.4);
-      display:none;align-items:center;justify-content:center;transition:transform .15s}
+      display:flex;align-items:center;justify-content:center;transition:transform .15s}
     .fab:active{transform:scale(0.9)}
+    
     .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);
       z-index:999;padding:16px;align-items:flex-end;justify-content:center}
     .modal.open{display:flex}
@@ -166,7 +169,7 @@
 <header>
   <div class="hdr-top">
     <span>🗺️</span>
-    <h1>BWI-App <span>by DitoLabs</span></span></h1>
+    <h1>BWI-App <span>by DitoLabs</span></h1>
     <button id="btnExport" class="badge btn-export" title="Download data">💾 EXPORT</button>
     <button id="btnLogin" class="badge btn-login">🔐 LOGIN</button>
   </div>
@@ -293,7 +296,6 @@
 </nav>
 
 <script type="module">
-  // 1. Import Firebase SDK lengkap dengan fitur Authentication
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } 
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -315,7 +317,7 @@
   const auth = getAuth(app);
 
   let DB = [];
-  let isAdmin = false; // Status hak akses pengguna
+  let isAdmin = false; 
   let currentFilter = 'all';
   let currentQuery  = '';
   let formMode      = 'add';
@@ -338,23 +340,20 @@
   /* ── 🔐 SISTEM AUTENTIKASI ADMIN ── */
   const modalLogin = document.getElementById('modalLogin');
   
-  // Memantau status login
   onAuthStateChanged(auth, (user) => {
     if (user) {
       isAdmin = true;
       document.getElementById('btnLogin').textContent = '🔓 LOGOUT';
       document.getElementById('btnLogin').style.background = '#0f172a';
-      document.getElementById('btnExport').style.display = 'block'; // Tampilkan tombol export
-      document.getElementById('fabBtn').style.display = 'flex'; // Tampilkan tombol tambah (+)
+      document.getElementById('btnExport').style.display = 'block'; 
       toast('Berhasil masuk sebagai Admin');
     } else {
       isAdmin = false;
       document.getElementById('btnLogin').textContent = '🔐 LOGIN';
       document.getElementById('btnLogin').style.background = '#334155';
-      document.getElementById('btnExport').style.display = 'none'; // Sembunyikan export
-      document.getElementById('fabBtn').style.display = 'none'; // Sembunyikan tambah (+)
+      document.getElementById('btnExport').style.display = 'none'; 
     }
-    render(); // Muat ulang layar untuk memunculkan/menyembunyikan tombol edit/hapus di kartu
+    render(); 
   });
 
   document.getElementById('btnLogin').addEventListener('click', () => {
@@ -453,7 +452,6 @@
     }
     list.innerHTML = filtered.map(cardHTML).join('');
     list.onclick = e => {
-      // Pastikan aksi edit/hapus tidak berjalan jika tombolnya tidak ada
       const editBtn = e.target.closest('[data-edit]');
       if(editBtn && isAdmin){ e.stopPropagation(); openEdit(editBtn.dataset.edit); return; }
       
@@ -505,7 +503,7 @@
   });
 
   document.getElementById('btnExport').addEventListener('click', () => {
-    if(!isAdmin) return; // Pengaman ganda
+    if(!isAdmin) return; 
     const out = { wisata_banyuwangi: [], penginapan: [], kuliner_cafe: [] };
     DB.forEach(d => {
       const copy = { ...d };
@@ -531,14 +529,15 @@
   function openModal(){ modal.classList.add('open'); }
   function closeModal(){ modal.classList.remove('open'); resetForm(); }
 
+  // Fungsi Tambah Data sekarang terbuka untuk umum (tidak ada pengecekan isAdmin)
   document.getElementById('fabBtn').addEventListener('click', () => {
-    if(!isAdmin) return;
     formMode = 'add'; editTargetId = null;
     document.getElementById('modalTitle').textContent = 'Tambah Data Baru';
     document.getElementById('btnSimpan').textContent = 'Simpan ke Cloud';
     inputTipe.disabled = false; resetForm(); openModal();
     document.getElementById('inputNama').focus();
   });
+  
   document.getElementById('modalClose').addEventListener('click', closeModal);
   document.getElementById('btnBatal').addEventListener('click', closeModal);
   modal.addEventListener('click', e => { if(e.target===modal) closeModal(); });
@@ -583,7 +582,9 @@
   }
 
   document.getElementById('btnSimpan').addEventListener('click', async () => {
-    if(!isAdmin) return toast('Akses ditolak','error');
+    // Blokir jika mencoba mengedit tapi BUKAN Admin
+    if(formMode === 'edit' && !isAdmin) return toast('Akses Edit ditolak', 'error');
+    
     const nama = document.getElementById('inputNama').value.trim();
     if(!nama){ toast('Nama tempat wajib diisi', 'error'); return; }
     
@@ -613,13 +614,15 @@
       if (formMode === 'edit') {
         payload.id = editTargetId;
       } else {
+        // Beri tanda (tag) bahwa ini hasil input dari kontributor publik
         payload.id = tipe.charAt(0) + Date.now();
+        payload.source = isAdmin ? 'admin' : 'public';
       }
       await setDoc(doc(dbFirestore, "places", payload.id), payload);
       toast('✓ ' + nama + ' tersimpan di Cloud');
       closeModal();
     } catch(e) {
-      toast('❌ Gagal: ' + e.message, 'error');
+      toast('❌ Gagal: Akses Ditolak Firebase', 'error');
     } finally {
       btn.disabled = false;
       btn.textContent = formMode==='edit'?'Update Cloud':'Simpan ke Cloud';
