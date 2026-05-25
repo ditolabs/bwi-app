@@ -174,11 +174,19 @@
     
 /* ── MAP VIEW ── */
 #viewMap { 
-  position: relative; 
-  height: 70vh; /* Menggunakan 70% tinggi layar agar aman dari kepotong */
+  height: calc(100vh - 160px); /* Memastikan peta tidak tertutup header & navigasi */
   width: 100%; 
-  padding: 0 16px; /* Memberi sedikit jarak estetis di kanan-kiri */
+  padding: 16px; 
 }
+#map { 
+  width: 100%; 
+  height: 100%; 
+  border-radius: 20px; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border: 1px solid #e2e8f0;
+  z-index: 1; 
+}
+
 #map { 
   position: absolute; 
   inset: 0; 
@@ -481,7 +489,7 @@ input:checked + .slider:before { transform: translateX(20px); }
   </div>
 </div>
 
-<div id="viewMap" class="full-view" style="padding:0;">
+<div id="viewMap" class="full-view">
   <div id="map"></div>
 </div>
 
@@ -758,10 +766,37 @@ document.getElementById('toggleAutoTime').addEventListener('change', (e) => {
 
 
     // ── RENDER MAP ──
-  function renderMap() {
+    function renderMap() {
+    // 1. Cek apakah peta sudah pernah dibuat atau belum
     if (!mapInstance) {
       mapInstance = L.map('map').setView([-8.2272, 114.3691], 10);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(mapInstance);
+    } else {
+      // 2. Paksa peta menghitung ulang ukuran layarnya
+      mapInstance.invalidateSize();
+    }
+    
+    // 3. Pasang titik kordinat seperti biasa
+    mapMarkers.forEach(m => m.remove()); mapMarkers = [];
+    
+    DB.forEach(d => {
+      let lat = d.lat, lng = d.lng;
+      if(!lat || !lng) {
+        const c = KAWASAN_COORDS[d.kawasan];
+        if(c){ lat = c[0]+(Math.random()-.5)*0.01; lng = c[1]+(Math.random()-.5)*0.01; }
+        else { lat = -8.2272+(Math.random()-.5)*0.2; lng = 114.3691+(Math.random()-.5)*0.2; }
+      }
+      const color = (META[d.type] || META.wisata).color;
+      const icon = L.divIcon({
+        html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div>`,
+        className: ''
+      });
+      const marker = L.marker([lat, lng], {icon}).addTo(mapInstance);
+      marker.bindPopup(`<b>${d.nama}</b><br>${d.kawasan||'Banyuwangi'}`);
+      mapMarkers.push(marker);
+    });
+  }
+
     }
     mapMarkers.forEach(m => m.remove()); mapMarkers = [];
     
@@ -843,9 +878,13 @@ document.getElementById('toggleAutoTime').addEventListener('change', (e) => {
         listDiv.innerHTML = filtered.map(renderListCard).join('');
       }
     } 
-    else if (currentView === 'map') {
+        else if (currentView === 'map') {
       document.getElementById('viewMap').style.display = 'block';
-      renderMap();
+      // JEDA WAKTU INI SANGAT PENTING AGAR PETA TIDAK BLANK
+      setTimeout(() => {
+        renderMap();
+      }, 150); 
+    }
     }
     else if (currentView === 'itinerary') {
       document.getElementById('viewItinerary').style.display = 'block';
