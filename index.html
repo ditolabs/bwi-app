@@ -350,6 +350,14 @@
       border-color: rgba(224,123,57,.7) !important;
       background: rgba(255,255,255,.08) !important;
     }
+
+    /* ── FIX RTL ANDROID CHROME ────────────────────────────────────────── */
+    /* Atribut dir="ltr" di HTML lebih kuat, tapi CSS ini sebagai fallback */
+    input, textarea, select {
+      direction: ltr !important;
+      text-align: left !important;
+      unicode-bidi: isolate !important;
+    }
     .user-menu   {
       position: absolute; top: 58px; right: 20px; z-index: 100;
       background: #1a2e1a; border: 1px solid rgba(255,255,255,.1);
@@ -877,6 +885,7 @@ function renderStep0() {
 
     <div style="position:relative;margin-bottom:14px">
       <input type="text" id="dest-input"
+        dir="ltr" inputmode="text"
         placeholder="Contoh: Kawah Ijen, Red Island, Baluran"
         value="${esc(S.destInput)}"
         style="padding-right:42px;font-size:15px">
@@ -914,6 +923,7 @@ function renderStep0() {
         Ada kuliner yang sudah diincar? <span style="color:#5a7a5a;font-weight:400">(opsional)</span>
       </div>
       <input type="text" id="input-kuliner-custom"
+        dir="ltr" inputmode="text"
         placeholder="Contoh: Sego Tempong Mbok Wah, Rujak Soto Blambangan..."
         value="${esc(S.kulinerCustom)}"
         style="margin-top:8px">
@@ -966,7 +976,7 @@ function renderStep1() {
         </select>
         <span class="select-arrow">▾</span>
       </div>
-      ${S.kotaAsal==='Lainnya' ? `<input type="text" id="input-kota-custom" placeholder="Tulis kota asal…" value="${esc(S.kotaAsalCustom)}" style="margin-top:8px">` : ''}
+      ${S.kotaAsal==='Lainnya' ? `<input type="text" id="input-kota-custom" dir="ltr" inputmode="text" placeholder="Tulis kota asal…" value="${esc(S.kotaAsalCustom)}" style="margin-top:8px">` : ''}
     </div>
 
     <div class="field-wrap">
@@ -1093,6 +1103,7 @@ function renderStep2() {
       <div style="margin-top:12px">
         <label style="display:block;font-size:12px;color:#6a8a6a;margin-bottom:6px">Atau ketik nama penginapan pilihanmu:</label>
         <input type="text" id="input-penginapan-custom"
+          dir="ltr" inputmode="text"
           placeholder="Contoh: Aston Banyuwangi, Ketapang Indah Hotel..."
           value="${esc(S.penginapanCustom)}">
       </div>
