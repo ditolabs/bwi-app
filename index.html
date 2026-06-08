@@ -630,18 +630,51 @@ function mapToWandr(id, d) {
 let DESTINATIONS = [];
 
 const DESTINATIONS_FALLBACK = [
-  { id:'ijen',         name:'Kawah Ijen',       cat:'alam',   emoji:'🌋', desc:'Blue fire & kawah asam',       bestTime:'dini hari', zone:'barat',   tiket:5000,  dur:300, isIjen:true },
-  { id:'baluran',      name:'TN Baluran',        cat:'alam',   emoji:'🦌', desc:'Afrika van Java',              bestTime:'pagi',      zone:'utara',   tiket:15000, dur:240 },
-  { id:'alas_purwo',   name:'TN Alas Purwo',     cat:'alam',   emoji:'🌿', desc:'Hutan purba tersembunyi',      bestTime:'pagi',      zone:'selatan', tiket:5000,  dur:300 },
-  { id:'kawah_wurung', name:'Kawah Wurung',       cat:'alam',   emoji:'🏔️', desc:'Kaldera indah & sunrise',      bestTime:'pagi',      zone:'barat',   tiket:5000,  dur:180 },
-  { id:'jagir',        name:'Air Terjun Jagir',  cat:'alam',   emoji:'💧', desc:'Air terjun tiga tingkat',     bestTime:'pagi',      zone:'barat',   tiket:10000, dur:120 },
-  { id:'red_island',   name:'Red Island',        cat:'pantai', emoji:'🏄', desc:'Tebing merah & sunset ikonik',bestTime:'sore',      zone:'selatan', tiket:10000, dur:180, isSunset:true },
-  { id:'green_bay',    name:'Green Bay',         cat:'pantai', emoji:'🌊', desc:'Teluk ijo tersembunyi',        bestTime:'pagi',      zone:'selatan', tiket:10000, dur:240 },
-  { id:'sukamade',     name:'Pantai Sukamade',   cat:'pantai', emoji:'🐢', desc:'Penangkaran penyu hijau',      bestTime:'malam',     zone:'selatan', tiket:10000, dur:240, isNight:true },
-  { id:'g_land',       name:'G-Land',            cat:'pantai', emoji:'🏄', desc:'Surga peselancar dunia',       bestTime:'pagi',      zone:'selatan', tiket:0,     dur:240 },
-  { id:'menjangan',    name:'Pulau Menjangan',   cat:'diving', emoji:'🤿', desc:'Snorkeling & diving terbaik',  bestTime:'pagi',      zone:'utara',   tiket:25000, dur:360 },
-  { id:'tabuhan',      name:'Pulau Tabuhan',      cat:'diving', emoji:'🏝️', desc:'Pasir putih & snorkeling',     bestTime:'pagi',      zone:'utara',   tiket:15000, dur:300 },
-  { id:'city',         name:'City Tour BWI',      cat:'budaya', emoji:'🏛️', desc:'Kuliner & wisata kota',        bestTime:'sore',      zone:'kota',    tiket:0,     dur:240, isCity:true },
+  { id:'ijen',         name:'Kawah Ijen',              cat:'alam',   emoji:'🌋', desc:'Blue fire & kawah asam',          bestTime:'dini hari', zone:'barat',   tiket:5000,  dur:300, isIjen:true,
+    aliases:['ijen','kawah ijen','blue fire'] },
+  { id:'baluran',      name:'TN Baluran',               cat:'alam',   emoji:'🦌', desc:'Afrika van Java',                 bestTime:'pagi',      zone:'utara',   tiket:15000, dur:240,
+    aliases:['baluran','taman nasional baluran','tn baluran'] },
+  { id:'alas_purwo',   name:'TN Alas Purwo',            cat:'alam',   emoji:'🌿', desc:'Hutan purba tersembunyi',         bestTime:'pagi',      zone:'selatan', tiket:5000,  dur:300,
+    aliases:['alas purwo','tn alas purwo','taman nasional alas purwo','purwo'] },
+  { id:'kawah_wurung', name:'Kawah Wurung',              cat:'alam',   emoji:'🏔️', desc:'Kaldera indah & sunrise',         bestTime:'pagi',      zone:'barat',   tiket:5000,  dur:180,
+    aliases:['kawah wurung','wurung'] },
+  { id:'jagir',        name:'Air Terjun Jagir',         cat:'alam',   emoji:'💧', desc:'Air terjun tiga tingkat',         bestTime:'pagi',      zone:'barat',   tiket:10000, dur:120,
+    aliases:['jagir','air terjun jagir','curug jagir'] },
+  { id:'red_island',   name:'Red Island',               cat:'pantai', emoji:'🏄', desc:'Tebing merah & sunset ikonik',    bestTime:'sore',      zone:'selatan', tiket:10000, dur:180, isSunset:true,
+    aliases:['red island','pulau merah','pantai pulau merah'] },
+  { id:'green_bay',    name:'Green Bay',                cat:'pantai', emoji:'🌊', desc:'Teluk ijo tersembunyi',           bestTime:'pagi',      zone:'selatan', tiket:10000, dur:240,
+    aliases:['green bay','teluk ijo','teluk hijau'] },
+  { id:'sukamade',     name:'Pantai Sukamade',          cat:'pantai', emoji:'🐢', desc:'Penangkaran penyu hijau',         bestTime:'malam',     zone:'selatan', tiket:10000, dur:240, isNight:true,
+    aliases:['sukamade','pantai sukamade'] },
+  { id:'g_land',       name:'G-Land',                   cat:'pantai', emoji:'🏄', desc:'Surga peselancar dunia',          bestTime:'pagi',      zone:'selatan', tiket:0,     dur:240,
+    aliases:['g-land','grajagan','g land'] },
+  { id:'menjangan',    name:'Pulau Menjangan',          cat:'diving', emoji:'🤿', desc:'Snorkeling & diving terbaik',     bestTime:'pagi',      zone:'utara',   tiket:25000, dur:360,
+    aliases:['menjangan','pulau menjangan'] },
+  { id:'tabuhan',      name:'Pulau Tabuhan',            cat:'diving', emoji:'🏝️', desc:'Pasir putih & snorkeling',        bestTime:'pagi',      zone:'utara',   tiket:15000, dur:300,
+    aliases:['tabuhan','pulau tabuhan'] },
+  { id:'city',         name:'City Tour BWI',            cat:'budaya', emoji:'🏛️', desc:'Kuliner & wisata kota',           bestTime:'sore',      zone:'kota',    tiket:0,     dur:240, isCity:true,
+    aliases:['city tour','banyuwangi kota','kota banyuwangi','city tour bwi'] },
+  // Destinasi tambahan yang sering dicari
+  { id:'beji_antaboga',  name:'Beji Antaboga',          cat:'budaya', emoji:'🛕', desc:'Pura Hindu di lereng Raung',     bestTime:'pagi',      zone:'barat',   tiket:5000,  dur:120,
+    aliases:['beji antaboga','beji','antaboga','pura antaboga'] },
+  { id:'perkebunan_kopi', name:'Perkebunan Kopi Malangsari', cat:'alam', emoji:'🌿', desc:'Wisata kopi di lereng Raung', bestTime:'pagi',     zone:'barat',   tiket:10000, dur:180,
+    aliases:['kopi malangsari','malangsari','perkebunan kopi','kebun kopi'] },
+  { id:'kawah_wurung2',  name:'Padang Savana Sadengan', cat:'alam',   emoji:'🌿', desc:'Padang rumput luas di Baluran', bestTime:'pagi',      zone:'utara',   tiket:0,     dur:120,
+    aliases:['sadengan','padang savana','savana sadengan','savana baluran'] },
+  { id:'goa_mayangkoro', name:'Goa Mayangkoro',         cat:'budaya', emoji:'🏛️', desc:'Goa bersejarah di Banyuwangi', bestTime:'pagi',      zone:'kota',    tiket:5000,  dur:90,
+    aliases:['mayangkoro','goa mayangkoro'] },
+  { id:'goa_padepokan',  name:'Goa Padepokan',          cat:'budaya', emoji:'🏛️', desc:'Goa budaya Banyuwangi',        bestTime:'pagi',      zone:'kota',    tiket:5000,  dur:90,
+    aliases:['padepokan','goa padepokan'] },
+  { id:'goa_songgo',     name:'Goa Songgo Langit',      cat:'budaya', emoji:'🏛️', desc:'Goa unik Banyuwangi',          bestTime:'pagi',      zone:'kota',    tiket:5000,  dur:90,
+    aliases:['songgo langit','goa songgo','songgo'] },
+  { id:'pantai_wedi',    name:'Pantai Wedi Ireng',      cat:'pantai', emoji:'🌊', desc:'Pantai pasir hitam eksotis',   bestTime:'pagi',      zone:'selatan', tiket:10000, dur:150,
+    aliases:['wedi ireng','pantai wedi ireng','wedi'] },
+  { id:'pantai_boom',    name:'Pantai Boom',            cat:'pantai', emoji:'🌊', desc:'Pantai bersejarah Banyuwangi', bestTime:'sore',      zone:'kota',    tiket:5000,  dur:120,
+    aliases:['boom','pantai boom'] },
+  { id:'telunjuk_raung', name:'Air Terjun Telunjuk Raung', cat:'alam', emoji:'💧', desc:'Air terjun eksotis Raung',    bestTime:'pagi',      zone:'barat',   tiket:10000, dur:180,
+    aliases:['telunjuk raung','telunjuk','air terjun telunjuk'] },
+  { id:'lider',          name:'Air Terjun Lider',       cat:'alam',   emoji:'💧', desc:'Air terjun tertinggi di BWI',  bestTime:'pagi',      zone:'barat',   tiket:10000, dur:240,
+    aliases:['lider','air terjun lider'] },
 ];
 
 // Tampilkan loading sebelum Firebase siap
@@ -801,42 +834,35 @@ function parseDestInput(text) {
   const terms = text.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
   terms.forEach(term => {
     if (!term) return;
-
-    // Cari match terbaik — score-based supaya "TN Alas Purwo" tidak salah match ke "TN Baluran"
     let bestMatch = null, bestScore = 0;
-
     DESTINATIONS.forEach(d => {
-      const n = d.name.toLowerCase();
-      let score = 0;
-
-      if (n === term) {
-        score = 100; // exact match
-      } else if (n.includes(term) && term.length >= 3) {
-        score = 80;  // nama mengandung term
-      } else if (term.includes(n) && n.length >= 4) {
-        score = 75;  // term mengandung nama penuh (minimal 4 karakter)
-      } else {
-        // Hitung berapa kata yang cocok (word-level match)
-        const nWords    = n.split(' ').filter(w => w.length > 1);
-        const termWords = term.split(' ').filter(w => w.length > 1);
-        const matched   = termWords.filter(tw => nWords.some(nw => nw.startsWith(tw) || tw.startsWith(nw)));
-        if (matched.length > 0) {
-          // Score proporsional — lebih banyak kata cocok = lebih tinggi
-          // Tapi "TN" saja (1 kata pendek) tidak cukup untuk match
-          const meaningful = matched.filter(w => w.length > 2);
-          score = meaningful.length > 0
-            ? Math.round((meaningful.length / Math.max(nWords.length, termWords.length)) * 60)
-            : 0;
-        }
-      }
-
+      const score = matchScore(term, d);
       if (score > bestScore) { bestScore = score; bestMatch = d; }
     });
-
-    // Threshold minimum 40 — hindari false positive dari kata pendek seperti "TN" saja
     if (bestMatch && bestScore >= 40) S.destinations.add(bestMatch.id);
   });
 }
+
+// Score matching satu term ke satu destinasi
+function matchScore(term, d) {
+  const t = term.toLowerCase().trim();
+  const n = d.name.toLowerCase();
+  // 1. Alias match — paling reliable
+  if (d.aliases && d.aliases.some(a => a === t || t === a || t.includes(a) || a.includes(t))) return 95;
+  // 2. Exact
+  if (n === t) return 100;
+  // 3. Nama mengandung term (min 3 karakter)
+  if (t.length >= 3 && n.includes(t)) return 80;
+  // 4. Term mengandung nama penuh (min 4 karakter)
+  if (n.length >= 4 && t.includes(n)) return 75;
+  // 5. Word-level — kata bermakna (>2 char) yang cocok
+  const nWords    = n.split(' ').filter(w => w.length > 2);
+  const termWords = t.split(' ').filter(w => w.length > 2);
+  if (!nWords.length || !termWords.length) return 0;
+  const hits = termWords.filter(tw => nWords.some(nw => nw.startsWith(tw) || tw.startsWith(nw)));
+  return hits.length ? Math.round((hits.length / Math.max(nWords.length, termWords.length)) * 60) : 0;
+}
+
 
 // Load penginapan terdekat dari Firebase berdasarkan destinasi terpilih
 async function loadPenginapanOptions() {
@@ -883,18 +909,11 @@ async function loadKulinerNearPenginapan(lat, lng) {
 }
 
 // ─── RENDER STEP 0 ───────────────────────────────────────────────────────────
-// Helper: cek apakah satu term cocok dengan salah satu destinasi (konsisten dengan parseDestInput)
+// Helper: cek apakah satu term cocok dengan salah satu destinasi
 function isTermMatched(term) {
   const t = term.toLowerCase().trim();
   if (!t) return true;
-  return DESTINATIONS.some(d => {
-    const n = d.name.toLowerCase();
-    if (n === t || n.includes(t) && t.length >= 3 || t.includes(n) && n.length >= 4) return true;
-    const nWords    = n.split(' ').filter(w => w.length > 1);
-    const termWords = t.split(' ').filter(w => w.length > 1);
-    const meaningful = termWords.filter(tw => nWords.some(nw => nw.startsWith(tw) || tw.startsWith(nw)) && tw.length > 2);
-    return meaningful.length > 0 && meaningful.length / Math.max(nWords.length, termWords.length) >= 0.4;
-  });
+  return DESTINATIONS.some(d => matchScore(t, d) >= 40);
 }
 
 function renderStep0() {
