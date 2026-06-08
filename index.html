@@ -664,8 +664,26 @@ function mapToWandr(id, d) {
     if (nama.includes(key)) { zone = z; break; }
   }
   const dur  = isIjen?300:cat==='diving'?360:kat.includes('terjun')?120:180;
+
+  // Auto-generate aliases dari nama Firestore supaya matching lebih toleran
+  // Contoh: "Pura Beji Antaboga" → aliases: ['pura beji antaboga','beji antaboga','beji','antaboga']
+  const namaWords = nama.split(' ').filter(w => w.length > 2);
+  const autoAliases = new Set([nama]);
+  // Tambah sub-kombinasi kata (tanpa kata depan seperti "pura","taman","air","pantai")
+  const skipWords = new Set(['pura','taman','nasional','pantai','air','gua','goa','pulau','kebun','perkebunan','padang']);
+  const meaningfulWords = namaWords.filter(w => !skipWords.has(w));
+  if (meaningfulWords.length > 0) {
+    autoAliases.add(meaningfulWords.join(' '));
+    meaningfulWords.forEach(w => autoAliases.add(w));
+    // Kombinasi dua kata berurutan
+    for (let i = 0; i < meaningfulWords.length - 1; i++) {
+      autoAliases.add(meaningfulWords[i] + ' ' + meaningfulWords[i+1]);
+    }
+  }
+
   return { id, name:d.nama, cat, emoji, desc:d.catatan||d.kategori||'', bestTime,
     zone, tiket:d.htm||0, dur, isIjen, isSunset, isNight, isCity,
+    aliases: [...autoAliases],
     tips:d.catatan?`Akses ${d.akses||''}. ${d.catatan}`.trim():'', maps:d.maps||'',
     lat:d.lat||null, lng:d.lng||null };
 }
@@ -804,7 +822,9 @@ const S = {
   durasi: '', gayaPerjalanan: '',
   penginapan: '', penginapanId: '', penginapanData: null,
   penginapanCustom: '',              // nama penginapan ketik manual
-  penginapanOptions: [],
+  penginapanSearchQuery: '',         // query search penginapan
+  penginapanOptions: [],             // terdekat dari destinasi
+  allPenginapan: [],                 // semua penginapan dari Firebase
   kulinerOptions: [],
   kulinerCustom: '',                 // kuliner incaran (opsional)
   jumlahOrang: 2,
@@ -912,27 +932,38 @@ function matchScore(term, d) {
 
 // Load penginapan terdekat dari Firebase berdasarkan destinasi terpilih
 async function loadPenginapanOptions() {
-  if (S.destinations.size === 0 || !db) { S.penginapanOptions = []; return; }
+  if (!db) { S.penginapanOptions = []; S.allPenginapan = []; return; }
   try {
-    // Hitung centroid destinasi terpilih
-    const selDests = DESTINATIONS.filter(d=>S.destinations.has(d.id));
-    const lats = selDests.map(d=>d.lat).filter(Boolean);
-    const lngs = selDests.map(d=>d.lng).filter(Boolean);
-    if (lats.length === 0) { S.penginapanOptions = []; return; }
-    const cLat = lats.reduce((a,b)=>a+b,0)/lats.length;
-    const cLng = lngs.reduce((a,b)=>a+b,0)/lngs.length;
-
     const snap = await db.collection('places').where('type','==','penginapan').get();
-    const options = snap.docs
+    const all  = snap.docs
       .map(doc => ({ id:doc.id, ...doc.data() }))
-      .filter(d => d.lat && d.lng && d.nama)
-      .map(d => ({ ...d, dist: haversineKm(cLat,cLng,d.lat,d.lng) }))
-      .sort((a,b)=>a.dist-b.dist)
-      .slice(0, 6);
-    S.penginapanOptions = options;
+      .filter(d => d.nama);
+
+    // Cache semua penginapan untuk search
+    S.allPenginapan = all;
+
+    // Hitung terdekat dari destinasi terpilih (jika ada koordinat)
+    if (S.destinations.size > 0) {
+      const selDests = DESTINATIONS.filter(d=>S.destinations.has(d.id));
+      const lats = selDests.map(d=>d.lat).filter(Boolean);
+      const lngs = selDests.map(d=>d.lng).filter(Boolean);
+      if (lats.length > 0) {
+        const cLat = lats.reduce((a,b)=>a+b,0)/lats.length;
+        const cLng = lngs.reduce((a,b)=>a+b,0)/lngs.length;
+        S.penginapanOptions = all
+          .filter(d => d.lat && d.lng)
+          .map(d => ({ ...d, dist: haversineKm(cLat,cLng,d.lat,d.lng) }))
+          .sort((a,b)=>a.dist-b.dist)
+          .slice(0, 6);
+      } else {
+        S.penginapanOptions = all.slice(0, 6);
+      }
+    } else {
+      S.penginapanOptions = all.slice(0, 6);
+    }
   } catch(e) {
     console.warn('loadPenginapanOptions gagal:', e.message);
-    S.penginapanOptions = [];
+    S.penginapanOptions = []; S.allPenginapan = [];
   }
 }
 
@@ -1146,43 +1177,61 @@ function renderStep2() {
     </div>`
   ).join('');
 
-  // Penginapan: Firebase options jika ada, fallback ke tier list
-  let penginapanCards = '';
-  if (S.penginapanOptions.length > 0) {
-    penginapanCards = S.penginapanOptions.map(p => {
-      const sel = S.penginapanId===p.id;
-      const distTxt = p.dist<1 ? Math.round(p.dist*1000)+'m' : p.dist.toFixed(1)+'km';
-      return `<div class="card-opt sm${sel?' selected':''}" data-penginapan-fb="${p.id}"
-        data-lat="${p.lat||''}" data-lng="${p.lng||''}">
-        <span class="card-opt-icon">🏨</span>
-        <div style="flex:1">
-          <div class="card-opt-title">${esc(p.nama)}</div>
-          <div class="card-opt-sub">${p.kategori||''} · ${p.kawasan||''}
-            · <span style="color:#e07b39">~${distTxt} dari destinasi</span>
-            ${p.harga?` · Rp${p.harga}`:''}
-          </div>
-        </div>
-        <span class="card-opt-check">✓</span>
-      </div>`;
-    }).join('');
-    penginapanCards += `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06)">
-      <div style="font-size:11px;color:#4a6a4a;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Atau pilih berdasarkan tipe:</div>
-      ${PENGINAPAN.filter(p=>p.v!=='none').map(p =>
-        `<div class="card-opt sm" style="margin-bottom:8px;${S.penginapan===p.v?'background:rgba(224,123,57,.1);border-color:#e07b39':''}" data-penginapan="${p.v}">
-          <span class="card-opt-icon">${p.emoji}</span>
-          <div><div class="card-opt-title">${p.label}</div><div class="card-opt-sub">${p.range}</div></div>
-          <span class="card-opt-check" style="opacity:${S.penginapan===p.v?1:0}">✓</span>
-        </div>`).join('')}
+  // Penginapan: search dari Firebase + fallback tier list
+  let penginapanSection = '';
+
+  // Semua data penginapan dari Firebase (load sekali, cache di S.allPenginapan)
+  const allHotels = S.allPenginapan || [];
+
+  // Filter berdasarkan query search
+  const hotelQuery = S.penginapanSearchQuery || '';
+  const filteredHotels = hotelQuery.length >= 2
+    ? allHotels.filter(p => {
+        const n = (p.nama||'').toLowerCase();
+        const q = hotelQuery.toLowerCase();
+        return n.includes(q) || (p.kawasan||'').toLowerCase().includes(q) || (p.kategori||'').toLowerCase().includes(q);
+      }).slice(0, 6)
+    : S.penginapanOptions.slice(0, 4); // default: terdekat dari destinasi
+
+  const hotelSuggestions = filteredHotels.map(p => {
+    const sel = S.penginapanId === p.id;
+    const distTxt = p.dist != null ? (p.dist < 1 ? Math.round(p.dist*1000)+'m' : p.dist.toFixed(1)+'km') : '';
+    return `<div class="card-opt sm${sel?' selected':''}" data-penginapan-fb="${p.id}">
+      <span class="card-opt-icon">🏨</span>
+      <div style="flex:1;min-width:0">
+        <div class="card-opt-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.nama)}</div>
+        <div class="card-opt-sub">${p.kawasan||''} ${distTxt?'· <span style="color:#e07b39">~'+distTxt+' dari destinasi</span>':''}${p.harga?' · Rp'+p.harga:''}</div>
+      </div>
+      <span class="card-opt-check">✓</span>
     </div>`;
-  } else {
-    penginapanCards = PENGINAPAN.map(p =>
-      `<div class="card-opt sm${S.penginapan===p.v?' selected':''}" data-penginapan="${p.v}">
-        <span class="card-opt-icon">${p.emoji}</span>
-        <div><div class="card-opt-title">${p.label}</div><div class="card-opt-sub">${p.range}</div></div>
-        <span class="card-opt-check">✓</span>
-      </div>`
-    ).join('');
-  }
+  }).join('');
+
+  penginapanSection = `
+    <div style="position:relative;margin-bottom:10px">
+      <input type="text" id="input-penginapan-search"
+        dir="ltr" lang="en" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false"
+        placeholder="🔍 Cari nama penginapan..."
+        value="${esc(hotelQuery)}"
+        style="padding-right:36px">
+      ${hotelQuery ? `<span id="btn-clear-hotel" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#5a7a5a;font-size:14px;padding:4px">✕</span>` : ''}
+    </div>
+    ${hotelSuggestions ? `<div class="card-list" id="hotel-suggestions">${hotelSuggestions}</div>` : ''}
+    ${allHotels.length === 0 ? `
+      <div class="card-list">
+        ${PENGINAPAN.map(p =>
+          `<div class="card-opt sm${S.penginapan===p.v?' selected':''}" data-penginapan="${p.v}">
+            <span class="card-opt-icon">${p.emoji}</span>
+            <div><div class="card-opt-title">${p.label}</div><div class="card-opt-sub">${p.range}</div></div>
+            <span class="card-opt-check">✓</span>
+          </div>`).join('')}
+      </div>` : ''}
+    <div style="margin-top:10px">
+      <label style="display:block;font-size:12px;color:#6a8a6a;margin-bottom:6px">Atau ketik langsung nama penginapan:</label>
+      <input type="text" id="input-penginapan-custom"
+        dir="ltr" lang="en" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false"
+        placeholder="Contoh: Aston Banyuwangi, Ketapang Indah Hotel..."
+        value="${esc(S.penginapanCustom)}">
+    </div>`;
 
   return `
     <h2 class="step-title">Preferensi Trip</h2>
@@ -1199,18 +1248,8 @@ function renderStep2() {
     </div>
 
     <div class="field-wrap">
-      <label class="field-label">
-        ${S.penginapanOptions.length>0?'🏨 Penginapan Terdekat dari Destinasimu':'Penginapan'}
-        ${S.penginapanOptions.length>0?`<span style="font-size:10px;color:#4a6a4a;text-transform:none;font-weight:400;margin-left:6px">• ${S.penginapanOptions.length} pilihan dari database</span>`:''}
-      </label>
-      <div class="card-list">${penginapanCards}</div>
-      <div style="margin-top:12px">
-        <label style="display:block;font-size:12px;color:#6a8a6a;margin-bottom:6px">Atau ketik nama penginapan pilihanmu:</label>
-        <input type="text" id="input-penginapan-custom"
-          dir="ltr" lang="en" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false"
-          placeholder="Contoh: Aston Banyuwangi, Ketapang Indah Hotel..."
-          value="${esc(S.penginapanCustom)}">
-      </div>
+      <label class="field-label">🏨 Penginapan</label>
+      ${penginapanSection}
     </div>
 
     <div class="field-wrap">
@@ -1442,6 +1481,32 @@ function updateDestFeedback() {
   }
 }
 
+// Partial update suggestions penginapan (tanpa re-render step 2)
+function updateHotelSuggestions() {
+  const listEl = document.getElementById('hotel-suggestions');
+  if (!listEl) return;
+  const q = (S.penginapanSearchQuery||'').toLowerCase();
+  const all = S.allPenginapan || [];
+  const filtered = q.length >= 2
+    ? all.filter(p => {
+        const n = (p.nama||'').toLowerCase();
+        return n.includes(q)||(p.kawasan||'').toLowerCase().includes(q)||(p.kategori||'').toLowerCase().includes(q);
+      }).slice(0,6)
+    : S.penginapanOptions.slice(0,4);
+
+  listEl.innerHTML = filtered.map(p => {
+    const sel = S.penginapanId === p.id;
+    const distTxt = p.dist!=null?(p.dist<1?Math.round(p.dist*1000)+'m':p.dist.toFixed(1)+'km'):'';
+    return `<div class="card-opt sm${sel?' selected':''}" data-penginapan-fb="${p.id}">
+      <span class="card-opt-icon">🏨</span>
+      <div style="flex:1;min-width:0">
+        <div class="card-opt-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.nama)}</div>
+        <div class="card-opt-sub">${p.kawasan||''} ${distTxt?'· ~'+distTxt+' dari destinasi':''}</div>
+      </div>
+      <span class="card-opt-check">✓</span>
+    </div>`;
+  }).join('') || '<div style="font-size:12px;color:#3a5a3a;padding:12px;text-align:center;font-style:italic">Tidak ditemukan — coba kata kunci lain</div>';
+}
 
 function render() {
   const c = document.getElementById('content');
@@ -1579,6 +1644,33 @@ function attachListeners() {
       S.penginapanId = ''; S.penginapan = 'custom';
       c.querySelectorAll('[data-penginapan-fb],[data-penginapan]').forEach(e => e.classList.remove('selected'));
     }
+    updateNav();
+  });
+
+  // Step 2 — penginapan search (partial update, tidak re-render)
+  const inpHotelSearch = document.getElementById('input-penginapan-search');
+  if (inpHotelSearch) inpHotelSearch.addEventListener('input', () => {
+    S.penginapanSearchQuery = inpHotelSearch.value;
+    updateHotelSuggestions();
+    updateNav();
+  });
+  const btnClearHotel = document.getElementById('btn-clear-hotel');
+  if (btnClearHotel) btnClearHotel.addEventListener('click', () => {
+    S.penginapanSearchQuery = '';
+    const inp = document.getElementById('input-penginapan-search');
+    if (inp) { inp.value = ''; inp.focus(); }
+    updateHotelSuggestions();
+  });
+  const hotelList = document.getElementById('hotel-suggestions');
+  if (hotelList) hotelList.addEventListener('click', e => {
+    const card = e.target.closest('[data-penginapan-fb]');
+    if (!card) return;
+    const id = card.dataset.penginapanFb;
+    S.penginapanId   = S.penginapanId === id ? '' : id;
+    S.penginapanData = (S.allPenginapan||[]).find(p=>p.id===id) || S.penginapanOptions.find(p=>p.id===id) || null;
+    S.penginapan     = S.penginapanId ? 'firebase' : '';
+    if (S.penginapanData?.lat && S.penginapanData?.lng) loadKulinerNearPenginapan(S.penginapanData.lat, S.penginapanData.lng);
+    updateHotelSuggestions();
     updateNav();
   });
 
