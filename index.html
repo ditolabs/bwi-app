@@ -1511,19 +1511,25 @@ function updateHotelSuggestions() {
 
 function render() {
   const c = document.getElementById('content');
-  switch (S.step) {
-    case 0: c.innerHTML = renderStep0(); break;
-    case 1: c.innerHTML = renderStep1(); break;
-    case 2: c.innerHTML = renderStep2(); break;
-    case 3:
-      if (S.loading || S.error || S.itinerary) {
-        c.innerHTML = renderStep3();
-      } else {
-        c.innerHTML = renderPlanningBoard();
-        // SortableJS harus dipanggil setelah DOM tersedia
-        requestAnimationFrame(() => initSortableBoard());
-      }
-      break;
+  try {
+    switch (S.step) {
+      case 0: c.innerHTML = renderStep0(); break;
+      case 1: c.innerHTML = renderStep1(); break;
+      case 2: c.innerHTML = renderStep2(); break;
+      case 3:
+        if (S.loading || S.error || S.itinerary) {
+          c.innerHTML = renderStep3();
+        } else {
+          c.innerHTML = renderPlanningBoard();
+          requestAnimationFrame(() => initSortableBoard());
+        }
+        break;
+    }
+  } catch(e) {
+    console.error('render() error:', e);
+    c.innerHTML = `<div style="padding:20px;color:#e07b39;font-size:13px">
+      <b>⚠️ Error render:</b><br><pre style="white-space:pre-wrap;font-size:11px;color:#8fa08f;margin-top:8px">${esc(e.message)}\n${esc(e.stack||'')}</pre>
+    </div>`;
   }
   updateProgress();
   updateNav();
@@ -2252,8 +2258,6 @@ function initPlanDays() {
   const actDays = Math.min(Math.max(naturalAct, minActDays), Math.max(1, totalDays - 1));
   S.planDays    = Array.from({length: actDays}, () => []);
   S.planBacklog = [];
-  const selected    = DESTINATIONS.filter(d => S.destinations.has(d.id));
-  const spotsPerDay = S.gayaPerjalanan === 'santai' ? 2 : 3;
   const byZone = {};
   selected.forEach(d => {
     const z = DEST_EXT[d.id]?.zone || d.zone || 'kota';
