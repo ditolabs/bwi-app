@@ -639,19 +639,57 @@ function renderStep3() {
   return '';
 }
 
-function updateDestFeedback() { /* Partial DOM updates for input to avoid jumpiness */ }
+function updateDestFeedback() {
+  const matched = DESTINATIONS.filter(d=>S.destinations.has(d.id));
+  const tags = matched.map(d => `<div class="dest-tag-pill"><span>${d.emoji}</span><span class="dt-name">${esc(d.name)}</span><span data-remove="${d.id}" class="dt-remove">✕</span></div>`).join('');
+  const suggestions = DESTINATIONS.filter(d=>!S.destinations.has(d.id)).slice(0,6).map(d=>`<button data-suggest="${d.id}" style="background:var(--white);border:1px solid var(--border);color:var(--text-muted);border-radius:16px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;margin:4px;box-shadow:0 2px 8px rgba(0,0,0,0.02)">${d.emoji} ${d.name}</button>`).join('');
 
-function render() {
+  const tagsArea = document.getElementById('dest-tags-area');
+  const tagsList = document.getElementById('dest-tags-list');
+  const suggestArea = document.getElementById('dest-suggestions');
+
+  if(tagsArea) tagsArea.style.display = matched.length > 0 ? '' : 'none';
+  if(tagsList) tagsList.innerHTML = tags;
+  if(suggestArea) suggestArea.innerHTML = suggestions;
+
+  updateNav();
+  attachDynamicDestListeners();
+}
+
+function attachDynamicDestListeners() {
   const c = document.getElementById('content');
-  switch (S.step) { case 0: c.innerHTML = renderStep0(); break; case 1: c.innerHTML = renderStep1(); break; case 2: c.innerHTML = renderStep2(); break; case 3: c.innerHTML = (S.loading || S.itinerary) ? renderStep3() : renderPlanningBoard(); if(!S.loading&&!S.itinerary) setTimeout(initSortableBoard, 100); break; }
-  updateProgress(); updateNav(); attachListeners();
+  c.querySelectorAll('[data-suggest]').forEach(el => el.addEventListener('click', () => {
+    const d = DESTINATIONS.find(x=>x.id===el.dataset.suggest);
+    if(d){
+      S.destinations.add(d.id);
+      S.destInput = S.destInput ? S.destInput+', '+d.name : d.name;
+      const inp = document.getElementById('dest-input');
+      if (inp) inp.value = S.destInput;
+      updateDestFeedback();
+    }
+  }));
+  c.querySelectorAll('[data-remove]').forEach(el => el.addEventListener('click', () => {
+    S.destinations.delete(el.dataset.remove);
+    updateDestFeedback();
+  }));
 }
 
 function attachListeners() {
   const c = document.getElementById('content');
-  const destInput = document.getElementById('dest-input'); if (destInput) { destInput.addEventListener('input', () => { S.destInput = destInput.value; parseDestInput(S.destInput); render(); }); destInput.focus(); }
-  c.querySelectorAll('[data-suggest]').forEach(el => el.addEventListener('click', () => { const d = DESTINATIONS.find(x=>x.id===el.dataset.suggest); if(d){ S.destinations.add(d.id); S.destInput = S.destInput ? S.destInput+', '+d.name : d.name; render(); } }));
-  c.querySelectorAll('[data-remove]').forEach(el => el.addEventListener('click', () => { S.destinations.delete(el.dataset.remove); render(); }));
+  
+  // LOGIKA INPUT WISATA
+  const destInput = document.getElementById('dest-input'); 
+  if (destInput) { 
+    destInput.addEventListener('input', () => { 
+      S.destInput = destInput.value; 
+      parseDestInput(S.destInput); 
+      updateDestFeedback(); // <--- Memperbarui daftar tanpa mereset input/kursor
+    }); 
+    destInput.focus(); 
+  }
+  attachDynamicDestListeners();
+
+  // LISTENER LAINNYA
   const selKota = document.getElementById('sel-kota'); if (selKota) selKota.addEventListener('change', () => { S.kotaAsal = selKota.value; render(); });
   c.querySelectorAll('[data-transport]').forEach(el => el.addEventListener('click', () => { S.transport = el.dataset.transport; render(); }));
   c.querySelectorAll('[data-sub]').forEach(el => el.addEventListener('click', () => { S.subTransport = el.dataset.sub; render(); }));
@@ -663,6 +701,7 @@ function attachListeners() {
   if (plus) plus.addEventListener('click', () => { S.jumlahOrang = Math.min(20, S.jumlahOrang+1); render(); });
   const restart = document.getElementById('btn-restart'); if (restart) restart.addEventListener('click', () => { window.location.reload(); });
 }
+
 
 document.getElementById('btn-back').addEventListener('click', () => { S.step--; render(); });
 document.getElementById('btn-next').addEventListener('click', async () => {
