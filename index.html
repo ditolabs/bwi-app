@@ -144,16 +144,21 @@
     .field-wrap { margin-bottom: 24px; }
 
     /* ── SELECT & INPUT ────────────────────────────────────────────────── */
-    select, input[type="text"], input[type="time"],
-    input[type="email"], input[type="password"], textarea {
-      background: var(--white);
-      border: 2px solid transparent;
-      color: var(--text-dark); border-radius: 16px; padding: 14px 16px;
-      font-family: inherit; font-size: 14px; font-weight: 600;
-      outline: none; transition: all .2s;
-      width: 100%; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-      direction: ltr !important; text-align: left !important;
-    }
+   select, input[type="text"], input[type="time"],
+input[type="email"], input[type="password"], textarea {
+  background: var(--white);
+  border: 2px solid transparent;
+  color: var(--text-dark); border-radius: 16px; padding: 14px 16px;
+  font-family: inherit; font-size: 14px; font-weight: 600;
+  outline: none; transition: all .2s;
+  width: 100%; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+  
+  /* ── Fix RTL typing bug di Android Chrome ── */
+  direction: ltr !important; 
+  text-align: left !important;
+  unicode-bidi: plaintext !important;
+  -webkit-rtl-ordering: logical !important;
+}
     select:focus, input:focus { border-color: var(--blue-main); box-shadow: 0 4px 15px var(--blue-light); }
     .select-wrap { position: relative; }
     .select-arrow { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-muted); font-size: 14px; font-weight: 800; }
@@ -551,7 +556,7 @@ function renderStep0() {
     <h2 class="step-title">Ke Banyuwangi,<br>mau kemana aja?</h2>
     <p class="step-sub">Ketik nama destinasi impianmu</p>
     <div class="field-wrap" style="position:relative;">
-      <input type="text" id="dest-input" placeholder="Kawah Ijen, Baluran..." value="${esc(S.destInput)}" style="padding-right:40px; font-size:15px; background: white;">
+     <input type="text" id="dest-input" dir="ltr" lang="en" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Kawah Ijen, Baluran..." value="${esc(S.destInput)}" style="padding-right:40px; font-size:15px; background: white;">
     </div>
     <div id="dest-tags-area" style="${matched.length>0?'':'display:none'};margin-bottom:24px">
       <div style="font-size:12px;font-weight:800;color:var(--text-muted);margin-bottom:8px">✓ Destinasi Dikenali:</div>
