@@ -1,325 +1,474 @@
 <!DOCTYPE html>
-<html lang="id" dir="ltr">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>BWI Admin — Minimalist Dashboard</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  
-<script>
-    window.tailwind = { config: {
-      theme: {
-        extend: {
-          colors: {
-            beige: '#F4EFEA',      // Latar belakang referensi
-            appBg: '#FAFAFA',      // Latar dalam app
-            dark: '#1C1C1E',       // Hitam elegan untuk teks & tombol utama
-            grayLight: '#F3F4F6',  // Abu-abu terang untuk input & secondary
-          },
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            serif: ['Playfair Display', 'serif'],
-          }
-        }
-      }
-    }};
-  </script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BWI Admin — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* Custom CSS untuk fitur spesifik yang sulit pakai utility class */
-    body { background-color: #E5DFD3; } /* Latar belakang luar presentasi */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    
-    /* Animasi Modal & Toast */
-    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-    .animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
-    
-    /* Styling Tabs Aktif */
-    .nav-item.active .cat-icon { background-color: #1C1C1E; color: white; transform: scale(1.05); }
-    .nav-item.active .cat-label { color: #1C1C1E; font-weight: 700; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:       #0a0f0a;
+      --surface:  #111811;
+      --surface2: #182018;
+      --border:   rgba(255,255,255,.07);
+      --border2:  rgba(255,255,255,.12);
+      --accent:   #4ade80;
+      --accent2:  #22c55e;
+      --orange:   #f97316;
+      --red:      #ef4444;
+      --blue:     #60a5fa;
+      --purple:   #c084fc;
+      --text:     #e2f0e2;
+      --muted:    #5a7a5a;
+      --muted2:   #3a5a3a;
+    }
+    html { font-size: 14px; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      min-height: 100vh; line-height: 1.5;
+    }
+
+    /* ── TOPBAR ── */
+    #topbar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,15,10,.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px; height: 54px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .tb-brand { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: .05em; }
+    .tb-sep   { width: 1px; height: 20px; background: var(--border2); }
+    .tb-title { font-size: 12px; color: var(--muted); }
+    .tb-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .tb-user  { font-size: 11px; color: var(--muted); background: var(--surface2); padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); }
+    .tb-logout { font-size: 11px; color: var(--red); background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.2); padding: 4px 12px; border-radius: 20px; cursor: pointer; transition: all .2s; font-family: inherit; }
+    .tb-logout:hover { background: rgba(239,68,68,.15); }
+
+    /* ── LAYOUT ── */
+    #main { display: flex; min-height: calc(100vh - 54px); }
+    #sidebar {
+      width: 200px; flex-shrink: 0;
+      background: var(--surface); border-right: 1px solid var(--border);
+      padding: 16px 0; position: sticky; top: 54px; height: calc(100vh - 54px);
+      overflow-y: auto;
+    }
+    .nav-section { padding: 0 12px; margin-bottom: 20px; }
+    .nav-label   { font-size: 9px; font-weight: 700; letter-spacing: .1em; color: var(--muted2); text-transform: uppercase; margin-bottom: 6px; padding: 0 4px; }
+    .nav-item    { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all .15s; margin-bottom: 2px; border: 1px solid transparent; }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: rgba(74,222,128,.08); color: var(--accent); border-color: rgba(74,222,128,.15); }
+    .nav-count { margin-left: auto; font-size: 10px; background: var(--surface2); padding: 1px 6px; border-radius: 10px; color: var(--muted); font-family: 'Space Mono', monospace; }
+    .nav-item.active .nav-count { background: rgba(74,222,128,.12); color: var(--accent2); }
+
+    #content { flex: 1; padding: 24px; overflow-x: hidden; }
+
+    /* ── STATS ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+    .stat-card  { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .stat-val   { font-family: 'Space Mono', monospace; font-size: 28px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+    .stat-lbl   { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+
+    /* ── TOOLBAR ── */
+    .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    .search-wrap { position: relative; flex: 1; min-width: 180px; }
+    .search-wrap input { width: 100%; background: var(--surface); border: 1px solid var(--border2); color: var(--text); border-radius: 8px; padding: 8px 12px 8px 32px; font-size: 12px; font-family: inherit; outline: none; transition: border-color .2s; }
+    .search-wrap input:focus { border-color: var(--accent2); }
+    .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; pointer-events: none; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; border: none; transition: all .2s; white-space: nowrap; }
+    .btn-primary { background: var(--accent2); color: #000; }
+    .btn-primary:hover { background: var(--accent); }
+    .btn-ghost   { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+    .btn-ghost:hover { background: rgba(255,255,255,.07); }
+    .btn-danger  { background: rgba(239,68,68,.1); color: var(--red); border: 1px solid rgba(239,68,68,.2); }
+    .btn-danger:hover { background: rgba(239,68,68,.2); }
+    .btn-import  { background: rgba(96,165,250,.1); color: var(--blue); border: 1px solid rgba(96,165,250,.2); }
+    .btn-export  { background: rgba(249,115,22,.1); color: var(--orange); border: 1px solid rgba(249,115,22,.2); }
+    .btn-push    { background: rgba(192,132,252,.1); color: var(--purple); border: 1px solid rgba(192,132,252,.2); }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── TABLE ── */
+    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--surface2); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,.015); }
+    .td-id    { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); }
+    .td-nama  { font-weight: 600; color: var(--text); max-width: 180px; }
+    .td-kaw   { font-size: 11px; color: var(--muted); }
+    .td-kat   { display: inline-block; font-size: 10px; background: var(--surface2); border: 1px solid var(--border2); padding: 2px 8px; border-radius: 12px; white-space: nowrap; }
+    .td-stat  { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 12px; font-weight: 600; }
+    .stat-approved { background: rgba(74,222,128,.1); color: var(--accent); border: 1px solid rgba(74,222,128,.2); }
+    .stat-pending  { background: rgba(249,115,22,.1); color: var(--orange); border: 1px solid rgba(249,115,22,.2); }
+    .stat-local    { background: rgba(96,165,250,.1); color: var(--blue); border: 1px solid rgba(96,165,250,.15); }
+    .td-actions { display: flex; gap: 4px; }
+    .action-btn { background: none; border: 1px solid var(--border2); color: var(--muted); border-radius: 6px; padding: 3px 8px; font-size: 10px; cursor: pointer; font-family: inherit; transition: all .15s; }
+    .action-btn:hover { border-color: var(--accent2); color: var(--accent); }
+    .action-btn.del:hover { border-color: var(--red); color: var(--red); }
+    .action-btn.push:hover { border-color: var(--purple); color: var(--purple); }
+
+    /* ── MODAL ── */
+    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .modal-bg.hidden { display: none; }
+    .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; padding: 24px; }
+    .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .modal-close { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; }
+    .form-row { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border2); color: var(--text);
+      border-radius: 8px; padding: 9px 12px; font-size: 13px; font-family: inherit; outline: none;
+      transition: border-color .2s; direction: ltr; text-align: left;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent2); }
+    .form-select option { background: #1a2e1a; }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+    /* ── IMPORT PANEL ── */
+    .import-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .import-title { font-size: 13px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .drop-zone { border: 2px dashed var(--border2); border-radius: 10px; padding: 32px; text-align: center; cursor: pointer; transition: all .2s; }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent2); background: rgba(74,222,128,.04); }
+    .drop-zone-icon { font-size: 32px; margin-bottom: 10px; }
+    .drop-zone-text { font-size: 13px; color: var(--muted); }
+    .drop-zone-sub  { font-size: 11px; color: var(--muted2); margin-top: 4px; }
+
+    /* ── TOAST ── */
+    #toast { position: fixed; bottom: 20px; right: 20px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+    .toast-item { background: var(--surface); border: 1px solid var(--border2); border-radius: 10px; padding: 12px 16px; font-size: 12px; max-width: 280px; animation: slideIn .3s ease; display: flex; align-items: center; gap: 8px; }
+    @keyframes slideIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .toast-ok  { border-left: 3px solid var(--accent); }
+    .toast-err { border-left: 3px solid var(--red); }
+    .toast-info{ border-left: 3px solid var(--blue); }
+
+    /* ── LOGIN ── */
+    #login-screen { position: fixed; inset: 0; background: var(--bg); z-index: 999; display: flex; align-items: center; justify-content: center; }
+    #login-screen.hidden { display: none; }
+    .login-box { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 32px; width: 320px; }
+    .login-logo { font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+    .login-sub  { font-size: 11px; color: var(--muted); margin-bottom: 24px; }
+    .login-err  { font-size: 11px; color: var(--red); margin-top: 10px; text-align: center; display: none; }
+
+    /* ── BADGE ── */
+    .badge-new { font-size: 9px; background: rgba(249,115,22,.15); color: var(--orange); border: 1px solid rgba(249,115,22,.3); padding: 1px 6px; border-radius: 10px; font-weight: 700; margin-left: 4px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      #sidebar { display: none; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+    .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); }
+    .empty-icon  { font-size: 36px; margin-bottom: 12px; opacity: .5; }
+    .pagination  { display: flex; align-items: center; gap: 6px; margin-top: 14px; justify-content: flex-end; font-size: 12px; color: var(--muted); }
+    .page-btn    { background: var(--surface); border: 1px solid var(--border2); color: var(--text); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-family: inherit; font-size: 12px; transition: all .15s; }
+    .page-btn:hover  { border-color: var(--accent2); color: var(--accent); }
+    .page-btn.active { background: rgba(74,222,128,.1); border-color: var(--accent2); color: var(--accent); }
+    .page-btn:disabled { opacity: .3; cursor: not-allowed; }
+    .col-sort { cursor: pointer; user-select: none; }
+    .col-sort:hover { color: var(--accent); }
+    .push-progress { margin-top: 12px; }
+    .push-bar-wrap { background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; margin-top: 6px; }
+    .push-bar { height: 100%; background: var(--accent2); transition: width .3s; border-radius: 4px; }
+    .push-log { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 8px; max-height: 80px; overflow-y: auto; line-height: 1.7; }
   </style>
 </head>
-<body class="flex justify-center items-center min-h-screen antialiased text-dark font-sans">
+<body>
 
-<div id="app-container" class="w-full max-w-[414px] bg-appBg min-h-screen sm:min-h-[850px] sm:h-[850px] sm:rounded-[40px] sm:shadow-2xl overflow-x-hidden overflow-y-auto relative flex flex-col mx-auto">
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">BWI Admin</div>
+    <div class="login-sub">Database Management Dashboard</div>
+    <div class="form-row">
+      <label class="form-label">Email</label>
+      <input type="email" id="loginEmail" class="form-input" placeholder="admin@email.com" dir="ltr">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Password</label>
+      <input type="password" id="loginPass" class="form-input" placeholder="••••••••">
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" id="btnLogin">Masuk</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
 
-  <div id="login-screen" class="absolute inset-0 bg-appBg z-50 flex items-center justify-center p-6 hidden">
-    <div class="w-full max-w-sm text-center">
-      <div class="font-serif text-4xl font-bold text-dark mb-2">BWI Admin</div>
-      <div class="text-sm text-gray-500 mb-10 font-medium">Masuk untuk mengelola destinasi</div>
-      
-      <div class="text-left mb-4">
-        <label class="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Alamat Email</label>
-        <input type="email" id="loginEmail" class="w-full bg-grayLight border-none rounded-2xl px-5 py-4 text-sm font-medium focus:ring-2 focus:ring-dark outline-none transition" placeholder="admin@email.com" dir="ltr">
-      </div>
-      <div class="text-left mb-6">
-        <label class="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Password</label>
-        <input type="password" id="loginPass" class="w-full bg-grayLight border-none rounded-2xl px-5 py-4 text-sm font-medium focus:ring-2 focus:ring-dark outline-none transition" placeholder="••••••••">
-      </div>
-      
-      <button id="btnLogin" class="w-full bg-dark text-white rounded-full py-4 font-semibold text-sm hover:bg-black transition shadow-lg">Sign In</button>
-      <div id="loginErr" class="text-xs text-red-500 mt-4 font-medium hidden"></div>
+<!-- TOPBAR -->
+<div id="topbar">
+  <span class="tb-brand">BWI/ADMIN</span>
+  <div class="tb-sep"></div>
+  <span class="tb-title">Database Management</span>
+  <div class="tb-right">
+    <span class="tb-user" id="tb-user">—</span>
+    <button class="tb-logout" id="btnLogout">Logout</button>
+  </div>
+</div>
+
+<div id="main">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="nav-section">
+      <div class="nav-label">Koleksi</div>
+      <div class="nav-item active" data-tab="wisata">🗺️ Wisata <span class="nav-count" id="cnt-wisata">—</span></div>
+      <div class="nav-item" data-tab="penginapan">🏨 Penginapan <span class="nav-count" id="cnt-penginapan">—</span></div>
+      <div class="nav-item" data-tab="kuliner">🍜 Kuliner <span class="nav-count" id="cnt-kuliner">—</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Tools</div>
+      <div class="nav-item" data-tab="import">📥 Import JSON</div>
+      <div class="nav-item" data-tab="export">📤 Export</div>
     </div>
   </div>
 
-  <div class="pt-12 pb-4 px-6 relative bg-appBg">
-    <div class="flex justify-between items-center mb-6">
-      <div>
-        <div class="text-xs text-gray-500 font-medium mb-1">Hi, <span id="tb-user" class="font-semibold text-dark">—</span> 👋</div>
+  <!-- CONTENT -->
+  <div id="content">
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-val" id="stat-total" style="color:var(--accent)">—</div>
+        <div class="stat-lbl">Total Records (aktif)</div>
       </div>
-      <button id="btnLogout" class="bg-gray-200 text-dark text-[10px] px-3 py-1.5 rounded-full font-bold uppercase tracking-wide hover:bg-gray-300 transition">Logout</button>
-    </div>
-    <div class="font-serif text-3xl font-bold leading-tight mb-2">Where do you<br>want to go?</div>
-    <div class="text-sm text-gray-400 font-medium italic">Database Management</div>
-  </div>
-
-  <div class="flex gap-4 overflow-x-auto no-scrollbar px-6 py-2 mb-2">
-    <div class="nav-item active flex flex-col items-center gap-2 cursor-pointer transition" data-tab="wisata">
-      <div class="cat-icon w-16 h-16 rounded-[20px] bg-white border border-gray-100 shadow-sm flex items-center justify-center text-2xl text-gray-600 transition duration-300">✈️</div>
-      <span class="cat-label text-xs font-medium text-gray-400 transition duration-300">Wisata</span>
-    </div>
-    <div class="nav-item flex flex-col items-center gap-2 cursor-pointer transition" data-tab="penginapan">
-      <div class="cat-icon w-16 h-16 rounded-[20px] bg-white border border-gray-100 shadow-sm flex items-center justify-center text-2xl text-gray-600 transition duration-300">🏨</div>
-      <span class="cat-label text-xs font-medium text-gray-400 transition duration-300">Hotels</span>
-    </div>
-    <div class="nav-item flex flex-col items-center gap-2 cursor-pointer transition" data-tab="kuliner">
-      <div class="cat-icon w-16 h-16 rounded-[20px] bg-white border border-gray-100 shadow-sm flex items-center justify-center text-2xl text-gray-600 transition duration-300">🍽️</div>
-      <span class="cat-label text-xs font-medium text-gray-400 transition duration-300">Kuliner</span>
-    </div>
-    <div class="nav-item flex flex-col items-center gap-2 cursor-pointer transition" data-tab="import">
-      <div class="cat-icon w-16 h-16 rounded-[20px] bg-white border border-gray-100 shadow-sm flex items-center justify-center text-2xl text-gray-600 transition duration-300">📥</div>
-      <span class="cat-label text-xs font-medium text-gray-400 transition duration-300">Import</span>
-    </div>
-    <div class="nav-item flex flex-col items-center gap-2 cursor-pointer transition" data-tab="export">
-      <div class="cat-icon w-16 h-16 rounded-[20px] bg-white border border-gray-100 shadow-sm flex items-center justify-center text-2xl text-gray-600 transition duration-300">📤</div>
-      <span class="cat-label text-xs font-medium text-gray-400 transition duration-300">Export</span>
-    </div>
-  </div>
-
-  <div id="content" class="flex-1 px-6 pb-8 bg-appBg">
-    
-    <div class="flex gap-3 mb-6 overflow-x-auto no-scrollbar py-2">
-      <div class="bg-white border border-gray-100 px-4 py-3 rounded-2xl min-w-[100px] shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
-        <div id="stat-total" class="font-serif text-2xl font-bold text-dark leading-none mb-1">—</div>
-        <div class="text-[10px] font-semibold text-gray-400 uppercase">Active</div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-pending" style="color:var(--orange)">—</div>
+        <div class="stat-lbl">Pending Approval</div>
       </div>
-      <div class="bg-white border border-gray-100 px-4 py-3 rounded-2xl min-w-[100px] shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
-        <div id="stat-pending" class="font-serif text-2xl font-bold text-amber-500 leading-none mb-1">—</div>
-        <div class="text-[10px] font-semibold text-gray-400 uppercase">Pending</div>
-      </div>
-      <div class="bg-white border border-gray-100 px-4 py-3 rounded-2xl min-w-[100px] shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
-        <div id="stat-local" class="font-serif text-2xl font-bold text-blue-500 leading-none mb-1">—</div>
-        <div class="text-[10px] font-semibold text-gray-400 uppercase">Drafts</div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-local" style="color:var(--blue)">—</div>
+        <div class="stat-lbl">Data Lokal (belum push)</div>
       </div>
     </div>
 
+    <!-- MAIN PANEL -->
     <div id="panel-wisata">
-      <div class="flex items-center bg-white border border-gray-100 rounded-full px-4 py-3 shadow-[0_4px_15px_rgba(0,0,0,0.02)] mb-6">
-        <span class="text-gray-400 text-lg mr-3">⌕</span>
-        <input type="text" id="search-wisata" class="flex-1 bg-transparent border-none outline-none text-sm font-medium text-dark placeholder-gray-400" placeholder="Search destinations...">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="search-wisata" placeholder="Cari wisata..." dir="ltr">
+        </div>
+        <button class="btn btn-ghost" id="filter-wisata" data-filter="">Semua Status</button>
+        <button class="btn btn-primary" id="btn-add-wisata">+ Tambah</button>
       </div>
-      <div class="flex justify-between items-center mb-4">
-        <span class="font-bold text-dark text-lg">Destinations</span>
-        <button id="btn-add-wisata" class="bg-dark text-white text-xs font-semibold px-4 py-2 rounded-full shadow-md hover:bg-black transition">Tambah Baru</button>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th class="col-sort">Nama ↕</th>
+              <th>Kawasan</th>
+              <th>Kategori</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-wisata"></tbody>
+        </table>
       </div>
-      <div class="flex flex-col gap-4" id="tbody-wisata"></div>
-      <div class="flex justify-center gap-2 mt-6" id="pag-wisata"></div>
+      <div class="pagination" id="pag-wisata"></div>
     </div>
 
     <div id="panel-penginapan" style="display:none">
-      <div class="flex items-center bg-white border border-gray-100 rounded-full px-4 py-3 shadow-[0_4px_15px_rgba(0,0,0,0.02)] mb-6">
-        <span class="text-gray-400 text-lg mr-3">⌕</span>
-        <input type="text" id="search-penginapan" class="flex-1 bg-transparent border-none outline-none text-sm font-medium text-dark placeholder-gray-400" placeholder="Search hotels...">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="search-penginapan" placeholder="Cari penginapan..." dir="ltr">
+        </div>
+        <button class="btn btn-primary" id="btn-add-penginapan">+ Tambah</button>
       </div>
-      <div class="flex justify-between items-center mb-4">
-        <span class="font-bold text-dark text-lg">Hotels</span>
-        <button id="btn-add-penginapan" class="bg-dark text-white text-xs font-semibold px-4 py-2 rounded-full shadow-md hover:bg-black transition">Tambah Baru</button>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Nama</th><th>Kawasan</th><th>Kategori</th><th>Status</th><th>Aksi</th></tr>
+          </thead>
+          <tbody id="tbody-penginapan"></tbody>
+        </table>
       </div>
-      <div class="flex flex-col gap-4" id="tbody-penginapan"></div>
-      <div class="flex justify-center gap-2 mt-6" id="pag-penginapan"></div>
+      <div class="pagination" id="pag-penginapan"></div>
     </div>
 
     <div id="panel-kuliner" style="display:none">
-      <div class="flex items-center bg-white border border-gray-100 rounded-full px-4 py-3 shadow-[0_4px_15px_rgba(0,0,0,0.02)] mb-6">
-        <span class="text-gray-400 text-lg mr-3">⌕</span>
-        <input type="text" id="search-kuliner" class="flex-1 bg-transparent border-none outline-none text-sm font-medium text-dark placeholder-gray-400" placeholder="Search culinary...">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="search-kuliner" placeholder="Cari kuliner/cafe..." dir="ltr">
+        </div>
+        <button class="btn btn-primary" id="btn-add-kuliner">+ Tambah</button>
       </div>
-      <div class="flex justify-between items-center mb-4">
-        <span class="font-bold text-dark text-lg">Culinary</span>
-        <button id="btn-add-kuliner" class="bg-dark text-white text-xs font-semibold px-4 py-2 rounded-full shadow-md hover:bg-black transition">Tambah Baru</button>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Nama</th><th>Kawasan</th><th>Kategori</th><th>Status</th><th>Aksi</th></tr>
+          </thead>
+          <tbody id="tbody-kuliner"></tbody>
+        </table>
       </div>
-      <div class="flex flex-col gap-4" id="tbody-kuliner"></div>
-      <div class="flex justify-center gap-2 mt-6" id="pag-kuliner"></div>
+      <div class="pagination" id="pag-kuliner"></div>
     </div>
 
+    <!-- IMPORT PANEL -->
     <div id="panel-import" style="display:none">
-      <div class="bg-white border border-gray-100 rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.03)] mb-6">
-        <div class="font-serif text-xl font-bold text-dark mb-4">Import Data</div>
-        <div id="dropZone" class="border-2 border-dashed border-gray-300 bg-gray-50 rounded-2xl p-8 text-center cursor-pointer hover:bg-gray-100 transition">
-          <div class="text-4xl mb-2 opacity-50">📂</div>
-          <div class="font-bold text-dark text-sm">Tap to select JSON file</div>
-          <div class="text-[10px] text-gray-400 mt-2">Format: {"wisata":[...], "penginapan":[...]}</div>
+      <div class="import-panel">
+        <div class="import-title">📥 Import dari JSON</div>
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone-icon">📂</div>
+          <div class="drop-zone-text">Drop file JSON di sini atau klik untuk pilih</div>
+          <div class="drop-zone-sub">Format: {"wisata_banyuwangi":[...], "penginapan":[...], "kuliner_cafe":[...]}</div>
           <input type="file" id="fileInput" accept=".json" style="display:none">
         </div>
-        
-        <div id="import-preview" class="mt-6 hidden">
-          <div class="font-bold text-dark mb-2">📋 Preview</div>
-          <div id="import-stats" class="text-xs text-gray-500 font-medium mb-4"></div>
-          <div class="flex flex-col gap-3">
-            <button id="btn-import-push" class="w-full bg-dark text-white py-3 rounded-full font-semibold shadow-md">🚀 Push to Firebase</button>
-            <button id="btn-import-local" class="w-full bg-white border border-gray-200 text-dark py-3 rounded-full font-semibold shadow-sm">💾 Save as Local Draft</button>
-            <button id="btn-import-cancel" class="w-full bg-transparent text-gray-500 py-3 rounded-full font-semibold">Cancel</button>
+        <div id="import-preview" style="margin-top:16px;display:none">
+          <div style="font-size:12px;font-weight:700;margin-bottom:10px;color:var(--accent)">📋 Preview Import</div>
+          <div id="import-stats" style="font-size:12px;color:var(--muted);margin-bottom:12px"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost" id="btn-import-local">💾 Simpan Lokal (draft)</button>
+            <button class="btn btn-push" id="btn-import-push">🚀 Push ke Firebase</button>
+            <button class="btn btn-danger" id="btn-import-cancel">Batal</button>
           </div>
-          <div id="push-progress" class="mt-4 hidden">
-            <div id="push-label" class="text-xs font-bold text-dark mb-2">Pushing...</div>
-            <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div id="push-bar" class="h-full bg-green-500 w-0 transition-all duration-300"></div>
-            </div>
-            <div id="push-log" class="font-mono text-[10px] mt-3 h-24 overflow-y-auto bg-gray-50 p-2 rounded-lg text-gray-600"></div>
+          <div class="push-progress" id="push-progress" style="display:none">
+            <div style="font-size:11px;color:var(--muted)" id="push-label">Pushing...</div>
+            <div class="push-bar-wrap"><div class="push-bar" id="push-bar" style="width:0%"></div></div>
+            <div class="push-log" id="push-log"></div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- EXPORT PANEL -->
     <div id="panel-export" style="display:none">
-      <div class="bg-white border border-gray-100 rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.03)] mb-6">
-        <div class="font-serif text-xl font-bold text-dark mb-4">Export Database</div>
-        <div class="grid grid-cols-2 gap-3">
-          <div class="col-span-2 bg-beige rounded-2xl p-5 border border-[#E5DFD3] flex justify-between items-center">
-            <div>
-              <div class="font-bold text-dark">All Database</div>
-              <div class="text-[10px] text-gray-500">Wisata, Hotel, Kuliner</div>
-            </div>
-            <button id="btn-export-all" class="bg-dark text-white px-4 py-2 rounded-full text-xs font-bold">Download</button>
+      <div class="import-panel">
+        <div class="import-title">📤 Export Database</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:16px">
+          <div class="stat-card" style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:12px;font-weight:600">Export Semua</div>
+            <div style="font-size:11px;color:var(--muted)">Wisata + Penginapan + Kuliner dari Firebase</div>
+            <button class="btn btn-export" style="margin-top:auto" id="btn-export-all">📤 Export JSON</button>
           </div>
-          <div class="bg-grayLight rounded-2xl p-4 flex flex-col items-start gap-3">
-            <div class="font-bold text-sm text-dark">Wisata</div>
-            <button id="btn-export-wisata" class="bg-white shadow-sm border border-gray-200 text-dark px-4 py-1.5 rounded-full text-[10px] font-bold w-full">Export</button>
+          <div class="stat-card" style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:12px;font-weight:600">Export Wisata</div>
+            <div style="font-size:11px;color:var(--muted)">Hanya data wisata (type: wisata)</div>
+            <button class="btn btn-ghost" style="margin-top:auto" id="btn-export-wisata">Export</button>
           </div>
-          <div class="bg-grayLight rounded-2xl p-4 flex flex-col items-start gap-3">
-            <div class="font-bold text-sm text-dark">Hotels</div>
-            <button id="btn-export-penginapan" class="bg-white shadow-sm border border-gray-200 text-dark px-4 py-1.5 rounded-full text-[10px] font-bold w-full">Export</button>
+          <div class="stat-card" style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:12px;font-weight:600">Export Penginapan</div>
+            <div style="font-size:11px;color:var(--muted)">Hanya data penginapan</div>
+            <button class="btn btn-ghost" style="margin-top:auto" id="btn-export-penginapan">Export</button>
           </div>
-          <div class="col-span-2 bg-grayLight rounded-2xl p-4 flex flex-col items-start gap-3">
-            <div class="font-bold text-sm text-dark">Kuliner</div>
-            <button id="btn-export-kuliner" class="bg-white shadow-sm border border-gray-200 text-dark px-4 py-1.5 rounded-full text-[10px] font-bold w-full">Export</button>
+          <div class="stat-card" style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:12px;font-weight:600">Export Kuliner</div>
+            <div style="font-size:11px;color:var(--muted)">Hanya data kuliner & cafe</div>
+            <button class="btn btn-ghost" style="margin-top:auto" id="btn-export-kuliner">Export</button>
           </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);padding:12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+          💡 Export mengambil langsung dari Firebase Firestore. File JSON yang dihasilkan kompatibel untuk re-import.
         </div>
       </div>
     </div>
-
   </div>
-
-  <div id="modalEdit" class="fixed inset-0 z-[100] hidden">
-    <div class="absolute inset-0 bg-dark/20 backdrop-blur-sm" id="modalOverlay"></div>
-    <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-[40px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-8 max-h-[90vh] overflow-y-auto animate-slide-up sm:max-w-[414px] sm:mx-auto">
-      
-      <div class="flex justify-between items-center mb-6">
-        <span id="modal-title-text" class="font-serif text-2xl font-bold text-dark">Add Data</span>
-        <button id="btnCloseModal" class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-500 font-bold hover:bg-gray-200">✕</button>
-      </div>
-
-      <div class="mb-4">
-        <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">Nama Tempat *</label>
-        <input type="text" id="f-nama" class="w-full bg-grayLight rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-1 focus:ring-dark" placeholder="e.g. Pantai Pulau Merah" dir="ltr">
-      </div>
-      
-      <div class="grid grid-cols-2 gap-3 mb-4">
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">Kawasan *</label>
-          <select id="f-kawasan" class="w-full bg-grayLight rounded-xl px-3 py-3 text-sm font-medium outline-none focus:ring-1 focus:ring-dark appearance-none">
-            <option value="">Pilih Kawasan</option>
-            <option>Licin / Paltuding</option><option>Kalibendo</option><option>Kalibaru</option>
-            <option>Songgon</option><option>Kemiren</option><option>Glenmore</option><option>Sempol</option>
-            <option>Wongsorejo</option><option>Banyuputih</option><option>Kalipuro</option>
-            <option>Pesanggaran</option><option>Tegaldlimo</option><option>Purwoharjo</option>
-            <option>Muncar</option><option>Benculuk</option><option>Grajagan</option>
-            <option>Pusat Kota</option><option>Glagah</option><option>Rogojampi</option>
-            <option>Kabat</option><option>Singojuruh</option><option>Gombengsari</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">Kategori</label>
-          <input type="text" id="f-kategori" class="w-full bg-grayLight rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-1 focus:ring-dark" placeholder="Pantai, Hutan...">
-        </div>
-      </div>
-
-      <div class="mb-4">
-        <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">Aksesibilitas</label>
-        <select id="f-akses" class="w-full bg-grayLight rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-1 focus:ring-dark appearance-none">
-          <option value="Mulus">Mulus</option><option value="Menengah">Menengah</option>
-          <option value="Offroad">Offroad</option><option value="Trekking">Trekking</option>
-        </select>
-      </div>
-
-      <div class="mb-4">
-        <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">Catatan / Deskripsi</label>
-        <textarea id="f-catatan" class="w-full bg-grayLight rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-1 focus:ring-dark min-h-[80px] resize-y" placeholder="Tips, info tiket..."></textarea>
-      </div>
-
-      <div class="mb-4">
-        <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">Google Maps URL</label>
-        <input type="text" id="f-maps" class="w-full bg-grayLight rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-1 focus:ring-dark" placeholder="https://maps.app.goo.gl/..." dir="ltr">
-      </div>
-
-      <div class="grid grid-cols-2 gap-3 mb-5">
-        <div>
-          <label class="flex justify-between text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">
-            <span>Latitude</span>
-            <span class="text-blue-600 cursor-pointer normal-case" id="btn-auto-geocode" onclick="autoGeocode()">📍 Auto</span>
-          </label>
-          <input type="number" id="f-lat" class="w-full bg-grayLight rounded-xl px-3 py-3 text-sm font-medium outline-none focus:ring-1 focus:ring-dark" placeholder="-8.2xxx" step="0.000001">
-        </div>
-        <div>
-          <label class="flex justify-between text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">
-            <span>Longitude</span>
-            <span id="geocode-status" class="text-[9px] font-normal normal-case"></span>
-          </label>
-          <input type="number" id="f-lng" class="w-full bg-grayLight rounded-xl px-3 py-3 text-sm font-medium outline-none focus:ring-1 focus:ring-dark" placeholder="114.3xxx" step="0.000001">
-        </div>
-      </div>
-
-      <div class="mb-8">
-        <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">Status App</label>
-        <select id="f-status" class="w-full bg-grayLight rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-1 focus:ring-dark appearance-none">
-          <option value="approved">✅ Approved (Live)</option>
-          <option value="pending">⏳ Pending (Draft)</option>
-        </select>
-      </div>
-
-      <div class="flex gap-3">
-        <button id="btnCancelEdit" class="flex-1 bg-white border border-gray-200 text-dark rounded-full py-3.5 font-bold text-sm shadow-sm hover:bg-gray-50">Cancel</button>
-        <button id="btnSaveEdit" class="flex-[2] bg-dark text-white rounded-full py-3.5 font-bold text-sm shadow-lg hover:bg-black">Save Data</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[999] flex flex-col gap-2 w-[90%] max-w-[360px]"></div>
-
 </div>
 
+<!-- MODAL TAMBAH/EDIT -->
+<div class="modal-bg hidden" id="modalEdit">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modal-title-text">Tambah Data</span>
+      <button class="modal-close" id="btnCloseModal">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label class="form-label">Nama *</label>
+        <input type="text" class="form-input" id="f-nama" placeholder="Nama tempat" dir="ltr">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Kawasan *</label>
+        <select class="form-select" id="f-kawasan">
+          <option value="">Pilih Kawasan</option>
+          <option>Licin / Paltuding</option><option>Kalibendo</option><option>Kalibaru</option>
+          <option>Songgon</option><option>Kemiren</option><option>Glenmore</option><option>Sempol</option>
+          <option>Wongsorejo</option><option>Banyuputih</option><option>Kalipuro</option>
+          <option>Pesanggaran</option><option>Tegaldlimo</option><option>Purwoharjo</option>
+          <option>Muncar</option><option>Benculuk</option><option>Grajagan</option>
+          <option>Pusat Kota</option><option>Glagah</option><option>Rogojampi</option>
+          <option>Kabat</option><option>Singojuruh</option><option>Gombengsari</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label class="form-label">Kategori</label>
+        <input type="text" class="form-input" id="f-kategori" placeholder="Pantai, Hutan, Hotel..." dir="ltr">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Akses</label>
+        <select class="form-select" id="f-akses">
+          <option value="Mulus">Mulus</option>
+          <option value="Menengah">Menengah</option>
+          <option value="Offroad">Offroad</option>
+          <option value="Trekking">Trekking</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Catatan / Deskripsi</label>
+      <textarea class="form-textarea" id="f-catatan" placeholder="Deskripsi singkat, tips, info tiket..."></textarea>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Google Maps URL</label>
+      <input type="text" class="form-input" id="f-maps" placeholder="https://maps.google.com/..." dir="ltr">
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label class="form-label" style="display:flex;align-items:center;justify-content:space-between">
+          <span>Latitude</span>
+          <button type="button" id="btn-auto-geocode" onclick="autoGeocode()"
+            style="font-size:11px;padding:2px 8px;border-radius:6px;background:rgba(99,179,237,.15);
+            border:1px solid rgba(99,179,237,.35);color:#63b3ed;cursor:pointer;font-family:inherit;
+            white-space:nowrap;transition:all .2s">
+            📍 Auto
+          </button>
+        </label>
+        <input type="number" class="form-input" id="f-lat" placeholder="-8.2xxx" step="0.000001">
+      </div>
+      <div class="form-row">
+        <label class="form-label" style="display:flex;align-items:center;justify-content:space-between">
+          <span>Longitude</span>
+          <span id="geocode-status" style="font-size:10px;color:#5a7a5a"></span>
+        </label>
+        <input type="number" class="form-input" id="f-lng" placeholder="114.3xxx" step="0.000001">
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Status</label>
+      <select class="form-select" id="f-status">
+        <option value="approved">✅ Approved (tampil di app)</option>
+        <option value="pending">⏳ Pending (review dulu)</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="btnCancelEdit">Batal</button>
+      <button class="btn btn-primary" id="btnSaveEdit">Simpan</button>
+    </div>
+  </div>
+</div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<!-- TOAST -->
+<div id="toast"></div>
 
-<script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js">
 // ── AUTO GEOCODE ──────────────────────────────────────────────────────────────
 async function autoGeocode() {
   const btn    = document.getElementById('btn-auto-geocode');
+  const status = document.getElementById('geocode-status');
   const latEl  = document.getElementById('f-lat');
   const lngEl  = document.getElementById('f-lng');
-  const nama   = (document.getElementById('f-nama')?.value||'').trim();
-  const kawasan= (document.getElementById('f-kawasan')?.value||'').trim();
-  const mapsUrl= (document.getElementById('f-maps')?.value||'').trim();
+  const nama   = document.getElementById('f-nama')?.value?.trim() || '';
+  const kawasan= document.getElementById('f-kawasan')?.value?.trim() || '';
+  const mapsUrl= document.getElementById('f-maps')?.value?.trim() || '';
 
-  // Step 1: Extract dari Maps URL
+  // Coba extract koordinat dari Maps URL dulu
   const fromUrl = extractCoordsFromUrl(mapsUrl);
   if (fromUrl) {
     latEl.value = fromUrl.lat;
@@ -328,75 +477,51 @@ async function autoGeocode() {
     return;
   }
 
-  if (!nama) { setGeocodeStatus('⚠ Isi nama dulu', '#e07b39'); return; }
+  // Fallback: geocode via Photon API
+  if (!nama) {
+    setGeocodeStatus('⚠ Isi nama dulu', '#e07b39');
+    return;
+  }
 
   btn.textContent = '⏳';
   btn.disabled = true;
   setGeocodeStatus('Mencari...', '#63b3ed');
 
-  const LAT_MIN = -8.8, LAT_MAX = -7.9, LNG_MIN = 113.9, LNG_MAX = 114.5;
-  const inBbox = (lat, lng) => lat>=LAT_MIN&&lat<=LAT_MAX&&lng>=LNG_MIN&&lng<=LNG_MAX;
-  const queryStr = `${nama} ${kawasan} Banyuwangi`.trim();
+  const query = encodeURIComponent(`${nama} ${kawasan} Banyuwangi`);
+  const url   = `https://photon.komoot.io/api/?q=${query}&limit=5`;
 
-  // Step 2: Photon API
   try {
-    const q   = encodeURIComponent(queryStr);
-    const res = await fetch(`https://photon.komoot.io/api/?q=${q}&limit=5`);
-    if (res.ok) {
-      const data = await res.json();
-      const features = data.features || [];
-      const best = features.find(f => {
-        const [lng, lat] = f.geometry.coordinates;
-        return inBbox(lat, lng);
-      }) || features[0];
-      if (best) {
-        const [lng, lat] = best.geometry.coordinates;
-        latEl.value = lat.toFixed(6);
-        lngEl.value = lng.toFixed(6);
-        const ok = inBbox(lat, lng);
-        setGeocodeStatus(ok ? `✓ ${(best.properties?.name||'').slice(0,25)}` : '⚠ Di luar area BWI', ok ? '#48bb78' : '#e07b39');
-        btn.textContent = '📍 Auto'; btn.disabled = false; return;
-      }
-    }
-  } catch(e) { /* lanjut ke fallback */ }
+    const res  = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+    const data = await res.json();
 
-  // Step 3: Nominatim fallback
-  setGeocodeStatus('Photon gagal, coba Nominatim...', '#63b3ed');
-  try {
-    const q   = encodeURIComponent(queryStr);
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=5&countrycodes=id`, {
-      headers: { 'User-Agent': 'Mozilla/5.0', 'Accept-Language': 'id' }
-    });
-    if (res.ok) {
-      const results = await res.json();
-      const best = results.find(r => inBbox(parseFloat(r.lat), parseFloat(r.lon))) || results[0];
-      if (best) {
-        const lat = parseFloat(best.lat), lng = parseFloat(best.lon);
-        latEl.value = lat.toFixed(6);
-        lngEl.value = lng.toFixed(6);
-        const ok = inBbox(lat, lng);
-        setGeocodeStatus(ok ? `✓ Nominatim` : '⚠ Di luar area BWI', ok ? '#48bb78' : '#e07b39');
-        btn.textContent = '📍 Auto'; btn.disabled = false; return;
-      }
-    }
-  } catch(e) { /* lanjut ke pesan manual */ }
+    const LAT_MIN = -8.8, LAT_MAX = -7.9, LNG_MIN = 113.9, LNG_MAX = 114.5;
+    const features = data.features || [];
 
-  // Step 4: Semua gagal — tampilkan link Google Maps
-  const mapsSearch = `https://www.google.com/maps/search/${encodeURIComponent(queryStr)}`;
-  setGeocodeStatus('✗ Tidak ditemukan — isi manual', '#fc8181');
-  // Tampilkan link helper di bawah tombol
-  let helper = document.getElementById('geocode-helper');
-  if (!helper) {
-    helper = document.createElement('div');
-    helper.id = 'geocode-helper';
-    helper.style.cssText = 'font-size:11px;margin-top:4px;';
-    btn.parentElement.parentElement.appendChild(helper);
+    // Prioritas: hasil yang masuk bbox Banyuwangi
+    let best = features.find(f => {
+      const [lng, lat] = f.geometry.coordinates;
+      return lat >= LAT_MIN && lat <= LAT_MAX && lng >= LNG_MIN && lng <= LNG_MAX;
+    }) || features[0];
+
+    if (best) {
+      const [lng, lat] = best.geometry.coordinates;
+      latEl.value = lat.toFixed(6);
+      lngEl.value = lng.toFixed(6);
+      const displayName = best.properties?.name || '';
+      const inBbox = lat >= LAT_MIN && lat <= LAT_MAX && lng >= LNG_MIN && lng <= LNG_MAX;
+      setGeocodeStatus(
+        inBbox ? `✓ ${displayName.slice(0,25)}` : `⚠ Di luar Banyuwangi`,
+        inBbox ? '#48bb78' : '#e07b39'
+      );
+    } else {
+      setGeocodeStatus('✗ Tidak ditemukan', '#fc8181');
+    }
+  } catch(e) {
+    setGeocodeStatus('✗ Error: ' + e.message.slice(0,30), '#fc8181');
+  } finally {
+    btn.textContent = '📍 Auto';
+    btn.disabled = false;
   }
-  helper.innerHTML = `<a href="${mapsSearch}" target="_blank"
-    style="color:#63b3ed;text-decoration:underline">
-    🗺 Buka Google Maps → klik kanan → "Apa yang ada di sini?" → copy koordinat
-  </a>`;
-  btn.textContent = '📍 Auto'; btn.disabled = false;
 }
 
 function extractCoordsFromUrl(url) {
@@ -418,8 +543,11 @@ function setGeocodeStatus(msg, color) {
   if (el) { el.textContent = msg; el.style.color = color; }
 }
 
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
-
+<script>
 // ─── FIREBASE INIT ────────────────────────────────────────────────────────────
 let db = null, auth = null;
 try {
@@ -512,7 +640,7 @@ function showLogin()  { document.getElementById('login-screen').classList.remove
 function hideLogin()  { document.getElementById('login-screen').classList.add('hidden'); }
 function onLogin(email) {
   hideLogin();
-  const _tb = document.getElementById('tb-user'); if(_tb) _tb.textContent = email;
+  document.getElementById('tb-user').textContent = email;
   loadAllTabs();
   pasangTombolPembersih();
 }
@@ -590,13 +718,12 @@ async function loadTab(type, forceRefresh = false) {
 function updateStats() {
   const all = [...state.data.wisata, ...state.data.penginapan, ...state.data.kuliner];
   const localAll = [...state.local.wisata, ...state.local.penginapan, ...state.local.kuliner];
-  const _s = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  _s('stat-total',   all.filter(d=>d.status==='approved'||!d.status).length);
-  _s('stat-pending', all.filter(d=>d.status==='pending').length);
-  _s('stat-local',   localAll.length);
-  setEl('cnt-wisata',     state.data.wisata.length + state.local.wisata.length);
-  setEl('cnt-penginapan', state.data.penginapan.length + state.local.penginapan.length);
-  setEl('cnt-kuliner',    state.data.kuliner.length + state.local.kuliner.length);
+  document.getElementById('stat-total').textContent   = all.filter(d=>d.status==='approved'||!d.status).length;
+  document.getElementById('stat-pending').textContent = all.filter(d=>d.status==='pending').length;
+  document.getElementById('stat-local').textContent   = localAll.length;
+  document.getElementById('cnt-wisata').textContent      = state.data.wisata.length + state.local.wisata.length;
+  document.getElementById('cnt-penginapan').textContent  = state.data.penginapan.length + state.local.penginapan.length;
+  document.getElementById('cnt-kuliner').textContent     = state.data.kuliner.length + state.local.kuliner.length;
 }
 
 // ─── RENDER TABLE ─────────────────────────────────────────────────────────────
@@ -619,7 +746,7 @@ function renderTable(type) {
   const tbody   = document.getElementById('tbody-'+type);
 
   if (rows.length === 0) {
-    tbody.innerHTML = '<div class="text-center py-12"><div class="text-4xl mb-3 opacity-30">📭</div><div class="text-sm font-semibold text-gray-400">Tidak ada data</div></div>';
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📭</div>Tidak ada data</div></td></tr>`;
   } else {
     tbody.innerHTML = rows.map(d => {
       const id     = d._id || d.Id || '—';
@@ -631,32 +758,21 @@ function renderTable(type) {
         : status === 'pending' ? '<span class="td-stat stat-pending">pending</span>'
         : '<span class="td-stat stat-approved">✓</span>';
       const isLocal = d._source === 'local';
-      const statBadge = status === 'local'
-        ? '<span class="text-[9px] font-bold bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">DRAFT</span>'
-        : status === 'pending'
-        ? '<span class="text-[9px] font-bold bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full">PENDING</span>'
-        : '<span class="text-[9px] font-bold bg-green-100 text-green-600 px-2 py-0.5 rounded-full">LIVE</span>';
-      const hasCoords = d.lat && d.lng;
-      return `<div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
-        <div class="flex justify-between items-start mb-2">
-          <div class="flex-1 min-w-0 mr-3">
-            <div class="font-bold text-sm text-dark truncate">${nama}${isLocal?'<span class="ml-1 text-[9px] font-bold bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full">NEW</span>':''}</div>
-            <div class="text-[11px] text-gray-400 mt-0.5">${kaw} · <span class="text-gray-500">${kat}</span></div>
-          </div>
-          <div class="flex items-center gap-1.5 shrink-0">
-            ${statBadge}
-            ${hasCoords ? '<span class="text-[9px] bg-green-50 text-green-600 border border-green-200 px-1.5 py-0.5 rounded-full font-bold">📍</span>' : ''}
-          </div>
-        </div>
-        <div class="text-[10px] text-gray-300 mb-3 font-mono">${String(id).slice(0,16)}</div>
-        <div class="flex gap-2">
-          <button class="flex-1 bg-grayLight text-dark text-[11px] font-semibold py-1.5 rounded-xl hover:bg-gray-200 transition" onclick="openEdit('${type}','${id}')">Edit</button>
+      return `<tr>
+        <td class="td-id">${String(id).slice(0,10)}</td>
+        <td class="td-nama">${nama}${isLocal?'<span class="badge-new">NEW</span>':''}</td>
+        <td class="td-kaw">${kaw}</td>
+        <td><span class="td-kat">${kat}</span></td>
+        <td>${statLabel}</td>
+        <td class="td-actions">
+          <button class="action-btn" onclick="openEdit('${type}','${id}')">Edit</button>
           ${isLocal
-            ? `<button class="flex-1 bg-dark text-white text-[11px] font-semibold py-1.5 rounded-xl hover:bg-black transition" onclick="pushSingle('${type}','${id}')">Push ↑</button>`
-            : `<button class="flex-1 bg-grayLight text-dark text-[11px] font-semibold py-1.5 rounded-xl hover:bg-gray-200 transition" onclick="approveDoc('${type}','${id}','${status}')">${status==='pending'?'Approve':'Pending'}</button>`}
-          <button class="bg-red-50 text-red-500 text-[11px] font-semibold px-3 py-1.5 rounded-xl hover:bg-red-100 transition" onclick="deleteDoc('${type}','${id}')">✕</button>
-        </div>
-      </div>`;
+            ? `<button class="action-btn push" onclick="pushSingle('${type}','${id}')">Push</button>`
+            : `<button class="action-btn" onclick="approveDoc('${type}','${id}','${status}')">
+                ${status==='pending'?'Approve':'Pending'}</button>`}
+          <button class="action-btn del" onclick="deleteDoc('${type}','${id}')">Hapus</button>
+        </td>
+      </tr>`;
     }).join('');
   }
 
@@ -664,13 +780,11 @@ function renderTable(type) {
   const pages = Math.ceil(total/perPage);
   const pag   = document.getElementById('pag-'+type);
   if (pages <= 1) { pag.innerHTML=''; return; }
-  let html = `<span class="text-xs text-gray-400 font-medium">${start+1}–${Math.min(start+perPage,total)} dari ${total}</span>`;
-  html += `<button class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-500 hover:bg-grayLight transition text-sm font-bold disabled:opacity-30" onclick="setPage('${type}',${page-1})" ${page<=1?'disabled':''}>‹</button>`;
+  let html = `<span style="margin-right:8px">${start+1}–${Math.min(start+perPage,total)} dari ${total}</span>`;
+  html += `<button class="page-btn" onclick="setPage('${type}',${page-1})" ${page<=1?'disabled':''}>‹</button>`;
   const lo = Math.max(1,page-2), hi = Math.min(pages,page+2);
-  for (let i=lo;i<=hi;i++) {
-    html += `<button class="w-8 h-8 flex items-center justify-center rounded-xl text-sm font-bold transition ${i===page?'bg-dark text-white':'bg-white border border-gray-200 text-gray-500 hover:bg-grayLight'}" onclick="setPage('${type}',${i})">${i}</button>`;
-  }
-  html += `<button class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-500 hover:bg-grayLight transition text-sm font-bold disabled:opacity-30" onclick="setPage('${type}',${page+1})" ${page>=pages?'disabled':''}>›</button>`;
+  for (let i=lo;i<=hi;i++) html += `<button class="page-btn${i===page?' active':''}" onclick="setPage('${type}',${i})">${i}</button>`;
+  html += `<button class="page-btn" onclick="setPage('${type}',${page+1})" ${page>=pages?'disabled':''}>›</button>`;
   pag.innerHTML = html;
 }
 
@@ -1040,114 +1154,6 @@ function pasangTombolPembersih() {
   container.insertBefore(btn, container.firstChild);
 }
 
-
-// ── AUTO GEOCODE ──────────────────────────────────────────────────────────────
-async function autoGeocode() {
-  const btn    = document.getElementById('btn-auto-geocode');
-  const latEl  = document.getElementById('f-lat');
-  const lngEl  = document.getElementById('f-lng');
-  const nama   = (document.getElementById('f-nama')?.value||'').trim();
-  const kawasan= (document.getElementById('f-kawasan')?.value||'').trim();
-  const mapsUrl= (document.getElementById('f-maps')?.value||'').trim();
-
-  // Step 1: Extract dari Maps URL
-  const fromUrl = extractCoordsFromUrl(mapsUrl);
-  if (fromUrl) {
-    latEl.value = fromUrl.lat;
-    lngEl.value = fromUrl.lng;
-    setGeocodeStatus('✓ Dari URL Maps', '#48bb78');
-    return;
-  }
-
-  if (!nama) { setGeocodeStatus('⚠ Isi nama dulu', '#e07b39'); return; }
-
-  btn.textContent = '⏳';
-  btn.disabled = true;
-  setGeocodeStatus('Mencari...', '#63b3ed');
-
-  const LAT_MIN = -8.8, LAT_MAX = -7.9, LNG_MIN = 113.9, LNG_MAX = 114.5;
-  const inBbox = (lat, lng) => lat>=LAT_MIN&&lat<=LAT_MAX&&lng>=LNG_MIN&&lng<=LNG_MAX;
-  const queryStr = `${nama} ${kawasan} Banyuwangi`.trim();
-
-  // Step 2: Photon API
-  try {
-    const q   = encodeURIComponent(queryStr);
-    const res = await fetch(`https://photon.komoot.io/api/?q=${q}&limit=5`);
-    if (res.ok) {
-      const data = await res.json();
-      const features = data.features || [];
-      const best = features.find(f => {
-        const [lng, lat] = f.geometry.coordinates;
-        return inBbox(lat, lng);
-      }) || features[0];
-      if (best) {
-        const [lng, lat] = best.geometry.coordinates;
-        latEl.value = lat.toFixed(6);
-        lngEl.value = lng.toFixed(6);
-        const ok = inBbox(lat, lng);
-        setGeocodeStatus(ok ? `✓ ${(best.properties?.name||'').slice(0,25)}` : '⚠ Di luar area BWI', ok ? '#48bb78' : '#e07b39');
-        btn.textContent = '📍 Auto'; btn.disabled = false; return;
-      }
-    }
-  } catch(e) { /* lanjut ke fallback */ }
-
-  // Step 3: Nominatim fallback
-  setGeocodeStatus('Photon gagal, coba Nominatim...', '#63b3ed');
-  try {
-    const q   = encodeURIComponent(queryStr);
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=5&countrycodes=id`, {
-      headers: { 'User-Agent': 'Mozilla/5.0', 'Accept-Language': 'id' }
-    });
-    if (res.ok) {
-      const results = await res.json();
-      const best = results.find(r => inBbox(parseFloat(r.lat), parseFloat(r.lon))) || results[0];
-      if (best) {
-        const lat = parseFloat(best.lat), lng = parseFloat(best.lon);
-        latEl.value = lat.toFixed(6);
-        lngEl.value = lng.toFixed(6);
-        const ok = inBbox(lat, lng);
-        setGeocodeStatus(ok ? `✓ Nominatim` : '⚠ Di luar area BWI', ok ? '#48bb78' : '#e07b39');
-        btn.textContent = '📍 Auto'; btn.disabled = false; return;
-      }
-    }
-  } catch(e) { /* lanjut ke pesan manual */ }
-
-  // Step 4: Semua gagal — tampilkan link Google Maps
-  const mapsSearch = `https://www.google.com/maps/search/${encodeURIComponent(queryStr)}`;
-  setGeocodeStatus('✗ Tidak ditemukan — isi manual', '#fc8181');
-  // Tampilkan link helper di bawah tombol
-  let helper = document.getElementById('geocode-helper');
-  if (!helper) {
-    helper = document.createElement('div');
-    helper.id = 'geocode-helper';
-    helper.style.cssText = 'font-size:11px;margin-top:4px;';
-    btn.parentElement.parentElement.appendChild(helper);
-  }
-  helper.innerHTML = `<a href="${mapsSearch}" target="_blank"
-    style="color:#63b3ed;text-decoration:underline">
-    🗺 Buka Google Maps → klik kanan → "Apa yang ada di sini?" → copy koordinat
-  </a>`;
-  btn.textContent = '📍 Auto'; btn.disabled = false;
-}
-
-function extractCoordsFromUrl(url) {
-  if (!url) return null;
-  // Format: maps.google.com/.../@lat,lng,zoom
-  let m = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-  if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
-  // Format: maps.google.com/?q=lat,lng
-  m = url.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
-  if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
-  // Format: ll=lat,lng
-  m = url.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
-  if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
-  return null;
-}
-
-function setGeocodeStatus(msg, color) {
-  const el = document.getElementById('geocode-status');
-  if (el) { el.textContent = msg; el.style.color = color; }
-}
 </script>
 </body>
 </html>

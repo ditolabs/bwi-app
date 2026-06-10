@@ -4,119 +4,529 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Wandr — Buat Itinerary Banyuwangi</title>
-  <meta name="description" content="Generate itinerary perjalanan Banyuwangi secara otomatis dengan AI.">
+  <meta name="description" content="Generate itinerary perjalanan Banyuwangi secara otomatis dengan AI. Masukkan destinasi, pilih kendaraan dan durasi, itinerary langsung jadi.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
-  <script>
-    window.tailwind = { config: {
-      theme: {
-        extend: {
-          colors: { beige:'#F4EFEA', appBg:'#FAFAFA', dark:'#1C1C1E', grayLight:'#F3F4F6' },
-          fontFamily: { sans:['Inter','sans-serif'], serif:['Playfair Display','serif'] }
-        }
-      }
-    }};
-  </script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    html{font-size:16px;scroll-behavior:smooth}
-    body{background-color:#E5DFD3;-webkit-font-smoothing:antialiased}
-    ::-webkit-scrollbar{display:none}
-    .step-labels{display:flex;justify-content:space-between;margin-bottom:12px;padding:0 4px}
-    .step-label{font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.05em;transition:all .3s}
-    .step-label.active{color:#1C1C1E;font-weight:800}
-    .step-label.done{color:#1C1C1E;opacity:.5}
-    .progress-bar{height:4px;background:#E5E7EB;border-radius:4px;overflow:hidden;margin-bottom:30px}
-    .progress-fill{height:100%;background:#1C1C1E;border-radius:4px;transition:width .5s cubic-bezier(.4,0,.2,1)}
-    .btn-pri{background:#1C1C1E;color:white;border:none;border-radius:9999px;padding:14px 28px;font-family:'Inter',sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:all .2s;box-shadow:0 10px 25px rgba(0,0,0,.1);display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
-    .btn-pri:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.2)}
-    .btn-pri:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none}
-    .btn-ghost{background:transparent;color:#6B7280;border:none;padding:14px 0;font-family:'Inter',sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:color .2s}
-    .btn-ghost:hover{color:#1C1C1E}
-    .btn-ghost.hidden{visibility:hidden;display:none!important}
-    @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    .animate-fade-in{animation:fadeIn .3s ease-out}
-    .animate-slide-up{animation:slideUp .4s ease-out}
-    .sortable-chosen{background:#F3F4F6!important;border-color:#1C1C1E!important;transform:scale(1.02);box-shadow:0 10px 25px rgba(0,0,0,.05)}
-    .sortable-ghost{opacity:.3;border:2px dashed #1C1C1E!important;background:transparent!important}
-    input,select,textarea{direction:ltr!important;text-align:left!important;outline:none!important}
-    input:focus,select:focus,textarea:focus{border-color:#1C1C1E!important}
-    /* Autocomplete light theme */
-    .autocomplete-wrap{position:relative}
-    .autocomplete-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:100;background:white;border:1.5px solid #E5E7EB;border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.08);max-height:260px;overflow-y:auto}
-    .autocomplete-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid #F9FAFB;transition:background .15s;display:flex;align-items:center;gap:10px}
-    .autocomplete-item:last-child{border-bottom:none}
-    .autocomplete-item:hover,.autocomplete-item.active{background:#F3F4F6}
-    .autocomplete-item-name{font-size:13px;font-weight:600;color:#1C1C1E}
-    .autocomplete-item-sub{font-size:11px;color:#9CA3AF;margin-top:1px}
-    .autocomplete-empty{padding:14px;text-align:center;font-size:12px;color:#9CA3AF;font-style:italic}
+    /* ── RESET & BASE ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      min-height: 100vh;
+      background: #0c1a0c;
+      font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+      color: #f0e8d8;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior-y: none;
+    }
+
+    /* ── LAYOUT ────────────────────────────────────────────────────────── */
+    #app { max-width: 640px; margin: 0 auto; padding: 0 20px; }
+
+    /* ── HEADER ────────────────────────────────────────────────────────── */
+    #header {
+      padding-top: 20px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .logo-icon {
+      width: 30px; height: 30px;
+      background: #e07b39;
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .logo-text {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 18px; font-weight: 700;
+      letter-spacing: -.01em;
+    }
+    .logo-badge {
+      font-size: 10px; color: #4a6a4a;
+      background: rgba(74,106,74,.18);
+      padding: 2px 9px; border-radius: 20px; font-weight: 500;
+    }
+
+    /* ── PROGRESS ──────────────────────────────────────────────────────── */
+    #progress-area { margin-bottom: 20px; }
+    .step-labels { display: flex; justify-content: space-between; margin-bottom: 7px; }
+    .step-label { font-size: 10px; font-weight: 400; color: #2a4a2a; letter-spacing: .04em; transition: color .3s; }
+    .step-label.active { font-weight: 700; color: #e07b39; }
+    .step-label.done   { color: #4a7a4a; }
+    .progress-bar { height: 2px; background: rgba(255,255,255,.05); border-radius: 1px; overflow: hidden; }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #c96a2a, #e07b39);
+      border-radius: 1px;
+      transition: width .5s ease;
+    }
+
+    /* ── NAV ───────────────────────────────────────────────────────────── */
+    #nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 0 32px;
+      border-top: 1px solid rgba(255,255,255,.04);
+      margin-top: 4px;
+    }
+    .dest-count { font-size: 11px; color: #3a5a3a; }
+
+    /* ── BUTTONS ───────────────────────────────────────────────────────── */
+    .btn-pri {
+      background: #e07b39; color: #fff; border: none;
+      border-radius: 10px; padding: 12px 22px;
+      font-family: inherit; font-weight: 600; font-size: 15px;
+      cursor: pointer; transition: all .2s;
+      display: inline-flex; align-items: center; gap: 8px;
+      white-space: nowrap;
+    }
+    .btn-pri:hover:not(:disabled) { background: #c96a2a; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(224,123,57,.3); }
+    .btn-pri:disabled { opacity: .35; cursor: not-allowed; transform: none !important; }
+    .btn-ghost {
+      background: transparent; color: #8fa08f;
+      border: 1.5px solid rgba(255,255,255,.1);
+      border-radius: 10px; padding: 12px 22px;
+      font-family: inherit; font-weight: 500; font-size: 15px;
+      cursor: pointer; transition: all .2s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-ghost:hover  { border-color: rgba(255,255,255,.22); color: #c0d4c0; }
+    .btn-ghost.hidden { visibility: hidden; }
+
+    /* ── STEP TYPOGRAPHY ───────────────────────────────────────────────── */
+    .step-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 26px; font-weight: 700;
+      margin-bottom: 6px; line-height: 1.3;
+    }
+    .step-sub { color: #6a8a6a; font-size: 14px; margin-bottom: 20px; }
+    .field-label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: #6a8a6a; margin-bottom: 8px;
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    .field-wrap { margin-bottom: 20px; }
+
+    /* ── CATEGORY FILTER ───────────────────────────────────────────────── */
+    .cat-filter { display: flex; gap: 7px; margin-bottom: 16px; flex-wrap: wrap; }
+    .cat-btn {
+      background: rgba(255,255,255,.06); color: #8fa08f;
+      border: none; border-radius: 20px; padding: 5px 13px;
+      font-size: 12px; font-weight: 500; cursor: pointer;
+      font-family: inherit; transition: all .2s;
+    }
+    .cat-btn.active { background: #e07b39; color: #fff; }
+
+    /* ── DESTINATION GRID ──────────────────────────────────────────────── */
+    .dest-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .dest-chip {
+      padding: 13px; border-radius: 12px;
+      background: rgba(255,255,255,.04);
+      border: 1.5px solid rgba(255,255,255,.08);
+      cursor: pointer; transition: all .2s; user-select: none;
+    }
+    .dest-chip:hover { transform: translateY(-2px); }
+    .dest-chip.selected { background: rgba(224,123,57,.1); border-color: #e07b39; }
+    .dest-chip-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .dest-emoji { font-size: 22px; }
+    .dest-check {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #e07b39;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; color: white; flex-shrink: 0;
+      opacity: 0; transition: opacity .2s;
+    }
+    .dest-chip.selected .dest-check { opacity: 1; }
+    .dest-name  { font-size: 13px; font-weight: 600; color: #f0e8d8; line-height: 1.3; margin-top: 8px; }
+    .dest-desc  { font-size: 11px; color: #5a7a5a; margin-top: 3px; line-height: 1.4; }
+    .dest-meta  { margin-top: 7px; display: flex; align-items: center; gap: 6px; }
+    .cat-tag    { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; }
+    .cat-tag.alam   { background: rgba(74,144,74,.15);  color: rgba(74,144,74,.95);  border: 1px solid rgba(74,144,74,.4); }
+    .cat-tag.pantai { background: rgba(57,157,224,.15); color: rgba(57,157,224,.95); border: 1px solid rgba(57,157,224,.4); }
+    .cat-tag.diving { background: rgba(57,224,200,.15); color: rgba(57,224,200,.95); border: 1px solid rgba(57,224,200,.4); }
+    .cat-tag.budaya { background: rgba(224,178,57,.15); color: rgba(224,178,57,.95); border: 1px solid rgba(224,178,57,.4); }
+    .best-time  { font-size: 10px; color: #4a6a4a; }
+    .dest-notice {
+      margin-top: 14px; padding: 10px 14px;
+      background: rgba(224,123,57,.07);
+      border: 1px solid rgba(224,123,57,.2);
+      border-radius: 10px; font-size: 12px; color: #b08060;
+      display: none;
+    }
+    .dest-notice.show { display: block; }
+
+    /* ── SELECT & INPUT ────────────────────────────────────────────────── */
+    select, input[type="text"], input[type="time"],
+    input[type="email"], input[type="password"], textarea {
+      background: rgba(255,255,255,.05);
+      border: 1.5px solid rgba(255,255,255,.1);
+      color: #f0e8d8; border-radius: 10px; padding: 11px 14px;
+      font-family: inherit; font-size: 14px;
+      outline: none; transition: border-color .2s;
+      width: 100%; appearance: none; -webkit-appearance: none;
+      /* ── Fix RTL typing bug di Android Chrome ── */
+      direction: ltr !important;
+      text-align: left !important;
+      unicode-bidi: plaintext;
+      -webkit-rtl-ordering: logical;
+    }
+    select:focus, input:focus { border-color: rgba(224,123,57,.7); background: rgba(255,255,255,.07); }
+    select option { background: #1a2e1a; color: #f0e8d8; }
+    input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+    .select-wrap { position: relative; }
+    .select-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #5a7a5a; font-size: 12px; }
+
+    /* ── AUTOCOMPLETE DROPDOWN ─────────────────────────────────────────── */
+    .autocomplete-wrap { position: relative; }
+    .autocomplete-dropdown {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 100;
+      background: #1a2e1a; border: 1.5px solid rgba(224,123,57,.35);
+      border-radius: 10px; overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,.5);
+      max-height: 260px; overflow-y: auto;
+    }
+    .autocomplete-item {
+      padding: 10px 14px; cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      transition: background .15s;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .autocomplete-item:last-child { border-bottom: none; }
+    .autocomplete-item:hover, .autocomplete-item.active { background: rgba(224,123,57,.12); }
+    .autocomplete-item-name { font-size: 13px; font-weight: 600; color: #f0e8d8; }
+    .autocomplete-item-sub  { font-size: 11px; color: #5a7a5a; margin-top: 1px; }
+    .autocomplete-empty { padding: 14px; text-align: center; font-size: 12px; color: #3a5a3a; font-style: italic; }
+
+    /* ── CARD OPTIONS ──────────────────────────────────────────────────── */
+    .card-list { display: flex; flex-direction: column; gap: 8px; }
+    .card-opt {
+      padding: 13px 15px; border-radius: 12px;
+      background: rgba(255,255,255,.04);
+      border: 1.5px solid rgba(255,255,255,.08);
+      cursor: pointer; transition: all .2s;
+      display: flex; align-items: center; gap: 13px;
+    }
+    .card-opt:hover { transform: translateY(-2px); }
+    .card-opt.selected { background: rgba(224,123,57,.1); border-color: #e07b39; }
+    .card-opt.sm { padding: 11px 13px; border-radius: 10px; }
+    .card-opt-icon { font-size: 24px; flex-shrink: 0; }
+    .card-opt.sm .card-opt-icon { font-size: 20px; }
+    .card-opt-title { font-size: 14px; font-weight: 600; color: #f0e8d8; transition: color .2s; }
+    .card-opt.sm .card-opt-title { font-size: 13px; font-weight: 500; }
+    .card-opt.selected .card-opt-title { color: #e07b39; }
+    .card-opt-sub { font-size: 12px; color: #5a7a5a; margin-top: 2px; }
+    .card-opt.sm .card-opt-sub { font-size: 11px; }
+    .card-opt-check { color: #e07b39; font-size: 14px; flex-shrink: 0; margin-left: auto; opacity: 0; transition: opacity .2s; }
+    .card-opt.selected .card-opt-check { opacity: 1; }
+
+    /* ── SEWA LOKAL ────────────────────────────────────────────────────── */
+    .sewa-wrap {
+      overflow: hidden; max-height: 0; opacity: 0;
+      transition: max-height .35s ease, opacity .35s ease;
+    }
+    .sewa-wrap.open { max-height: 420px; opacity: 1; }
+    .sewa-box {
+      padding: 15px; border-radius: 12px;
+      background: rgba(107,159,212,.06);
+      border: 1.5px solid rgba(107,159,212,.2);
+      margin-bottom: 4px;
+    }
+    .sewa-title { font-size: 13px; font-weight: 700; color: #6b9fd4; margin-bottom: 4px; }
+    .sewa-sub   { font-size: 12px; color: #5a7a5a; margin-bottom: 12px; line-height: 1.5; }
+    .card-opt.sewa-sel { background: rgba(107,159,212,.12) !important; border-color: rgba(107,159,212,.6) !important; }
+    .card-opt.sewa-sel .card-opt-title { color: #6b9fd4 !important; }
+    .card-opt.sewa-sel .card-opt-check { opacity: 1 !important; color: #6b9fd4 !important; }
+
+    /* ── PILL OPTIONS ──────────────────────────────────────────────────── */
+    .pill-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill-opt {
+      padding: 10px 15px; border-radius: 10px;
+      background: rgba(255,255,255,.04);
+      border: 1.5px solid rgba(255,255,255,.08);
+      cursor: pointer; transition: all .2s; text-align: center;
+    }
+    .pill-opt:hover { transform: translateY(-1px); }
+    .pill-opt.selected { background: rgba(224,123,57,.13); border-color: #e07b39; }
+    .pill-label { font-size: 13px; font-weight: 700; color: #f0e8d8; transition: color .2s; }
+    .pill-opt.selected .pill-label { color: #e07b39; }
+    .pill-sub { font-size: 10px; color: #5a7a5a; margin-top: 2px; }
+
+    /* ── GAYA CARDS ────────────────────────────────────────────────────── */
+    .gaya-row { display: flex; gap: 10px; }
+    .gaya-card {
+      flex: 1; padding: 15px; border-radius: 12px;
+      background: rgba(255,255,255,.04);
+      border: 1.5px solid rgba(255,255,255,.08);
+      cursor: pointer; transition: all .2s; text-align: center;
+    }
+    .gaya-card:hover { transform: translateY(-2px); }
+    .gaya-card.selected { background: rgba(224,123,57,.1); border-color: #e07b39; }
+    .gaya-emoji { font-size: 28px; margin-bottom: 8px; }
+    .gaya-label { font-size: 14px; font-weight: 700; color: #f0e8d8; transition: color .2s; }
+    .gaya-card.selected .gaya-label { color: #e07b39; }
+    .gaya-desc  { font-size: 11px; color: #5a7a5a; margin-top: 7px; line-height: 1.6; white-space: pre-line; }
+
+    /* ── COUNTER ───────────────────────────────────────────────────────── */
+    .counter-row { display: flex; align-items: center; gap: 14px; }
+    .cnt-btn {
+      background: rgba(255,255,255,.07); color: #f0e8d8;
+      border: 1.5px solid rgba(255,255,255,.12);
+      border-radius: 8px; width: 36px; height: 36px;
+      font-size: 18px; cursor: pointer; transition: all .2s;
+      display: flex; align-items: center; justify-content: center;
+      font-family: inherit;
+    }
+    .cnt-btn:hover { background: rgba(255,255,255,.13); }
+    .cnt-val   { font-size: 22px; font-weight: 700; min-width: 30px; text-align: center; }
+    .cnt-label { font-size: 13px; color: #5a7a5a; }
+
+    /* ── LOADING ───────────────────────────────────────────────────────── */
+    .loading-screen { text-align: center; padding: 64px 0; }
+    .loading-icon {
+      font-size: 52px; margin-bottom: 18px;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    .loading-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 22px; margin-bottom: 10px; line-height: 1.3;
+    }
+    .loading-sub  { color: #5a7a5a; font-size: 13px; line-height: 1.6; }
+    .loading-tags { display: flex; gap: 7px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+    .loading-tag  { font-size: 11px; color: #4a6a4a; background: rgba(74,106,74,.15); padding: 4px 11px; border-radius: 20px; }
+    .dot { animation: bou 1.4s ease-in-out infinite; display: inline-block; }
+    .dot:nth-child(1) { animation-delay: 0s; }
+    .dot:nth-child(2) { animation-delay: .2s; }
+    .dot:nth-child(3) { animation-delay: .4s; }
+    @keyframes bou { 0%,80%,100%{transform:translateY(0);opacity:.5} 40%{transform:translateY(-7px);opacity:1} }
+
+    /* ── ERROR ─────────────────────────────────────────────────────────── */
+    .error-screen { text-align: center; padding: 64px 0; }
+
+    /* ── RESULT ────────────────────────────────────────────────────────── */
+    .result-summary {
+      padding: 18px;
+      background: rgba(224,123,57,.07);
+      border: 1.5px solid rgba(224,123,57,.2);
+      border-radius: 16px; margin-bottom: 22px;
+    }
+    .result-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+    .result-title { font-family: 'Playfair Display', Georgia, serif; font-size: 20px; font-weight: 700; flex: 1; line-height: 1.3; }
+    .result-budget-label { font-size: 10px; color: #6a8a6a; text-align: right; }
+    .result-budget-val   { font-size: 16px; font-weight: 700; color: #e07b39; }
+    .result-desc  { font-size: 13px; color: #a0b090; line-height: 1.6; margin-bottom: 10px; }
+    .highlight-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .highlight-tag  { font-size: 11px; padding: 3px 9px; background: rgba(224,123,57,.1); border: 1px solid rgba(224,123,57,.25); border-radius: 20px; color: #b08060; }
+    .budget-note { font-size: 11px; color: #4a6a4a; }
+
+    /* ── DAY SECTION ───────────────────────────────────────────────────── */
+    .day-section { margin-bottom: 24px; animation: fdi .5s ease both; }
+    @keyframes fdi { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .day-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .day-num {
+      width: 32px; height: 32px; background: #e07b39;
+      border-radius: 8px; display: flex; align-items: center;
+      justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;
+    }
+    .day-label    { font-size: 10px; color: #5a7a5a; text-transform: uppercase; letter-spacing: .05em; }
+    .day-title-txt { font-family: 'Playfair Display', Georgia, serif; font-size: 17px; font-weight: 600; line-height: 1.3; }
+
+    /* ── ACTIVITY ──────────────────────────────────────────────────────── */
+    .act-list { padding-left: 4px; }
+    .act-item { display: flex; gap: 12px; margin-bottom: 12px; animation: sli .45s ease both; }
+    @keyframes sli { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+    .act-timeline { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 22px; }
+    .act-icon { font-size: 15px; }
+    .act-line { width: 1px; flex: 1; background: rgba(255,255,255,.05); margin: 4px 0; min-height: 12px; }
+    .act-body { flex: 1; padding-bottom: 4px; }
+    .act-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+    .act-time     { font-size: 11px; color: #5a7a5a; font-weight: 500; }
+    .act-duration { font-size: 11px; color: #3d5a3d; margin-left: 7px; }
+    .act-cost     { font-size: 11px; color: #6a8a6a; background: rgba(255,255,255,.04); padding: 2px 7px; border-radius: 6px; flex-shrink: 0; }
+    .act-name     { font-size: 14px; font-weight: 600; color: #f0e8d8; line-height: 1.3; }
+    .act-location { font-size: 11px; color: #4a6a4a; margin-top: 2px; }
+    .act-desc     { font-size: 12px; color: #7a9a7a; line-height: 1.55; margin-top: 4px; }
+    .act-tip      { margin-top: 7px; padding: 6px 10px; border-radius: 7px; font-size: 11px; line-height: 1.5; border-left: 2px solid; }
+
+    /* ── PACKING & NOTES ───────────────────────────────────────────────── */
+    .packing-box  { padding: 15px; background: rgba(255,255,255,.03); border-radius: 12px; margin-bottom: 14px; border: 1px solid rgba(255,255,255,.07); }
+    .packing-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+    .packing-tags  { display: flex; gap: 6px; flex-wrap: wrap; }
+    .packing-tag   { font-size: 11px; padding: 4px 10px; background: rgba(255,255,255,.05); border-radius: 20px; color: #7a9a7a; }
+    .notes-box { padding: 13px; background: rgba(224,178,57,.06); border-radius: 10px; border: 1px solid rgba(224,178,57,.15); margin-bottom: 22px; font-size: 12px; color: #a09040; line-height: 1.5; }
+
+    /* ── SCROLLBAR ─────────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
+
+    /* ── SORTABLEJS DRAG STATES ────────────────────────────────────────── */
+    .sortable-chosen  { box-shadow: 0 8px 24px rgba(0,0,0,.5); background: #1a2e1a !important; border-color: #e07b39 !important; transform: scale(1.02); }
+    .sortable-ghost   { opacity: .3; background: rgba(224,123,57,.1) !important; border: 2px dashed #e07b39 !important; }
+    .sortable-drag    { cursor: grabbing !important; z-index: 9999 !important; background: #1a2e1a !important; border: 1px solid #e07b39 !important; box-shadow: 0 15px 35px rgba(0,0,0,.7) !important; opacity: 1 !important; will-change: transform, left, top !important; pointer-events: none !important; transition: none !important; }
+    .drag-item        { cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y; }
+
+    /* ── PLANNING BOARD ────────────────────────────────────────────────── */
+    .planning-board   { display: flex; flex-direction: column; gap: 10px; }
+    .plan-col         { border: 1px solid rgba(255,255,255,.08); border-radius: 14px;
+                        background: rgba(255,255,255,.02); overflow: hidden; }
+    .plan-col.locked  { opacity: .6; }
+    .plan-col-header  { display: flex; align-items: center; gap: 8px;
+                        padding: 11px 14px; font-size: 13px; font-weight: 600;
+                        color: #7a9a7a; border-bottom: 1px solid rgba(255,255,255,.05);
+                        background: rgba(255,255,255,.02); }
+    .plan-col-body    { padding: 8px; display: flex; flex-direction: column; gap: 6px;
+                        min-height: 48px; }
+    .plan-day-badge   { width: 22px; height: 22px; border-radius: 50%;
+                        background: #3a5a3a; color: #a0c090; font-size: 11px;
+                        font-weight: 700; display: flex; align-items: center;
+                        justify-content: center; flex-shrink: 0; }
+    .plan-warn        { font-size: 11px; color: #a07840; background: rgba(255,180,50,.07);
+                        padding: 6px 12px; border-left: 2px solid rgba(255,180,50,.3); }
+    .plan-empty       { font-size: 12px; color: #3a5a3a; text-align: center;
+                        padding: 14px; font-style: italic; }
+
+    /* ── DRAG CARD ─────────────────────────────────────────────────────── */
+    .drag-item        { display: flex; align-items: center; gap: 10px;
+                        padding: 10px 12px; border-radius: 10px;
+                        border: 1px solid rgba(255,255,255,.08);
+                        background: rgba(255,255,255,.03);
+                        transition: background .15s, border-color .15s; }
+    .drag-handle      { font-size: 16px; color: #3a5a3a; flex-shrink: 0;
+                        line-height: 1; padding: 2px; }
+    .drag-emoji       { font-size: 22px; flex-shrink: 0; line-height: 1; }
+    .drag-info        { flex: 1; min-width: 0; }
+    .drag-title       { font-size: 13px; font-weight: 600; color: #c8d8b8;
+                        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .drag-zone        { font-size: 11px; color: #5a7a5a; margin-top: 2px; }
+
+    /* ── AUTH — LOGIN MODAL (pola bwi-app-v3) ─────────────────────────── */
+    #loginEmail:focus, #loginPass:focus {
+      border-color: rgba(224,123,57,.7) !important;
+      background: rgba(255,255,255,.08) !important;
+    }
+
+    /* ── FIX RTL ANDROID CHROME ────────────────────────────────────────── */
+    /* Atribut dir="ltr" di HTML lebih kuat, tapi CSS ini sebagai fallback */
+    input, textarea, select {
+      direction: ltr !important;
+      text-align: left !important;
+      unicode-bidi: isolate !important;
+    }
+    .user-menu   {
+      position: absolute; top: 58px; right: 20px; z-index: 100;
+      background: #1a2e1a; border: 1px solid rgba(255,255,255,.1);
+      border-radius: 12px; padding: 6px; min-width: 160px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.5);
+      display: none;
+    }
+    .user-menu.open { display: block; animation: fadeIn .2s ease; }
+    .user-menu-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 8px;
+      font-size: 13px; color: #a0b090; cursor: pointer;
+      transition: background .15s;
+    }
+    .user-menu-item:hover { background: rgba(255,255,255,.07); }
+    .user-menu-item.danger { color: #e07b39; }
+
+    /* ── RESPONSIVE ────────────────────────────────────────────────────── */
+    @media (max-width: 380px) {
+      .step-title { font-size: 22px; }
+      .dest-grid  { gap: 7px; }
+    }
   </style>
 </head>
-<body class="flex justify-center items-center min-h-screen font-sans text-dark">
+<body>
 
-<div id="modalLogin" style="display:none;position:fixed;inset:0;background:rgba(28,28,30,0.4);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;padding:24px;">
-  <div class="bg-white rounded-[30px] w-full max-w-[360px] p-8 shadow-2xl">
-    <div class="flex justify-between items-start mb-8">
+<!-- ── LOGIN MODAL (persis pola bwi-app-v3) ─────────────────────────────── -->
+<div id="modalLogin" style="display:none;position:fixed;inset:0;background:rgba(12,26,12,.7);
+  backdrop-filter:blur(6px);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#1a2e1a;border-radius:20px;width:100%;max-width:320px;padding:28px;
+    border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 60px rgba(0,0,0,.6)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
       <div>
-        <div class="font-serif text-3xl font-bold text-dark mb-1">Login Admin</div>
-        <div class="text-xs font-semibold text-gray-400">Wandr · Banyuwangi</div>
+        <div style="font-size:18px;font-weight:700;color:#f0e8d8">🔐 Masuk Admin</div>
+        <div style="font-size:11px;color:#4a6a4a;margin-top:3px">Wandr · Banyuwangi</div>
       </div>
-      <button id="closeLogin" class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-500 font-bold hover:bg-gray-200">✕</button>
+      <button id="closeLogin" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+        color:#6a8a6a;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer">✕</button>
     </div>
-    <div class="mb-5">
-      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Email</label>
-      <input type="email" id="loginEmail" class="w-full bg-grayLight border-2 border-transparent rounded-2xl px-4 py-3.5 text-sm font-medium transition focus:border-dark" placeholder="admin@email.com">
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-size:11px;font-weight:600;color:#6a8a6a;margin-bottom:6px">Email</label>
+      <input type="email" id="loginEmail" placeholder="email@admin.com"
+        style="width:100%;padding:12px 14px;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);
+        color:#f0e8d8;border-radius:10px;font-size:14px;outline:none;font-family:inherit;
+        direction:ltr;text-align:left">
     </div>
-    <div class="mb-8">
-      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Password</label>
-      <input type="password" id="loginPass" class="w-full bg-grayLight border-2 border-transparent rounded-2xl px-4 py-3.5 text-sm font-medium transition focus:border-dark" placeholder="••••••••">
+    <div style="margin-bottom:20px">
+      <label style="display:block;font-size:11px;font-weight:600;color:#6a8a6a;margin-bottom:6px">Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••"
+        style="width:100%;padding:12px 14px;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);
+        color:#f0e8d8;border-radius:10px;font-size:14px;outline:none;font-family:inherit;
+        direction:ltr;text-align:left">
     </div>
-    <button id="btnDoLogin" class="w-full bg-dark text-white rounded-full py-4 font-bold text-sm shadow-xl hover:bg-black transition">Masuk Workspace</button>
-    <p id="loginErr" style="display:none;" class="text-xs font-bold text-red-500 mt-4 text-center"></p>
+    <button id="btnDoLogin" style="width:100%;padding:13px;background:#e07b39;color:#fff;
+      border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;
+      font-family:inherit;transition:all .2s">Masuk</button>
+    <p id="loginErr" style="display:none;font-size:12px;color:#e07b39;margin-top:12px;
+      text-align:center;line-height:1.5"></p>
   </div>
 </div>
 
-<div class="user-menu" id="user-menu" style="position:fixed;top:80px;right:max(24px,calc(50vw - 207px + 24px));z-index:1000;background:white;border-radius:24px;padding:12px;box-shadow:0 10px 40px rgba(0,0,0,0.12);display:none;border:1px solid #F3F4F6;width:200px;">
-  <div class="px-4 py-2 mb-2 border-b border-gray-50">
-    <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Logged in as</div>
-    <div id="menu-username" class="font-bold text-sm text-dark truncate mt-1">Admin</div>
+<!-- ── USER MENU DROPDOWN ─────────────────────────────────────────────────── -->
+<div class="user-menu" id="user-menu">
+  <div class="user-menu-item" id="menu-profile">
+    <span>🔓</span> <span id="menu-username">Admin</span>
   </div>
-  <div onclick="window.location.href='admin.html'" class="px-4 py-3 text-sm font-semibold text-dark hover:bg-grayLight rounded-xl cursor-pointer transition flex items-center gap-3"><span>📊</span> Dashboard</div>
-  <div id="menu-logout" class="px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 rounded-xl cursor-pointer transition mt-1 flex items-center gap-3"><span>🚪</span> Sign Out</div>
+  
+  <div class="user-menu-item" onclick="window.location.href='admin.html'">
+    <span>📊</span> Masuk Dashboard Admin
+  </div>
+
+  <div class="user-menu-item danger" id="menu-logout" style="border-top:1px solid rgba(255,255,255,.06);margin-top:4px;padding-top:10px">
+    <span>🚪</span> Keluar
+  </div>
 </div>
 
-<div id="app" class="w-full max-w-[414px] bg-appBg min-h-screen sm:min-h-[850px] sm:h-[850px] sm:rounded-[40px] sm:shadow-2xl overflow-x-hidden relative flex flex-col mx-auto">
-  <div id="header" class="pt-12 pb-6 px-6 flex justify-between items-center bg-appBg z-10 relative">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 bg-white border border-gray-100 rounded-[14px] flex items-center justify-center text-xl shadow-sm">🗺️</div>
-      <div>
-        <div class="font-serif text-2xl font-bold text-dark leading-none">Wandr</div>
-        <div class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">Banyuwangi</div>
-      </div>
-    </div>
-    <button id="btnLogin" title="Login admin" class="w-10 h-10 flex items-center justify-center bg-white border border-gray-100 rounded-full text-lg shadow-sm hover:bg-gray-50 transition">🔐</button>
+
+<div id="app">
+
+  <div id="header" style="position:relative">
+    <div class="logo-icon">🗺️</div>
+    <span class="logo-text">Wandr</span>
+    <span class="logo-badge">Banyuwangi</span>
+    <!-- Tombol login admin — persis pola bwi-app-v3 -->
+    <button id="btnLogin" title="Login admin"
+      style="margin-left:auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);
+      color:#6a8a6a;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s">
+      🔐
+    </button>
   </div>
-  <div id="progress-area" class="px-6" style="display:none">
+
+  <div id="progress-area">
     <div class="step-labels">
       <span class="step-label active" data-i="0">Destinasi</span>
-      <span class="step-label" data-i="1">Transport</span>
-      <span class="step-label" data-i="2">Preferensi</span>
-      <span class="step-label" data-i="3">Susun</span>
+      <span class="step-label"        data-i="1">Transport</span>
+      <span class="step-label"        data-i="2">Preferensi</span>
+      <span class="step-label"        data-i="3">Susun</span>
     </div>
-    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
   </div>
-  <div id="content" class="flex-1 px-6 pb-28 overflow-y-auto" style="-ms-overflow-style:none;scrollbar-width:none"></div>
-  <div id="nav" class="absolute bottom-0 left-0 right-0 px-6 py-5 bg-white/80 backdrop-blur-md border-t border-gray-100 flex justify-between items-center sm:rounded-b-[40px] z-20">
+
+  <div id="content"></div>
+
+  <div id="nav">
     <button class="btn-ghost hidden" id="btn-back">← Kembali</button>
-    <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest" id="dest-count"></span>
+    <span class="dest-count" id="dest-count"></span>
     <button class="btn-pri" id="btn-next" disabled>Lanjut →</button>
   </div>
-</div>
 
+</div>
+<!-- SortableJS — drag-and-drop native yang smooth di mobile (touch support bawaan) -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 
 <!-- Firebase SDK (compat) -->
@@ -171,8 +581,7 @@ function setAdmin(val, email) {
 document.getElementById('btnLogin').addEventListener('click', (e) => {
   e.stopPropagation();
   if (isAdmin) {
-    const m = document.getElementById('user-menu');
-    m.style.display = m.style.display === 'block' ? 'none' : 'block';
+    document.getElementById('user-menu').classList.toggle('open');
   } else {
     const m = document.getElementById('modalLogin');
     m.style.display = 'flex';
@@ -183,15 +592,6 @@ document.getElementById('closeLogin').addEventListener('click', () => {
   document.getElementById('modalLogin').style.display = 'none';
   document.getElementById('loginErr').style.display = 'none';
 });
-// Tutup user-menu kalau klik di luar
-document.addEventListener('click', (e) => {
-  const menu = document.getElementById('user-menu');
-  const btn = document.getElementById('btnLogin');
-  if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
-    menu.style.display = 'none';
-  }
-});
-
 document.getElementById('modalLogin').addEventListener('click', (e) => {
   if (e.target === document.getElementById('modalLogin'))
     document.getElementById('modalLogin').style.display = 'none';
@@ -431,11 +831,11 @@ const PENGINAPAN = [
 ];
 
 const ACT_STYLE = {
-  aktivitas:  { color:'text-green-600',  bg:'bg-green-50',  icon:'🎯' },
-  makan:      { color:'text-orange-600', bg:'bg-orange-50', icon:'🍽️' },
-  transport:  { color:'text-blue-600',   bg:'bg-blue-50',   icon:'🚌' },
-  penginapan: { color:'text-purple-600', bg:'bg-purple-50', icon:'🏨' },
-  belanja:    { color:'text-amber-600',  bg:'bg-amber-50',  icon:'🛍️' },
+  aktivitas:  { color:'#e07b39', bg:'rgba(224,123,57,.1)',  icon:'🎯' },
+  makan:      { color:'#4ab06a', bg:'rgba(74,176,106,.1)',  icon:'🍽️' },
+  transport:  { color:'#6b9fd4', bg:'rgba(107,159,212,.1)', icon:'🚌' },
+  penginapan: { color:'#c47bd4', bg:'rgba(196,123,212,.1)', icon:'🏨' },
+  istirahat:  { color:'#8fa08f', bg:'rgba(143,160,143,.1)', icon:'☕' },
 };
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
@@ -450,8 +850,6 @@ const S = {
   sewaLokal: new Set(),
   durasi: '', gayaPerjalanan: '',
   penginapan: '', penginapanId: '', penginapanData: null,
-  penginapanIds: [],                 // array id penginapan terpilih (multi)
-  penginapanDataList: [],            // array data penginapan terpilih
   penginapanCustom: '',              // nama penginapan ketik manual
   penginapanSearchQuery: '',         // query search penginapan
   penginapanOptions: [],             // terdekat dari destinasi
@@ -504,29 +902,21 @@ function updateNav() {
 function canNext() {
   if (S.step===0) return S.destinations.size > 0;
   if (S.step===1) { const ok = S.kotaAsal && (S.kotaAsal!=='Lainnya'||S.kotaAsalCustom.trim()) && S.transport; return S.transport==='umum' ? ok && !!S.subTransport : ok; }
-  if (S.step===2) return S.durasi && S.gayaPerjalanan && (S.penginapan || S.penginapanId || (S.penginapanIds&&S.penginapanIds.length>0) || S.penginapanCustom.trim());
+  if (S.step===2) return S.durasi && S.gayaPerjalanan && (S.penginapan || S.penginapanId || S.penginapanCustom.trim());
   if (S.step===3) return true; // Planning board: selalu bisa lanjut
   return false;
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 function getFinalHotelName() {
-  if (S.penginapanDataList?.length > 0) return S.penginapanDataList[0].nama;
   if (S.penginapanCustom.trim()) return S.penginapanCustom.split(',')[0].trim();
   if (S.penginapanData?.nama) return S.penginapanData.nama;
   return 'Penginapan Banyuwangi';
 }
 // Ekstrak array nama penginapan dari input multi (pisah koma) — dari Gemini
 function getHotelNames() {
-  // Multi-penginapan dari Firebase
-  if (S.penginapanDataList && S.penginapanDataList.length > 0) {
-    return S.penginapanDataList.map(p => p.nama).filter(Boolean);
-  }
-  // Custom input (pisah koma)
-  if (S.penginapanCustom.trim()) {
-    return S.penginapanCustom.split(',').map(s=>s.trim()).filter(Boolean);
-  }
-  return ['Penginapan Banyuwangi'];
+  const raw = S.penginapanCustom.trim() || S.penginapanData?.nama || 'Penginapan Banyuwangi';
+  return raw.split(',').map(s=>s.trim()).filter(Boolean);
 }
 function haversineKm(lat1,lng1,lat2,lng2) {
   const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
@@ -667,188 +1057,259 @@ function isTermMatched(term) {
 }
 
 function renderStep0() {
-  const matched   = DESTINATIONS.filter(d=>S.destinations.has(d.id));
-  const terms     = S.destInput.split(',').map(s=>s.trim()).filter(Boolean);
+  const matched = DESTINATIONS.filter(d=>S.destinations.has(d.id));
+  const terms   = S.destInput.split(',').map(s=>s.trim()).filter(Boolean);
   const unmatched = terms.filter(t => !isTermMatched(t));
 
   const tags = matched.map(d => `
-    <div class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full m-1 shadow-sm">
-      <span class="text-lg">${d.emoji}</span>
-      <span class="text-xs font-bold text-dark">${esc(d.name)}</span>
-      <span data-remove="${d.id}" class="cursor-pointer text-gray-400 hover:text-red-500 text-xs ml-1 font-bold">✕</span>
+    <div style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;
+      background:rgba(224,123,57,.12);border:1.5px solid rgba(224,123,57,.4);
+      border-radius:20px;margin:3px">
+      <span>${d.emoji}</span>
+      <span style="font-size:13px;font-weight:600;color:#e07b39">${esc(d.name)}</span>
+      <span data-remove="${d.id}" style="cursor:pointer;color:#8fa08f;font-size:11px;
+        margin-left:2px;padding:1px 3px;border-radius:50%">✕</span>
     </div>`).join('');
 
   const suggestions = DESTINATIONS
-    .filter(d => !S.destinations.has(d.id))
-    .slice(0, 8)
-    .map(d => `<button data-suggest="${d.id}" class="bg-transparent border border-gray-200 text-gray-500 hover:bg-white hover:text-dark hover:border-gray-300 rounded-full px-4 py-2 text-xs font-bold cursor-pointer m-1 transition-colors">${d.emoji} ${d.name}</button>`)
-    .join('');
-
-  const unmatchedWarn = unmatched.length ? `
-    <div class="mt-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-2xl text-xs font-medium text-amber-700">
-      ⚠ Tidak dikenal: <b>${unmatched.join(', ')}</b>
-    </div>` : '';
+    .filter(d=>!S.destinations.has(d.id))
+    .slice(0,6)
+    .map(d=>`<button data-suggest="${d.id}" style="background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.1);color:#8fa08f;border-radius:16px;
+      padding:5px 11px;font-size:11px;cursor:pointer;font-family:inherit;
+      transition:all .2s;white-space:nowrap">${d.emoji} ${d.name}</button>`).join('');
 
   return `
-    <h2 class="font-serif text-3xl font-bold text-dark mb-2 leading-tight">Ke Banyuwangi,<br>mau kemana?</h2>
-    <p class="text-sm font-medium text-gray-400 mb-8">Ketik nama destinasi impianmu</p>
-    <div class="mb-6 relative">
-      <input type="text" id="dest-input" dir="ltr" lang="en" autocomplete="off" spellcheck="false"
-        placeholder="Kawah Ijen, Baluran, Pantai Pulau Merah..."
+    <h2 class="step-title" style="line-height:1.2">Ke Banyuwangi,<br>mau kemana aja?</h2>
+    <p class="step-sub">Tulis nama destinasi, pisahkan dengan koma</p>
+
+    <div style="position:relative;margin-bottom:14px">
+      <input type="text" id="dest-input"
+        dir="ltr" lang="en" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false"
         value="${esc(S.destInput)}"
-        class="w-full bg-white border-2 border-transparent rounded-2xl px-5 py-4 text-sm font-medium shadow-sm transition focus:border-dark placeholder-gray-300">
+        style="padding-right:42px;font-size:15px">
+      ${S.destInput ? `<span id="btn-clear-input" style="position:absolute;right:12px;top:50%;
+        transform:translateY(-50%);cursor:pointer;color:#5a7a5a;font-size:16px;
+        padding:4px">✕</span>` : ''}
     </div>
-    ${unmatchedWarn}
-    <div id="dest-tags-area" style="${matched.length>0?'':'display:none'}" class="mb-8">
-      <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">✓ Terpilih</div>
-      <div id="dest-tags-list" class="flex flex-wrap -ml-1">${tags}</div>
+
+    <div id="dest-tags-area" style="${matched.length>0?'':'display:none'};margin-bottom:16px">
+      <div style="font-size:11px;color:#5a7a5a;margin-bottom:6px;
+        text-transform:uppercase;letter-spacing:.05em">✓ Destinasi dikenali:</div>
+      <div id="dest-tags-list" style="display:flex;flex-wrap:wrap;gap:4px">${tags}</div>
     </div>
-    <div class="mb-8">
-      <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">Saran Destinasi</div>
-      <div id="dest-suggestions" class="flex flex-wrap -ml-1">${suggestions}</div>
-    </div>`;
-}
 
+    <div id="dest-warn-area" style="${unmatched.length>0&&S.destInput?'':'display:none'};
+      padding:10px 14px;background:rgba(255,200,50,.06);
+      border:1px solid rgba(255,200,50,.2);border-radius:10px;
+      font-size:12px;color:#a09040;margin-bottom:14px">
+      ${unmatched.length>0&&S.destInput?`⚠️ Tidak ditemukan: <em>${unmatched.join(', ')}</em><br>
+        <span style="color:#6a8a6a">Coba: Kawah Ijen, TN Baluran, Red Island, Green Bay, TN Alas Purwo, Kawah Wurung…</span>`:''}
+    </div>
 
-function renderStep1() {
-  const transOpts = [
-    { v:'pribadi_motor', label:'Motor Pribadi',  emoji:'🏍️', sub:'Fleksibel, hemat, masuk jalan kecil' },
-    { v:'pribadi_mobil', label:'Mobil Pribadi',  emoji:'🚗', sub:'Nyaman, bawa lebih banyak barang' },
-    { v:'umum',          label:'Kendaraan Umum', emoji:'🚂', sub:'Kereta / Bus / Pesawat ke BWI' },
-  ];
-  const sewaOpts = [
-    { v:'motor',         label:'Sewa Motor',          emoji:'🏍️', sub:'~100K–150K/hari' },
-    { v:'mobil_driver',  label:'Sewa Mobil + Driver',  emoji:'🚐', sub:'~450K–650K/hari' },
-    { v:'ojek',          label:'Ojek / Online',        emoji:'🛵', sub:'Per perjalanan' },
-  ];
-
-  const transCards = transOpts.map(t => `
-    <div class="flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border-2 ${S.transport===t.v?'border-dark bg-white shadow-md':'border-transparent bg-white shadow-sm'} mb-3" data-transport="${t.v}">
-      <span class="text-2xl">${t.emoji}</span>
-      <div class="flex-1">
-        <div class="font-bold text-sm text-dark">${t.label}</div>
-        <div class="text-xs text-gray-400 mt-0.5">${t.sub}</div>
+    <div style="margin-bottom:6px">
+      <div id="dest-suggest-label" style="font-size:11px;color:#4a6a4a;margin-bottom:8px;
+        text-transform:uppercase;letter-spacing:.05em">
+        ${matched.length>0?'Tambah lagi:':'Atau pilih dari sini:'}
       </div>
-      ${S.transport===t.v ? '<span class="text-dark font-bold text-lg">✓</span>' : ''}
-    </div>`).join('');
+      <div id="dest-suggestions" style="display:flex;flex-wrap:wrap;gap:6px">${suggestions}</div>
+    </div>
 
-  const showSewa = S.transport && S.transport !== 'umum';
-  const sewaCards = sewaOpts.map(t => `
-    <div class="flex-1 flex flex-col items-center gap-2 p-4 rounded-xl cursor-pointer transition-all border-2 ${S.sewaTransport===t.v?'border-dark bg-white shadow-sm':'border-transparent bg-grayLight opacity-70'}" data-sewa="${t.v}">
-      <span class="text-2xl">${t.emoji}</span>
-      <div class="text-xs font-bold text-dark text-center">${t.label}</div>
-      <div class="text-[10px] text-gray-400 text-center">${t.sub}</div>
-    </div>`).join('');
-
-  const showUmum = S.transport === 'umum';
-  const umumCards = [{v:'kereta',l:'Kereta Api',e:'🚂'},{v:'pesawat',l:'Pesawat',e:'✈️'}].map(t => `
-    <div class="flex-1 flex flex-col items-center gap-2 p-4 rounded-xl cursor-pointer transition-all border-2 ${S.subTransport===t.v?'border-dark bg-white shadow-sm':'border-transparent bg-white shadow-sm opacity-70'}" data-sub="${t.v}">
-      <span class="text-3xl">${t.e}</span>
-      <div class="text-xs font-bold text-dark">${t.l}</div>
-    </div>`).join('');
-
-  return `
-    <h2 class="font-serif text-3xl font-bold text-dark mb-2 leading-tight">Naik apa?</h2>
-    <p class="text-sm font-medium text-gray-400 mb-8">Pilih kota asal dan kendaraan</p>
-    <div class="mb-6">
-      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">Kota Asal</label>
-      <div class="relative">
-        <select id="sel-kota" class="w-full bg-white border-2 border-transparent rounded-2xl px-5 py-4 text-sm font-medium shadow-sm transition focus:border-dark appearance-none">
-          <option value="">Pilih kota...</option>${KOTA.map(k=>`<option value="${k}"${S.kotaAsal===k?' selected':''}>${k}</option>`).join('')}
-        </select>
-        <span class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold pointer-events-none">▾</span>
+    ${matched.length>0 ? `
+    <div style="margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,.06)">
+      <div style="font-size:13px;font-weight:600;color:#f0e8d8;margin-bottom:4px">
+        Ada kuliner yang sudah diincar? <span style="color:#5a7a5a;font-weight:400">(opsional)</span>
       </div>
-    </div>
-    <div class="mb-4">
-      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">Kendaraan ke Banyuwangi</label>
-      ${transCards}
-    </div>
-    ${showUmum ? `
-    <div class="bg-grayLight p-5 rounded-2xl border border-gray-100 mt-2">
-      <div class="text-xs font-bold text-dark mb-4">Pilih Transportasi Umum</div>
-      <div class="flex gap-3">${umumCards}</div>
-    </div>` : ''}
-    ${showSewa ? `
-    <div class="bg-grayLight p-5 rounded-2xl border border-gray-100 mt-2">
-      <div class="text-xs font-bold text-dark mb-4">Transportasi di Banyuwangi</div>
-      <div class="flex gap-2">${sewaCards}</div>
+      <input type="text" id="input-kuliner-custom"
+        dir="ltr" lang="en" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false"
+        placeholder="Contoh: Sego Tempong Mbok Wah, Rujak Soto Blambangan..."
+        value="${esc(S.kulinerCustom)}"
+        style="margin-top:8px">
     </div>` : ''}`;
 }
 
+// ─── RENDER STEP 1 ───────────────────────────────────────────────────────────
+function renderStep1() {
+  const transOpts = [
+    { v:'pribadi_motor', label:'Motor Pribadi',   emoji:'🏍️', sub:'Fleksibel, hemat, masuk jalan kecil' },
+    { v:'pribadi_mobil', label:'Mobil Pribadi',   emoji:'🚗', sub:'Nyaman, bawa lebih banyak barang' },
+    { v:'umum',          label:'Kendaraan Umum', emoji:'🚂', sub:'Kereta / Bus / Pesawat ke BWI' },
+  ];
+  const sewaOpts = [
+    { v:'motor',        label:'Sewa Motor',          emoji:'🏍️', sub:'~100K–150K/hari' },
+    { v:'mobil_driver', label:'Sewa Mobil + Driver', emoji:'🚐', sub:'~450K–650K/hari' },
+    { v:'ojek',         label:'Ojek / Online',       emoji:'📱', sub:'Gojek, Grab, ojek pangkalan' },
+  ];
 
+  const kotaOpts = KOTA.map(k =>
+    `<option value="${k}"${S.kotaAsal===k?' selected':''}>${k}</option>`
+  ).join('');
+
+  const transCards = transOpts.map(t =>
+    `<div class="card-opt${S.transport===t.v?' selected':''}" data-transport="${t.v}">
+      <span class="card-opt-icon">${t.emoji}</span>
+      <div><div class="card-opt-title">${t.label}</div><div class="card-opt-sub">${t.sub}</div></div>
+      <span class="card-opt-check">✓</span>
+    </div>`
+  ).join('');
+
+  const sewaCards = sewaOpts.map(s =>
+    `<div class="card-opt sm${S.sewaLokal.has(s.v)?' selected sewa-sel':''}" data-sewa="${s.v}">
+      <span class="card-opt-icon">${s.emoji}</span>
+      <div><div class="card-opt-title">${s.label}</div><div class="card-opt-sub">${s.sub}</div></div>
+      <span class="card-opt-check">✓</span>
+    </div>`
+  ).join('');
+
+  return `
+    <h2 class="step-title">Naik apa?</h2>
+    <p class="step-sub">Pilih kota asal dan kendaraan ke Banyuwangi</p>
+
+    <div class="field-wrap">
+      <label class="field-label">Kota Asal</label>
+      <div class="select-wrap">
+        <select id="sel-kota">
+          <option value="">Pilih kota asal...</option>
+          ${kotaOpts}
+        </select>
+        <span class="select-arrow">▾</span>
+      </div>
+      ${S.kotaAsal==='Lainnya' ? `<input type="text" id="input-kota-custom" dir="ltr" lang="en" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Tulis kota asal…" value="${esc(S.kotaAsalCustom)}" style="margin-top:8px">` : ''}
+    </div>
+
+    <div class="field-wrap">
+      <label class="field-label">Kendaraan ke Banyuwangi</label>
+      <div class="card-list">${transCards}</div>
+    </div>
+
+    <div class="sewa-wrap${S.transport==='umum'?' open':''}" id="sub-trans-wrap" style="margin-bottom:16px">
+      <div class="sewa-box" style="background:rgba(224,123,57,.06);border-color:rgba(224,123,57,.2)">
+        <div class="sewa-title" style="color:#e07b39">🎫 Jalur Transportasi Umum</div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          ${[{v:'kereta',l:'Kereta Api',e:'🚂'},{v:'pesawat',l:'Pesawat',e:'✈️'},{v:'bus',l:'Bus',e:'🚌'}].map(t=>
+            `<div class="card-opt sm${S.subTransport===t.v?' selected':''}" data-sub="${t.v}" style="flex:1;justify-content:center;text-align:center;padding:10px 8px;flex-direction:column;gap:4px">
+              <span style="font-size:20px">${t.e}</span>
+              <div class="card-opt-title" style="font-size:12px">${t.l}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="field-wrap">
+      <label class="field-label">Jam Perjalanan</label>
+      <div style="display:flex;gap:10px">
+        <div style="flex:1">
+          <div style="font-size:11px;color:#5a7a5a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Tiba di BWI</div>
+          <input type="time" id="input-waktu-tiba" value="${S.waktuTiba}"
+            style="width:100%;padding:10px 12px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);color:#f0e8d8;border-radius:10px;font-family:inherit;font-size:15px;outline:none">
+        </div>
+        <div style="flex:1">
+          <div style="font-size:11px;color:#5a7a5a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Pulang dari BWI</div>
+          <input type="time" id="input-waktu-pulang" value="${S.waktuPulang}"
+            style="width:100%;padding:10px 12px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);color:#f0e8d8;border-radius:10px;font-family:inherit;font-size:15px;outline:none">
+        </div>
+      </div>
+    </div>
+
+    <div class="sewa-wrap${S.transport==='umum'?' open':''}" id="sewa-wrap">
+      <div class="sewa-box">
+        <div class="sewa-title">🚉 Mobilitas Lokal di Banyuwangi</div>
+        <div class="sewa-sub">Pilih kendaraan setelah tiba. Boleh lebih dari satu.</div>
+        <div class="card-list">${sewaCards}</div>
+      </div>
+    </div>`;
+}
+
+// ─── RENDER STEP 2 ───────────────────────────────────────────────────────────
 function renderStep2() {
   const durasiBtns = DURASI.map(d =>
-    `<div class="flex-1 text-center py-3 rounded-xl cursor-pointer transition-all border-2 ${S.durasi===d.v?'bg-dark text-white border-dark font-bold':'bg-white text-gray-500 border-transparent font-semibold shadow-sm'}" data-durasi="${d.v}">
-      <div class="text-sm">${d.label}</div>
-      <div class="text-[10px] opacity-60 mt-0.5">${d.sub}</div>
-    </div>`).join('');
+    `<div class="pill-opt${S.durasi===d.v?' selected':''}" data-durasi="${d.v}">
+      <div class="pill-label">${d.label}</div>
+      <div class="pill-sub">${d.sub}</div>
+    </div>`
+  ).join('');
 
   const gayaCards = [
-    { v:'santai',     emoji:'🌴', label:'Santai',     desc:'Maks 2 destinasi/hari\nBanyak waktu menikmati' },
-    { v:'eksplorasi', emoji:'⚡', label:'Eksplorasi',  desc:'3–4 destinasi/hari\nEfisien & terpadatkan' },
+    { v:'santai',    emoji:'🌴', label:'Santai',    desc:'Maks 2 destinasi/hari\nBanyak waktu menikmati' },
+    { v:'eksplorasi',emoji:'⚡', label:'Eksplorasi', desc:'3–4 destinasi/hari\nEfisien & terpadatkan' },
   ].map(g =>
-    `<div class="flex-1 flex flex-col items-center py-5 rounded-2xl cursor-pointer transition-all border-2 ${S.gayaPerjalanan===g.v?'border-dark bg-white shadow-md':'border-transparent bg-white shadow-sm opacity-80'}" data-gaya="${g.v}">
-      <div class="text-3xl mb-3">${g.emoji}</div>
-      <div class="font-bold text-sm text-dark">${g.label}</div>
-      <div class="text-[10px] text-gray-400 mt-1 text-center">${g.desc.replace('\n','<br>')}</div>
-    </div>`).join('');
+    `<div class="gaya-card${S.gayaPerjalanan===g.v?' selected':''}" data-gaya="${g.v}">
+      <div class="gaya-emoji">${g.emoji}</div>
+      <div class="gaya-label">${g.label}</div>
+      <div class="gaya-desc">${g.desc}</div>
+    </div>`
+  ).join('');
 
   // Penginapan: search dari Firebase + fallback tier list
+  let penginapanSection = '';
 
-  // ── PENGINAPAN SECTION ──
-  const allHotels  = S.allPenginapan || [];
+  // Semua data penginapan dari Firebase (load sekali, cache di S.allPenginapan)
+  const allHotels = S.allPenginapan || [];
+
+  // Filter berdasarkan query search
   const hotelQuery = S.penginapanSearchQuery || '';
-
-  // Daftar penginapan terpilih (multi)
-  const selectedHotels = S.penginapanDataList || [];
-
-  // Filter autocomplete
-  const filteredHotels = hotelQuery.length >= 1
+  const filteredHotels = hotelQuery.length >= 2
     ? allHotels.filter(p => {
         const n = (p.nama||'').toLowerCase();
         const q = hotelQuery.toLowerCase();
-        return n.includes(q) || (p.kawasan||'').toLowerCase().includes(q);
-      }).slice(0, 8)
-    : (hotelQuery === '' && selectedHotels.length === 0)
-      ? S.penginapanOptions.slice(0, 5)
-      : [];
+        return n.includes(q) || (p.kawasan||'').toLowerCase().includes(q) || (p.kategori||'').toLowerCase().includes(q);
+      }).slice(0, 6)
+    : S.penginapanOptions.slice(0, 4); // default: terdekat dari destinasi
 
-  const selectedCards = selectedHotels.map((p, idx) => `
-    <div class="flex items-center gap-3 px-4 py-3 bg-dark text-white rounded-2xl mb-2 shadow-sm">
-      <span class="text-xl">🏨</span>
-      <div class="flex-1 min-w-0">
-        <div class="text-sm font-bold truncate">${esc(p.nama)}</div>
-        <div class="text-[11px] opacity-60">${esc(p.kawasan||'')}${p.harga?' · Rp'+p.harga:''}</div>
+  const hotelSuggestions = filteredHotels.map(p => {
+    const sel = S.penginapanId === p.id;
+    const distTxt = p.dist != null ? (p.dist < 1 ? Math.round(p.dist*1000)+'m' : p.dist.toFixed(1)+'km') : '';
+    return `<div class="card-opt sm${sel?' selected':''}" data-penginapan-fb="${p.id}">
+      <span class="card-opt-icon">🏨</span>
+      <div style="flex:1;min-width:0">
+        <div class="card-opt-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.nama)}</div>
+        <div class="card-opt-sub">${p.kawasan||''} ${distTxt?'· <span style="color:#e07b39">~'+distTxt+' dari destinasi</span>':''}${p.harga?' · Rp'+p.harga:''}</div>
       </div>
-      <span data-remove-hotel="${p.id}" class="cursor-pointer opacity-50 hover:opacity-100 text-xl px-1 shrink-0">✕</span>
-    </div>`).join('');
+      <span class="card-opt-check">✓</span>
+    </div>`;
+  }).join('');
 
-  const penginapanSection = `
-    <div class="autocomplete-wrap" style="margin-bottom:${selectedHotels.length>0?'8':'10'}px">
+  penginapanSection = `
+    <div class="autocomplete-wrap" style="margin-bottom:10px">
       <input type="text" id="input-penginapan-search"
         dir="ltr" lang="en" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false"
         placeholder="🔍 Cari nama penginapan..."
-        value="${esc(hotelQuery)}">
-      <div class="autocomplete-dropdown" id="hotel-autocomplete" style="${hotelQuery.length>=1||(!hotelQuery&&selectedHotels.length===0&&S.penginapanOptions.length>0)?'':'display:none'}">
+        value="${esc(hotelQuery)}"
+        style="padding-right:36px">
+      ${hotelQuery ? `<span id="btn-clear-hotel" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#5a7a5a;font-size:14px;padding:4px;z-index:1">✕</span>` : ''}
+      <div class="autocomplete-dropdown" id="hotel-autocomplete" style="${hotelQuery.length>=1?'':'display:none'}">
         ${filteredHotels.length > 0
           ? filteredHotels.map(p => {
-              const alreadySel = selectedHotels.some(s=>s.id===p.id);
+              const sel = S.penginapanId === p.id;
               const distTxt = p.dist!=null?(p.dist<1?Math.round(p.dist*1000)+'m':p.dist.toFixed(1)+'km'):'';
-              return `<div class="autocomplete-item${alreadySel?' active':''}" data-penginapan-ac="${p.id}">
-                <span style="font-size:20px">${alreadySel?'✓':'🏨'}</span>
-                <div style="flex:1;min-width:0">
-                  <div class="autocomplete-item-name">${esc(p.nama)}</div>
-                  <div class="autocomplete-item-sub">${p.kawasan||''}${distTxt?' · ~'+distTxt+' dari destinasi':''}${p.harga?' · Rp'+p.harga:''}</div>
+              return `<div class="autocomplete-item\${sel?' active':''}" data-penginapan-ac="\${p.id}">
+                <span style="font-size:20px">🏨</span>
+                <div>
+                  <div class="autocomplete-item-name">\${esc(p.nama)}\${sel?' ✓':''}</div>
+                  <div class="autocomplete-item-sub">\${p.kawasan||''}\${distTxt?' · ~'+distTxt+' dari destinasi':''}\${p.harga?' · Rp'+p.harga:''}</div>
                 </div>
-                ${alreadySel?'<span style="color:#e07b39;font-size:12px">Terpilih</span>':''}
               </div>`;
             }).join('')
-          : `<div class="autocomplete-empty">Tidak ditemukan</div>`
+          : `<div class="autocomplete-empty">Tidak ditemukan — coba kata kunci lain</div>`
         }
       </div>
     </div>
-    ${selectedCards}
-    ${selectedHotels.length===0 && allHotels.length===0 ? `
+    ${S.penginapanId ? (() => {
+        const sel = (S.allPenginapan||[]).find(p=>p.id===S.penginapanId) || (S.penginapanOptions||[]).find(p=>p.id===S.penginapanId);
+        if (!sel) return '';
+        return `<div class="card-opt sm selected" style="margin-bottom:10px;pointer-events:none">
+          <span class="card-opt-icon">🏨</span>
+          <div style="flex:1;min-width:0">
+            <div class="card-opt-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">\${esc(sel.nama)}</div>
+            <div class="card-opt-sub">\${sel.kawasan||''}\${sel.harga?' · Rp'+sel.harga:''}</div>
+          </div>
+          <span class="card-opt-check">✓</span>
+        </div>`;
+      })() : ''}
+    ${!S.penginapanId && !hotelQuery && S.penginapanOptions.length > 0 ? `
+      <div style="font-size:11px;color:#4a6a4a;margin-bottom:8px">📍 Terdekat dari destinasimu:</div>
+      <div class="card-list" id="hotel-suggestions">\${hotelSuggestions}</div>` : ''}
+    ${allHotels.length === 0 ? `
       <div class="card-list">
         ${PENGINAPAN.map(p =>
           `<div class="card-opt sm${S.penginapan===p.v?' selected':''}" data-penginapan="${p.v}">
@@ -857,10 +1318,8 @@ function renderStep2() {
             <span class="card-opt-check">✓</span>
           </div>`).join('')}
       </div>` : ''}
-    <div style="margin-top:${selectedHotels.length>0?'10':'8'}px">
-      <label style="display:block;font-size:12px;color:#6a8a6a;margin-bottom:6px">
-        ${selectedHotels.length>0?'Atau tambah penginapan lain (multi malam):':'Atau ketik langsung nama penginapan:'}
-      </label>
+    <div style="margin-top:10px">
+      <label style="display:block;font-size:12px;color:#6a8a6a;margin-bottom:6px">Atau ketik langsung nama penginapan:</label>
       <input type="text" id="input-penginapan-custom"
         dir="ltr" lang="en" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false"
         placeholder="Contoh: Aston Banyuwangi, Ketapang Indah Hotel..."
@@ -868,28 +1327,31 @@ function renderStep2() {
     </div>`;
 
   return `
-    <h2 class="font-serif text-3xl font-bold text-dark mb-2 leading-tight">Preferensi</h2>
-    <p class="text-sm font-medium text-gray-400 mb-8">Sesuaikan gaya perjalananmu</p>
-    <div class="mb-6">
-      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">Durasi Perjalanan</label>
-      <div class="flex gap-3">${durasiBtns}</div>
+    <h2 class="step-title">Preferensi Trip</h2>
+    <p class="step-sub">Sesuaikan dengan gaya traveling kamu</p>
+
+    <div class="field-wrap">
+      <label class="field-label">Durasi Perjalanan</label>
+      <div class="pill-row">${durasiBtns}</div>
     </div>
-    <div class="mb-6">
-      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">Gaya Liburan</label>
-      <div class="flex gap-3">${gayaCards}</div>
+
+    <div class="field-wrap">
+      <label class="field-label">Gaya Perjalanan</label>
+      <div class="gaya-row">${gayaCards}</div>
     </div>
-    <div class="mb-6">
-      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">🏨 Penginapan</label>
+
+    <div class="field-wrap">
+      <label class="field-label">🏨 Penginapan</label>
       ${penginapanSection}
     </div>
 
-    <div class="mb-8">
-      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">Jumlah Orang</label>
-      <div class="inline-flex items-center gap-4 bg-white px-3 py-2 rounded-2xl shadow-sm border border-gray-50">
-        <button id="btn-minus" class="w-10 h-10 flex items-center justify-center bg-grayLight text-dark rounded-xl font-bold text-xl hover:bg-gray-200 transition">−</button>
-        <span id="cnt-val" class="font-serif text-2xl font-bold w-6 text-center">${S.jumlahOrang}</span>
-        <button id="btn-plus" class="w-10 h-10 flex items-center justify-center bg-grayLight text-dark rounded-xl font-bold text-xl hover:bg-gray-200 transition">+</button>
-        <span class="text-xs font-bold text-gray-400 pr-2 uppercase tracking-widest">Orang</span>
+    <div class="field-wrap">
+      <label class="field-label">Jumlah Orang</label>
+      <div class="counter-row">
+        <button class="cnt-btn" id="btn-minus">−</button>
+        <span class="cnt-val" id="cnt-val">${S.jumlahOrang}</span>
+        <button class="cnt-btn" id="btn-plus">+</button>
+        <span class="cnt-label">orang</span>
       </div>
     </div>`;
 }
@@ -897,24 +1359,24 @@ function renderStep2() {
 // ─── RENDER STEP 3 ───────────────────────────────────────────────────────────
 function renderStep3() {
   if (S.loading) return `
-    <div class="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
-      <div class="text-6xl mb-6" style="animation:float 3s ease-in-out infinite">🗺️</div>
-      <h3 class="font-serif text-2xl font-bold text-dark mb-3">Menyusun Rute Terbaik</h3>
-      <p class="text-sm font-medium text-gray-400 leading-relaxed max-w-[250px]">AI sedang mengoptimasi rute dan menyusun jadwal terbaik untukmu...</p>
-      <div class="flex flex-wrap justify-center gap-2 mt-6">
-        <span class="bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm">📍 Sorting rute</span>
-        <span class="bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm">🕐 Estimasi waktu</span>
-        <span class="bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm">💰 Kalkulasi biaya</span>
-        <span class="bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm">✨ Finalisasi</span>
+    <div class="loading-screen">
+      <div class="loading-icon">🗺️</div>
+      <h3 class="loading-title">Merencanakan perjalananmu<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></h3>
+      <p class="loading-sub">AI sedang mengoptimasi rute, mengecek jam operasional,<br>dan menyusun jadwal terbaik untukmu</p>
+      <div class="loading-tags">
+        <span class="loading-tag">📍 Sorting rute</span>
+        <span class="loading-tag">🕐 Estimasi waktu</span>
+        <span class="loading-tag">💰 Kalkulasi biaya</span>
+        <span class="loading-tag">✨ Finalisasi</span>
       </div>
     </div>`;
 
   if (S.error) return `
-    <div class="flex flex-col items-center justify-center py-16 text-center px-4">
-      <div class="text-5xl mb-4">⚠️</div>
-      <h3 class="font-serif text-xl font-bold text-dark mb-2">Gagal Generate Itinerary</h3>
-      <p class="text-sm text-gray-400 mb-6">${S.error}</p>
-      <button id="btn-retry" class="bg-dark text-white rounded-full px-8 py-3 font-bold text-sm hover:bg-black transition">Coba Lagi</button>
+    <div class="error-screen">
+      <div style="font-size:48px;margin-bottom:14px">⚠️</div>
+      <h3 style="font-size:18px;margin-bottom:8px">Gagal generate</h3>
+      <p style="color:#5a7a5a;font-size:13px;margin-bottom:22px">${esc(S.error)}</p>
+      <button class="btn-pri" id="btn-retry">↺ Coba Lagi</button>
     </div>`;
 
   if (!S.itinerary) return '';
@@ -930,37 +1392,37 @@ function renderStep3() {
       const as = ACT_STYLE[act.type] || ACT_STYLE.aktivitas;
       const isLast = ai === day.activities.length - 1;
       return `
-        <div class="flex gap-4 mb-5 group" style="animation-delay:${di*.12+ai*.07}s">
-          <div class="flex flex-col items-center w-6 shrink-0 pt-1">
-            <span class="text-xl bg-appBg z-10 p-1">${as.icon}</span>
-            ${!isLast ? '<div class="w-[2px] flex-1 bg-gray-200 my-1 rounded-full"></div>' : ''}
+        <div class="act-item" style="animation-delay:${di*.12+ai*.07}s">
+          <div class="act-timeline">
+            <span class="act-icon">${as.icon}</span>
+            ${!isLast ? '<div class="act-line"></div>' : ''}
           </div>
-          <div class="flex-1 bg-white p-5 rounded-3xl shadow-sm border border-gray-100 transition-all hover:shadow-md">
-            <div class="flex justify-between items-start mb-2">
+          <div class="act-body">
+            <div class="act-meta">
               <div>
-                <span class="text-sm font-black text-dark tracking-tight">${esc(act.time||'')}</span>
-                ${act.duration ? `<span class="text-xs text-gray-400 ml-2">${esc(act.duration)}</span>` : ''}
+                <span class="act-time">${esc(act.time||'')}</span>
+                ${act.duration ? `<span class="act-duration">· ${esc(act.duration)}</span>` : ''}
               </div>
-              ${act.estimatedCost>0 ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg">~${fmt(act.estimatedCost)}</span>` : ''}
+              ${act.estimatedCost>0 ? `<span class="act-cost">~${fmt(act.estimatedCost)}</span>` : ''}
             </div>
-            <div class="font-bold text-[15px] text-dark leading-snug mb-1">${esc(act.name)}</div>
-            ${act.location&&act.location!==act.name ? `<div class="text-xs text-gray-400 mb-1">📍 ${esc(act.location)}</div>` : ''}
-            <div class="text-xs font-medium text-gray-500 leading-relaxed">${esc(act.description||'')}</div>
-            ${act.tips ? `<div class="mt-3 px-3 py-2 rounded-xl text-[11px] font-bold ${as.bg} ${as.color}">💡 ${esc(act.tips)}</div>` : ''}
+            <div class="act-name">${esc(act.name)}</div>
+            ${act.location&&act.location!==act.name ? `<div class="act-location">📍 ${esc(act.location)}</div>` : ''}
+            <div class="act-desc">${esc(act.description||'')}</div>
+            ${act.tips ? `<div class="act-tip" style="background:${as.bg};border-color:${as.color};color:${as.color}">💡 ${esc(act.tips)}</div>` : ''}
           </div>
         </div>`;
     }).join('');
 
     return `
-      <div class="mb-10 animate-slide-up" style="animation-delay:${di*.1}s">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-10 h-10 bg-dark text-white rounded-xl flex items-center justify-center font-bold text-lg shadow-md">${day.day}</div>
+      <div class="day-section" style="animation-delay:${di*.15}s">
+        <div class="day-header">
+          <div class="day-num">${day.day}</div>
           <div>
-            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">${esc(day.date_label||'')}</div>
-            <div class="font-serif text-xl font-bold text-dark leading-tight">${esc(day.title||'')}</div>
+            <div class="day-label">${esc(day.date_label||'')}</div>
+            <div class="day-title-txt">${esc(day.title||'')}</div>
           </div>
         </div>
-        ${acts}
+        <div class="act-list">${acts}</div>
       </div>`;
   }).join('');
 
@@ -969,24 +1431,38 @@ function renderStep3() {
     .join('');
 
   return `
-    <div class="bg-dark rounded-3xl p-6 mb-8 text-white shadow-2xl relative overflow-hidden">
-      <div class="absolute -right-4 -top-4 text-6xl opacity-10">🗺️</div>
-      <div class="font-serif text-2xl font-bold mb-2 relative z-10">Itinerary Banyuwangi ✨</div>
-      <div class="text-xs font-medium text-gray-300 mb-4 relative z-10">Siap untuk petualanganmu!</div>
-      <div class="inline-block bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/10 relative z-10">
-        <div class="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-0.5">Estimasi Budget/org</div>
-        <div class="font-bold text-lg">${fmt(it.estimatedBudget?.min||0)} – ${fmt(it.estimatedBudget?.max||0)}</div>
+    <div class="result-summary">
+      <div class="result-top">
+        <div class="result-title">Itinerary Banyuwangi ✨</div>
+        <details style="cursor:pointer;outline:none;background:rgba(224,123,57,.1);padding:6px 12px;border-radius:12px;border:1px solid rgba(224,123,57,.3);flex-shrink:0">
+          <summary style="list-style:none;user-select:none">
+            <div class="result-budget-label" style="display:flex;align-items:center;justify-content:flex-end;gap:4px">Est. Budget/org <span style="font-size:8px">▼</span></div>
+            <div class="result-budget-val">${fmt(it.estimatedBudget?.min)}–${fmt(it.estimatedBudget?.max)}</div>
+          </summary>
+          <div style="margin-top:10px;font-size:11px;text-align:left;background:rgba(0,0,0,.3);padding:10px;border-radius:8px;color:#d0d0d0;min-width:160px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span>🚌 Transport</span><span style="color:#fff;font-weight:600">~${fmt(it.estimatedBudget?.details?.transportasi)}</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span>🏨 Penginapan</span><span style="color:#fff;font-weight:600">~${fmt(it.estimatedBudget?.details?.akomodasi)}</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span>🍽️ Kuliner</span><span style="color:#fff;font-weight:600">~${fmt(it.estimatedBudget?.details?.kuliner)}</span></div>
+            <div style="display:flex;justify-content:space-between"><span>🎫 Tiket Wisata</span><span style="color:#fff;font-weight:600">~${fmt(it.estimatedBudget?.details?.wisata)}</span></div>
+          </div>
+        </details>
       </div>
+      <div class="result-desc">${esc(it.summary||'')}</div>
+      <div class="highlight-tags">${highlights}</div>
+      ${it.estimatedBudget?.note ? `<div class="budget-note">ℹ️ ${esc(it.estimatedBudget.note)}</div>` : ''}
     </div>
+
     ${days}
-    ${it.packingTips ? `<div class="bg-blue-50 border border-blue-100 rounded-3xl p-5 mb-4">
-      <div class="font-bold text-sm text-blue-800 mb-2">🎒 Perlengkapan</div>
-      <div class="text-xs text-blue-700 leading-relaxed">${esc(it.packingTips)}</div>
-    </div>` : ''}
-    ${it.importantNotes ? `<div class="bg-amber-50 border border-amber-100 rounded-3xl p-5 mb-4">
-      <div class="text-xs text-amber-700 leading-relaxed">⚠️ ${esc(it.importantNotes)}</div>
-    </div>` : ''}
-    <button class="w-full bg-white border border-gray-200 text-dark rounded-full py-4 font-bold text-sm shadow-sm hover:bg-gray-50 transition mt-4 mb-10" id="btn-restart">
+
+    ${packingTags ? `
+      <div class="packing-box">
+        <div class="packing-title">🎒 Perlengkapan yang Perlu Dibawa</div>
+        <div class="packing-tags">${packingTags}</div>
+      </div>` : ''}
+
+    ${it.importantNotes ? `<div class="notes-box">⚠️ ${esc(it.importantNotes)}</div>` : ''}
+
+    <button class="btn-ghost" id="btn-restart" style="width:100%;justify-content:center">
       ↺ Buat Itinerary Baru
     </button>`;
 }
@@ -1100,67 +1576,65 @@ function updateDestFeedback() {
 
 // Partial update suggestions penginapan (tanpa re-render step 2)
 function updateHotelSuggestions() {
-  const q    = (S.penginapanSearchQuery||'').toLowerCase();
-  const all  = S.allPenginapan || [];
-  const sel  = S.penginapanDataList || [];
-
+  const q = (S.penginapanSearchQuery||'').toLowerCase();
+  const all = S.allPenginapan || [];
   const filtered = q.length >= 1
     ? all.filter(p => {
         const n = (p.nama||'').toLowerCase();
-        return n.includes(q)||(p.kawasan||'').toLowerCase().includes(q);
+        return n.includes(q)||(p.kawasan||'').toLowerCase().includes(q)||(p.kategori||'').toLowerCase().includes(q);
       }).slice(0, 8)
-    : (q==='' && sel.length===0 ? S.penginapanOptions.slice(0,5) : []);
+    : S.penginapanOptions.slice(0, 5);
 
+  // Update autocomplete dropdown
   const acEl = document.getElementById('hotel-autocomplete');
   if (acEl) {
-    const show = q.length>=1 || (q===''&&sel.length===0&&S.penginapanOptions.length>0);
-    acEl.style.display = show ? '' : 'none';
+    acEl.style.display = q.length >= 1 ? '' : 'none';
     acEl.innerHTML = filtered.length > 0
       ? filtered.map(p => {
-          const alreadySel = sel.some(s=>s.id===p.id);
+          const sel = S.penginapanId === p.id;
           const distTxt = p.dist!=null?(p.dist<1?Math.round(p.dist*1000)+'m':p.dist.toFixed(1)+'km'):'';
-          return `<div class="autocomplete-item${alreadySel?' active':''}" data-penginapan-ac="${p.id}">
-            <span style="font-size:20px">${alreadySel?'✓':'🏨'}</span>
-            <div style="flex:1;min-width:0">
-              <div class="autocomplete-item-name">${esc(p.nama)}</div>
-              <div class="autocomplete-item-sub">${p.kawasan||''}${distTxt?' · ~'+distTxt:''}${p.harga?' · Rp'+p.harga:''}</div>
+          return `<div class="autocomplete-item${sel?' active':''}" data-penginapan-ac="${p.id}">
+            <span style="font-size:20px">🏨</span>
+            <div>
+              <div class="autocomplete-item-name">${esc(p.nama)}${sel?' ✓':''}</div>
+              <div class="autocomplete-item-sub">${p.kawasan||''}${distTxt?' · ~'+distTxt+' dari destinasi':''}${p.harga?' · Rp'+p.harga:''}</div>
             </div>
-            ${alreadySel?'<span style="color:#e07b39;font-size:11px">Terpilih</span>':''}
           </div>`;
         }).join('')
-      : '<div class="autocomplete-empty">Tidak ditemukan</div>';
+      : '<div class="autocomplete-empty">Tidak ditemukan — coba kata kunci lain</div>';
 
-    // Attach click listeners — mousedown supaya tidak kalah sama blur
+    // Re-attach click listeners
     acEl.querySelectorAll('[data-penginapan-ac]').forEach(el => {
-      el.addEventListener('mousedown', e => {
-        e.preventDefault();
-        const id  = el.dataset.penginapanAc;
-        const p   = all.find(x=>x.id===id);
-        if (!p) return;
-        const already = sel.some(s=>s.id===id);
-        if (already) {
-          // Toggle off
-          S.penginapanDataList = sel.filter(s=>s.id!==id);
-          S.penginapanIds      = S.penginapanDataList.map(s=>s.id);
-        } else {
-          // Tambah ke list
-          S.penginapanDataList = [...sel, p];
-          S.penginapanIds      = S.penginapanDataList.map(s=>s.id);
-        }
-        // Backward compat
-        S.penginapanId   = S.penginapanIds[0] || '';
-        S.penginapanData = S.penginapanDataList[0] || null;
-        S.penginapan     = S.penginapanIds.length > 0 ? 'firebase' : '';
+      el.addEventListener('mousedown', (e) => {
+        e.preventDefault(); // prevent blur before click
+        const id = el.dataset.penginapanAc;
+        S.penginapanId   = S.penginapanId === id ? '' : id;
+        S.penginapanData = (S.allPenginapan||[]).find(p=>p.id===id) || (S.penginapanOptions||[]).find(p=>p.id===id) || null;
+        S.penginapan     = S.penginapanId ? 'firebase' : '';
         S.penginapanSearchQuery = '';
-        // Load kuliner dari penginapan pertama
-        const first = S.penginapanDataList[0];
-        if (first?.lat && first?.lng) loadKulinerNearPenginapan(first.lat, first.lng);
+        if (S.penginapanData?.lat && S.penginapanData?.lng) loadKulinerNearPenginapan(S.penginapanData.lat, S.penginapanData.lng);
         render();
       });
     });
   }
-}
 
+  // Update old card list jika ada
+  const listEl = document.getElementById('hotel-suggestions');
+  if (listEl) {
+    listEl.innerHTML = filtered.map(p => {
+      const sel = S.penginapanId === p.id;
+      const distTxt = p.dist!=null?(p.dist<1?Math.round(p.dist*1000)+'m':p.dist.toFixed(1)+'km'):'';
+      return `<div class="card-opt sm${sel?' selected':''}" data-penginapan-fb="${p.id}">
+        <span class="card-opt-icon">🏨</span>
+        <div style="flex:1;min-width:0">
+          <div class="card-opt-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.nama)}</div>
+          <div class="card-opt-sub">${p.kawasan||''} ${distTxt?'· ~'+distTxt+' dari destinasi':''}</div>
+        </div>
+        <span class="card-opt-check">✓</span>
+      </div>`;
+    }).join('') || '<div style="font-size:12px;color:#3a5a3a;padding:12px;text-align:center;font-style:italic">Tidak ditemukan</div>';
+  }
+}
 
 function render() {
   const c = document.getElementById('content');
@@ -1348,19 +1822,6 @@ function attachListeners() {
     if (S.penginapanData?.lat && S.penginapanData?.lng) loadKulinerNearPenginapan(S.penginapanData.lat, S.penginapanData.lng);
     updateHotelSuggestions();
     updateNav();
-  });
-
-  // Remove hotel dari multi-list (tombol ✕ di kartu terpilih)
-  c.querySelectorAll('[data-remove-hotel]').forEach(el => {
-    el.addEventListener('click', () => {
-      const id = el.dataset.removeHotel;
-      S.penginapanDataList = (S.penginapanDataList||[]).filter(p=>p.id!==id);
-      S.penginapanIds      = S.penginapanDataList.map(p=>p.id);
-      S.penginapanId       = S.penginapanIds[0] || '';
-      S.penginapanData     = S.penginapanDataList[0] || null;
-      S.penginapan         = S.penginapanIds.length>0 ? 'firebase' : '';
-      render();
-    });
   });
 
   // Step 2 — durasi (targeted)
@@ -2024,26 +2485,26 @@ function renderPlanningBoard() {
     if (!d) return '';
     const ext  = DEST_EXT[id] || {};
     const zone = ext.zone || d.zone || '';
-    const ijen_warn = id==='ijen' ? '<span class="text-[9px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold ml-auto shrink-0">Dini hari</span>' : '';
-    return `<div class="drag-item flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-2xl cursor-grab active:cursor-grabbing transition-all hover:shadow-md" data-id="${id}">
-      <span class="text-gray-300 font-bold text-lg shrink-0">≡</span>
-      <span class="text-2xl shrink-0">${d.emoji||'🗺️'}</span>
-      <div class="flex-1 min-w-0">
-        <div class="font-bold text-sm text-dark truncate">${esc(d.name)}</div>
-        <div class="text-[10px] text-gray-400 mt-0.5">⏰ ${d.bestTime||'pagi'} · ${zone}</div>
+    return `<div class="drag-item" data-id="${id}">
+      <span class="drag-handle">≡</span>
+      <span class="drag-emoji">${d.emoji||'🗺️'}</span>
+      <div class="drag-info">
+        <div class="drag-title">${esc(d.name)}</div>
+        <div class="drag-zone">⏰ ${d.bestTime||'pagi'} · ${zone}</div>
       </div>
-      ${ijen_warn}
+      ${id==='ijen'?'<span style="font-size:11px;color:#e07b39" title="Perlu persiapan khusus">⚠️</span>':''}
     </div>`;
   }
 
   // Kartu hotel check-in
   function hotelCard(idx, name) {
-    return `<div class="drag-item" data-id="hotel_checkin_${idx}" class="drag-item flex items-center gap-3 p-3 bg-purple-50 border border-purple-200 rounded-2xl cursor-grab transition-all hover:shadow-md">
-      <span class="text-purple-300 font-bold text-lg shrink-0">≡</span>
-      <span class="text-2xl shrink-0">🏨</span>
-      <div class="flex-1 min-w-0">
-        <div class="font-bold text-sm text-purple-700 truncate">Check-in: ${esc(name)}</div>
-        <div class="text-[10px] text-purple-400 mt-0.5">Malam ini</div>
+    return `<div class="drag-item" data-id="hotel_checkin_${idx}"
+      style="border-color:rgba(196,123,212,.3);background:rgba(196,123,212,.06)">
+      <span class="drag-handle" style="color:#7a4a8a">≡</span>
+      <span class="drag-emoji">🏨</span>
+      <div class="drag-info">
+        <div class="drag-title" style="color:#c47bd4">Check-in: ${esc(name)}</div>
+        <div class="drag-zone" style="color:#8a5a9a">📍 Akomodasi</div>
       </div>
     </div>`;
   }
@@ -2055,10 +2516,8 @@ function renderPlanningBoard() {
     .join('');
 
   const backlogHTML = S.planBacklog.length > 0 || hotelCards ? `
-    <div class="bg-amber-50 border border-amber-200 rounded-3xl overflow-hidden mb-1">
-      <div class="flex items-center gap-2 px-4 py-3 border-b border-amber-100">
-        <span class="w-6 h-6 bg-amber-400 text-white rounded-lg flex items-center justify-center text-xs font-bold">📌</span>
-        <span class="font-bold text-sm text-amber-800">Belum Dijadwalkan
+    <div class="plan-col" style="border-color:rgba(255,200,50,.25);background:rgba(255,255,255,.015)">
+      <div class="plan-col-header" style="color:#a09040">📌 Belum Dijadwalkan
         ${S.planBacklog.length>0?`<span style="font-size:10px;background:rgba(255,200,50,.15);padding:2px 7px;border-radius:10px;margin-left:6px">${S.planBacklog.length}</span>`:''}
       </div>
       <div class="plan-col-body" id="bucket-unassigned">
@@ -2068,14 +2527,13 @@ function renderPlanningBoard() {
     </div>` : '';
 
   const arrivalHTML = `
-    <div class="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm">
-      <div class="flex items-center gap-3 px-4 py-3 bg-grayLight/50 border-b border-gray-100">
-        <span class="w-7 h-7 bg-dark text-white rounded-lg flex items-center justify-center text-xs font-bold">1</span>
-        <span class="font-bold text-sm text-dark">Hari 1 — Kedatangan</span>
-        <span class="text-[10px] text-gray-400 ml-auto">Check-in otomatis</span>
+    <div class="plan-col" style="border-color:rgba(255,255,255,.06)">
+      <div class="plan-col-header">
+        <span class="plan-day-badge">1</span> Hari 1 — Kedatangan
+        <span style="font-size:10px;color:#3a5a3a;margin-left:auto">Check-in otomatis</span>
       </div>
-      <div class="plan-col-body p-3 min-h-[60px]" id="bucket-day-arrival">
-        <div class="text-xs text-gray-400 text-center py-4 italic">Opsional: tambah destinasi sore hari kedatangan</div>
+      <div class="plan-col-body" id="bucket-day-arrival">
+        <div class="plan-empty" style="font-size:11px">Opsional: tambah destinasi sore hari kedatangan</div>
       </div>
     </div>`;
 
@@ -2090,51 +2548,44 @@ function renderPlanningBoard() {
       ? `<div class="plan-warn">⚠️ Gaya santai: disarankan maks 2 destinasi/hari</div>`
       : '';
     return `
-      <div class="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm">
-        <div class="flex items-center gap-3 px-4 py-3 bg-grayLight/50 border-b border-gray-100">
-          <span class="w-7 h-7 bg-dark text-white rounded-lg flex items-center justify-center text-xs font-bold">${dayNum}</span>
-          <span class="font-bold text-sm text-dark">Hari ${dayNum}</span>
-          <span class="text-[10px] text-gray-400 ml-auto">${destIds.length} destinasi</span>
+      <div class="plan-col">
+        <div class="plan-col-header">
+          <span class="plan-day-badge">${dayNum}</span> Hari ${dayNum}
+          <span style="font-size:10px;color:#5a7a5a;margin-left:auto">${destIds.length} destinasi</span>
         </div>
         ${warnHTML}
-        <div class="plan-col-body p-3 min-h-[80px]" id="bucket-day${i}">
+        <div class="plan-col-body" id="bucket-day${i}">
           ${ids.map(id => id.startsWith('hotel_checkin_') ? hotelCard(parseInt(id.split('_')[2]), hotelNames[parseInt(id.split('_')[2])]||'Penginapan') : destCard(id)).join('')}
-          ${ids.length===0?'<div class="text-xs text-gray-400 text-center py-6 italic">Seret destinasi ke sini</div>':''}
+          ${ids.length===0?'<div class="plan-empty">Seret destinasi ke sini</div>':''}
         </div>
       </div>`;
   }).join('');
 
   const depHTML = totalDays > 1 ? `
-    <div class="bg-green-50 border border-green-200 rounded-3xl overflow-hidden opacity-60">
-      <div class="flex items-center gap-3 px-4 py-3 border-b border-green-100">
-        <span class="w-7 h-7 bg-green-600 text-white rounded-lg flex items-center justify-center text-xs font-bold">${totalDays}</span>
-        <span class="font-bold text-sm text-green-800">Hari ${totalDays} — Kepulangan 🔒</span>
-        <span class="text-[10px] text-green-500 ml-auto">Otomatis</span>
-      </div>
-      <div class="p-3 pointer-events-none">
-        <div class="flex items-center gap-3 p-3 bg-white/60 border border-green-100 rounded-2xl">
-          <span class="text-2xl">🚌</span>
-          <div class="font-bold text-sm text-green-700">Perjalanan Pulang</div>
-        </div>
+    <div class="plan-col locked" style="border-color:rgba(74,122,74,.2);opacity:.5">
+      <div class="plan-col-header">
+        <span class="plan-day-badge" style="background:#4a7a4a">${totalDays}</span>
+        Hari ${totalDays} — Kepulangan 🔒
+        <span style="font-size:10px;color:#3a5a3a;margin-left:auto">Otomatis</span>
       </div>
     </div>` : '';
 
   return `
-    <h2 class="font-serif text-3xl font-bold text-dark mb-2 leading-tight">Susun Rute</h2>
-    <p class="text-sm font-medium text-gray-400 mb-6">Tahan lalu seret destinasi ke hari yang diinginkan</p>
-    <div class="flex justify-between items-center mb-4">
-      <div class="text-xs font-semibold text-gray-400">
+    <h2 class="step-title">Susun Perjalananmu</h2>
+    <p class="step-sub">Tahan lalu seret destinasi ke hari yang diinginkan</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-size:11px;color:#5a7a5a">
         ${S.destinations.size} destinasi · ${totalDays} hari
-        ${S.planBacklog.length>0?`<span class="text-amber-500"> · ${S.planBacklog.length} belum dijadwalkan</span>`:''}
+        ${S.planBacklog.length>0?`<span style="color:#e07b39"> · ${S.planBacklog.length} belum dijadwalkan</span>`:''}
       </div>
-      <button id="btn-reset-plan" class="text-[11px] text-gray-400 bg-white border border-gray-200 rounded-full px-3 py-1.5 font-semibold hover:bg-gray-50 transition shadow-sm">
+      <button id="btn-reset-plan" style="font-size:11px;color:#8fa08f;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:5px 10px;cursor:pointer;font-family:inherit">
         ↺ Saran Otomatis
       </button>
     </div>
-    ${hotelNames.length>1?`<div class="bg-purple-50 border border-purple-200 rounded-2xl px-4 py-3 text-xs font-semibold text-purple-700 mb-4">
-      💡 <b>Multi-penginapan terdeteksi</b> — kartu check-in bisa diseret ke hari pindah penginapan
+    ${hotelNames.length>1?`<div style="font-size:12px;color:#c47bd4;background:rgba(196,123,212,.08);padding:10px 12px;border-radius:8px;margin-bottom:14px;line-height:1.5;border:1px solid rgba(196,123,212,.2)">
+      💡 <b>Multi-penginapan terdeteksi</b> — kartu check-in ungu bisa kamu seret ke hari pindah penginapan
     </div>`:''}
-    <div class="planning-board flex flex-col gap-3">
+    <div class="planning-board">
       ${backlogHTML}${arrivalHTML}${actDayHTML}${depHTML}
     </div>`;
 }
@@ -2363,4 +2814,4 @@ function generateFromPlan() {
 })();
 </script>
 </body>
-</html>  
+</html>
