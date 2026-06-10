@@ -80,7 +80,7 @@
   </div>
 </div>
 
-<div class="user-menu" id="user-menu" style="position:absolute;top:80px;right:24px;z-index:100;background:white;border-radius:24px;padding:12px;box-shadow:0 10px 40px rgba(0,0,0,0.08);display:none;border:1px solid #F3F4F6;width:200px;">
+<div class="user-menu" id="user-menu" style="position:fixed;top:80px;right:max(24px,calc(50vw - 207px + 24px));z-index:1000;background:white;border-radius:24px;padding:12px;box-shadow:0 10px 40px rgba(0,0,0,0.12);display:none;border:1px solid #F3F4F6;width:200px;">
   <div class="px-4 py-2 mb-2 border-b border-gray-50">
     <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Logged in as</div>
     <div id="menu-username" class="font-bold text-sm text-dark truncate mt-1">Admin</div>
@@ -171,7 +171,8 @@ function setAdmin(val, email) {
 document.getElementById('btnLogin').addEventListener('click', (e) => {
   e.stopPropagation();
   if (isAdmin) {
-    document.getElementById('user-menu').classList.toggle('open');
+    const m = document.getElementById('user-menu');
+    m.style.display = m.style.display === 'block' ? 'none' : 'block';
   } else {
     const m = document.getElementById('modalLogin');
     m.style.display = 'flex';
@@ -182,6 +183,15 @@ document.getElementById('closeLogin').addEventListener('click', () => {
   document.getElementById('modalLogin').style.display = 'none';
   document.getElementById('loginErr').style.display = 'none';
 });
+// Tutup user-menu kalau klik di luar
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('user-menu');
+  const btn = document.getElementById('btnLogin');
+  if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+    menu.style.display = 'none';
+  }
+});
+
 document.getElementById('modalLogin').addEventListener('click', (e) => {
   if (e.target === document.getElementById('modalLogin'))
     document.getElementById('modalLogin').style.display = 'none';
