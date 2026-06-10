@@ -590,13 +590,13 @@ async function loadTab(type, forceRefresh = false) {
 function updateStats() {
   const all = [...state.data.wisata, ...state.data.penginapan, ...state.data.kuliner];
   const localAll = [...state.local.wisata, ...state.local.penginapan, ...state.local.kuliner];
+  
+  // Fungsi helper untuk update teks di dashboard statis (Active, Pending, Drafts)
   const _s = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  
   _s('stat-total',   all.filter(d=>d.status==='approved'||!d.status).length);
   _s('stat-pending', all.filter(d=>d.status==='pending').length);
   _s('stat-local',   localAll.length);
-  setEl('cnt-wisata',     state.data.wisata.length + state.local.wisata.length);
-  setEl('cnt-penginapan', state.data.penginapan.length + state.local.penginapan.length);
-  setEl('cnt-kuliner',    state.data.kuliner.length + state.local.kuliner.length);
 }
 
 // ─── RENDER TABLE ─────────────────────────────────────────────────────────────
