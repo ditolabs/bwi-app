@@ -2189,7 +2189,9 @@ function injectArrivalExtras(arrivalDay) {
   const extras = (S.planArrivalExtras||[])
     .map(id => DESTINATIONS.find(d=>d.id===id))
     .filter(Boolean);
-  if (extras.length === 0) return arrivalDay;
+  // Guard: hanya inject jika tiba sebelum jam 15 (masih ada waktu wisata sore)
+  const jamTiba = parseInt((S.waktuTiba||'10:00').split(':')[0]);
+  if (extras.length === 0 || jamTiba >= 15) return arrivalDay;
   // Sisipkan setelah aktivitas terakhir sebelum makan malam
   const insertBefore = arrivalDay.activities.findIndex(a=>a.type==='kuliner'&&a.name.toLowerCase().includes('malam'));
   const extraActs = extras.map((d,i) => {
@@ -2459,17 +2461,14 @@ function buildNotes(spots) {
 // Inisialisasi planDays dari auto-suggestion zone clustering
 function initPlanDays() {
   const [totalDays] = parseDurasi(S.durasi);
-  // actDays = hari aktif untuk drag (exclude hari 1 kedatangan dan hari terakhir kepulangan)
-  // Tapi juga pastikan cukup slot untuk semua destinasi
   const selected  = DESTINATIONS.filter(d => S.destinations.has(d.id));
   const spotsPerDay = S.gayaPerjalanan === 'santai' ? 2 : 3;
   const minActDays  = Math.ceil(selected.length / spotsPerDay);
   const naturalAct  = Math.max(1, totalDays - (totalDays > 1 ? 2 : 0));
-  // Pakai yang lebih besar antara natural dan minimum yang dibutuhkan
-  // tapi tidak melebihi totalDays - 1 (sisakan 1 hari kepulangan)
   const actDays = Math.min(Math.max(naturalAct, minActDays), Math.max(1, totalDays - 1));
   S.planDays    = Array.from({length: actDays}, () => []);
   S.planBacklog = [];
+  S.planArrivalExtras = []; // selalu reset agar tidak nyasar dari sesi lama
   const byZone = {};
   selected.forEach(d => {
     const z = DEST_EXT[d.id]?.zone || d.zone || 'kota';
@@ -2584,8 +2583,10 @@ function renderPlanningBoard() {
         <span class="plan-day-badge">1</span> Hari 1 — Kedatangan
         <span style="font-size:10px;color:#3a5a3a;margin-left:auto">Check-in otomatis</span>
       </div>
-      <div class="plan-col-body" id="bucket-day-arrival">
-        <div class="plan-empty" style="font-size:11px">Opsional: tambah destinasi sore hari kedatangan</div>
+      <div class="plan-col-body arrival-bucket" id="bucket-day-arrival">
+        ${S.planArrivalExtras && S.planArrivalExtras.length > 0
+          ? S.planArrivalExtras.map(destCard).join('')
+          : '<div class="plan-empty" style="font-size:11px">Opsional: seret destinasi kota ke sini untuk sore kedatangan</div>'}
       </div>
     </div>`;
 
@@ -2655,8 +2656,14 @@ function initSortableBoard() {
   containers.forEach(col => {
     // Skip: locked departure day tidak perlu SortableJS
     if (col.closest('.plan-col.locked')) return;
+
+    // Arrival bucket pakai group terpisah — tidak bisa menerima drag dari hari biasa
+    // dan tidak bisa jadi source drag ke hari lain (mencegah destinasi nyasar)
+    const isArrival = col.id === 'bucket-day-arrival';
     const inst = new Sortable(col, {
-      group:            'wandr-board',
+      group: isArrival
+        ? { name: 'wandr-arrival', pull: true, put: ['wandr-arrival'] }
+        : { name: 'wandr-board',   pull: true, put: ['wandr-board'] },
       animation:        280,
       easing:           'cubic-bezier(0.25, 1, 0.5, 1)',
       delay:            150,
