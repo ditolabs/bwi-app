@@ -1993,12 +1993,12 @@ const DEST_EXT = {
   g_land:      { zone:'selatan', tiket:0,     dur:240, lat:-8.6760,  lng:114.3320,
                  desc:'Pantai legendaris surganya peselancar kelas dunia, berlokasi di dalam kawasan TN Alas Purwo.',
                  tips:'Akses via perahu dari Pantai Grajagan ~200–300K. Bawa perlengkapan snorkeling.' },
-  menjangan:   { zone:'utara',   tiket:25000, dur:360, lat:-8.1122,  lng:114.4978,
-                 desc:'Pulau dengan terumbu karang terbaik di Banyuwangi. Visibilitas air hingga 30m, ideal untuk snorkeling dan diving.',
-                 tips:'Sewa perahu dari Bangsring ~300–400K/perahu. Bawa tabir surya dan alat snorkel sendiri.' },
-  tabuhan:     { zone:'utara',   tiket:15000, dur:300, lat:-8.0940,  lng:114.4856,
-                 desc:'Pulau pasir putih kecil dengan air berwarna biru jernih. Spot foto yang sangat instagramable.',
-                 tips:'Sewa perahu dari Pantai Bangsring ~200–250K. Perjalanan ~30 menit. Bawa bekal makanan.' },
+  menjangan:   { zone:'utara',   tiket:25000, dur:360, isMenjanganTabuhan:true, lat:-8.1122,  lng:114.4978,
+                 desc:'Pulau tak berpenghuni di kawasan Taman Nasional Bali Barat dengan terumbu karang terbaik. Visibilitas hingga 30m, snorkeling kelas dunia.',
+                 tips:'Hampir selalu dipaketkan dengan Pulau Tabuhan (07:30–15:30 dari Grand Watu Dodol). Open trip tersedia setiap weekend ~275K/orang via Yukbanyuwangi. Bawa sunblock, pakaian ganti, dan cemilan.' },
+  tabuhan:     { zone:'utara',   tiket:15000, dur:300, isMenjanganTabuhan:true, lat:-8.0940,  lng:114.4856,
+                 desc:'Pulau pasir putih kecil dengan air biru jernih dan gradasi warna spektakuler. Spot foto terbaik, ada kano dan jetski.',
+                 tips:'Paling efisien dipaketkan dengan Pulau Menjangan dalam satu hari. Meeting point di Pantai Grand Watu Dodol, berangkat 07:30. Open trip ~275K/orang via Yukbanyuwangi.' },
   city:        { zone:'kota',    tiket:0,     dur:240, isCity:true,  lat:-8.2191,  lng:114.3691,
                  desc:'Jelajahi pesona kota Banyuwangi: Pantai Boom, Taman Blambangan, Pendopo, dan pusat oleh-oleh khas.',
                  tips:'Malam hari lebih ramai dan hidup. Cicipi kuliner kaki lima di Jl. PB Sudirman.' },
@@ -2191,26 +2191,26 @@ function buildArrivalDay(kota, transport, penginapan) {
 
   // Logika berdasarkan jam tiba
   if (jamTiba < 11) {
-    // Tiba pagi → bisa aktivitas ringan dulu, check-in jam 14:00
+    // Tiba pagi → titip tas, sarapan, waktu bebas sampai check-in
     acts.push({ _order:1, time:S.waktuTiba, name:'Tiba di Banyuwangi',
       location: isUmum ? 'Stasiun/Bandara Banyuwangi' : 'Banyuwangi',
       duration:'30 menit', description:'Selamat datang di Banyuwangi! 🎉',
       tips:'', estimatedCost:0, type:'transport' });
     acts.push({ _order:2, time:addMin(S.waktuTiba,30), name:'Titip Tas & Sewa Kendaraan',
       location:'Locker Wangi / Area Stasiun', duration:'45 menit',
-      description:'Titip koper di Locker Wangi agar jalan-jalan pagi leluasa sebelum jam check-in hotel.',
+      description:'Titip koper di Locker Wangi agar jalan-jalan pagi leluasa sebelum jam check-in penginapan.',
       tips:'Locker Wangi: lockerwangi.com | WA: 0851-4717-8692. Tarif ~25K/tas.',
       estimatedCost:25000, type:'aktivitas' });
     acts.push({ _order:3, time:addMin(S.waktuTiba,80), name:'Sarapan Khas Banyuwangi',
       ...buildMakan('pagi','kota', addMin(S.waktuTiba,80), BWI_COORDS.stasiun.lat, BWI_COORDS.stasiun.lng), time:addMin(S.waktuTiba,80) });
-    acts.push({ _order:4, time:addMin(S.waktuTiba,140), name:'Wisata Pagi — Pantai Boom / Taman Blambangan',
-      location:'Pusat Kota Banyuwangi', duration:'2 jam',
-      description:'Jalan santai di Pantai Boom atau Taman Blambangan. Nikmati suasana kota sebelum check-in.',
-      tips:'Santai saja, simpan energi untuk hari-hari berikutnya.', estimatedCost:5000, type:'aktivitas' });
-    acts.push({ _order:5, time:'14:00', name:'Ambil Tas & Check-in Penginapan',
+    acts.push({ _order:4, time:addMin(S.waktuTiba,140), name:'Waktu Bebas — Jelajah Sekitar Kota',
+      location:'Pusat Kota Banyuwangi', duration:'±2 jam',
+      description:'Waktu santai sambil menunggu jam check-in. Bisa jalan-jalan di sekitar penginapan, beli kebutuhan perjalanan, atau sekadar istirahat di warung kopi.',
+      tips:'Jika penginapanmu di dekat pusat kota, Pantai Boom dan Taman Blambangan bisa jadi pilihan singgah sebentar.', estimatedCost:0, type:'aktivitas' });
+    acts.push({ _order:5, time:'13:00', name:'Ambil Tas & Check-in Penginapan',
       location:finalHotel, duration:'1 jam',
-      description:`Ambil kembali tas dari Locker Wangi, lalu check-in ${finalHotel}. Bersih-bersih dan istirahat siang.`,
-      tips:'Standar check-in hotel jam 14:00. Jika lebih awal, tas bisa dititip resepsionis.', estimatedCost:0, type:'penginapan' });
+      description:`Ambil kembali tas dari Locker Wangi, lalu check-in ${finalHotel}. Check-in standar jam 14:00 — banyak penginapan fleksibel untuk early check-in.`,
+      tips:'Hubungi penginapan H-1 untuk konfirmasi early check-in. Jika kamar belum siap, tas bisa dititip resepsionis dulu.', estimatedCost:0, type:'penginapan' });
     acts.push({ _order:6, time:'19:00', ...buildMakan('malam','kota', '19:00', hotelC?.lat, hotelC?.lng), time:'19:00' });
   } else if (jamTiba >= 11 && jamTiba < 18) {
     // Tiba siang-sore → langsung check-in (kemungkinan besar sudah jam 14:00+)
@@ -2337,8 +2337,67 @@ function buildDepartureDay(dayNum, kota, transport) {
 
 // ── Build activity day ─────────────────────────────────────────────────────────
 function buildActivityDay(dayNum, spots, zone, form, opts={}) {
-  const hasIjen = spots.some(s=>s.id==='ijen');
+  const hasIjen    = spots.some(s=>s.id==='ijen');
   const hasSukamade = spots.some(s=>s.id==='sukamade');
+  const hasMenjangan = spots.some(s=>s.id==='menjangan');
+  const hasTabuhan   = spots.some(s=>s.id==='tabuhan');
+
+  // ── MENJANGAN + TABUHAN (atau salah satu) — trip seharian dari Grand Watu Dodol ──
+  if (hasMenjangan || hasTabuhan) {
+    const title = (hasMenjangan && hasTabuhan)
+      ? 'Snorkeling Menjangan & Tabuhan'
+      : hasMenjangan ? 'Snorkeling Pulau Menjangan' : 'Pulau Tabuhan';
+    const biaya = (hasMenjangan && hasTabuhan) ? 275000 : hasMenjangan ? 250000 : 100000;
+    const sisaSpots = spots.filter(s=>s.id!=='menjangan'&&s.id!=='tabuhan');
+    const gwdCoords = { lat:-8.0737, lng:114.4269 }; // Grand Watu Dodol
+    const malamAct  = buildMakan('malam','utara',null,getHotelCoords()?.lat,getHotelCoords()?.lng);
+    malamAct.time   = '19:00';
+    const acts = [
+      { time:'06:30', name:`Berangkat Menuju Grand Watu Dodol`,
+        location:`${getFinalHotelName()} → Pantai Grand Watu Dodol`,
+        duration:'±45 menit',
+        description:'Perjalanan menuju meeting point open trip di Pantai Grand Watu Dodol (area Watu Dodol, ~35km utara kota).',
+        tips:'Tiket masuk Grand Watu Dodol 8K/orang + parkir 10K. Bisa via ojek dari Stasiun Ketapang ~15 menit.',
+        estimatedCost:18000, type:'transport' },
+      { time:'07:30', name:`Meeting Point & Briefing — ${title}`,
+        location:'Pantai Grand Watu Dodol (Sunrise Boat)',
+        duration:'30 menit',
+        description:'Registrasi, fitting alat snorkeling, dan briefing singkat dari guide. Pastikan hadir tepat waktu.',
+        tips:`Open trip tersedia setiap Sabtu-Minggu & libur nasional via Yukbanyuwangi. Booking H-1 agar pasti dapat slot. Biaya ~${biaya.toLocaleString('id-ID')}/orang sudah all-in termasuk makan siang.`,
+        estimatedCost:biaya, type:'aktivitas' },
+    ];
+    if (hasMenjangan) {
+      acts.push({ time:'08:15', name:'Menyeberang & Snorkeling Pulau Menjangan',
+        location:'Pulau Menjangan, TN Bali Barat',
+        duration:'±4 jam',
+        description:'Perjalanan laut ±45 menit ke Menjangan. Explore pantai pasir putih, snorkeling di Sandy Slope dan Coral Garden — visibilitas hingga 30m. Ada area suci Pura Hindu, hormati dengan tidak masuk jika sedang menstruasi.',
+        tips:'Dokumen foto underwater disediakan guide. Fins tidak termasuk, boleh bawa sendiri.',
+        estimatedCost:0, type:'aktivitas' });
+    }
+    acts.push({ time:'12:30', name:`Berlabuh di Pulau Tabuhan — Makan Siang`,
+      location:'Pulau Tabuhan',
+      duration:'2.5 jam',
+      description:'Makan siang (sudah termasuk paket). Explore pasir putih dan gradasi air biru Tabuhan. Tersedia kano ~50K/30 menit dan Jetski ~350K/15 menit.',
+      tips:'Ada surau kecil dan toilet di pulau. Warung kecil tidak selalu buka — bawa cemilan pribadi.',
+      estimatedCost:50000, type:'aktivitas' });
+    acts.push({ time:'15:00', name:'Kembali ke Daratan & Bilas',
+      location:'Pantai Grand Watu Dodol',
+      duration:'1 jam',
+      description:'Perjalanan balik ke Grand Watu Dodol. Fasilitas kamar bilas tersedia bersih dan memadai.',
+      tips:'Trip selesai ~15:30. Grab/Gojek sulit di area ini — sebaiknya sudah arrange kendaraan pulang dari H-1.',
+      estimatedCost:0, type:'transport' });
+    acts.push(malamAct);
+    // Jika ada destinasi lain selain menjangan/tabuhan di hari yang sama, append sebagai sore
+    if (sisaSpots.length > 0) {
+      sisaSpots.forEach((spot,i) => {
+        const ext = DEST_EXT[spot.id]||{};
+        acts.push({ time:addMin('16:30', i*90), name:spot.name,
+          location:spot.name+', Banyuwangi', duration:durLabel(ext.dur||120),
+          description:ext.desc||'', tips:ext.tips||'', estimatedCost:ext.tiket||0, type:'aktivitas' });
+      });
+    }
+    return { day:dayNum, date_label:`Hari ${dayNum}`, title, activities:sortActivities(acts) };
+  }
 
   // Sort: normal → sunset → night
   // Jika opts.honorOrder=true (dari planning board), hanya geser night activities ke belakang
