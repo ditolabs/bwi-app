@@ -1003,24 +1003,21 @@ async function loadPenginapanOptions() {
     dbg.style.cssText=`position:fixed;bottom:80px;left:12px;right:12px;background:#1a2a1a;border:1px solid #3a5a3a;color:${color};font-size:11px;padding:8px 12px;border-radius:8px;z-index:9999;font-family:monospace;word-break:break-all`;
     dbg.textContent = msg;
     document.body.appendChild(dbg);
-    setTimeout(()=>dbg.remove(), 20000);
+    setTimeout(()=>dbg.remove(), 15000);
   };
 
-  if (!db) {
-    showDbg('[Debug] db=null — Firebase tidak terinisialisasi!', '#ff8f8f');
-    S.penginapanOptions = []; S.allPenginapan = []; return;
-  }
   try {
-    // Pakai cache dari loadDestinations kalau ada, hindari fetch ulang
-    let allDocs;
-    if (window._placesCache && window._placesCache.length > 0) {
-      allDocs = window._placesCache;
-      showDbg(`[Debug] Cache: ${allDocs.length} docs`);
-    } else {
-      showDbg('[Debug] Fetching Firestore places...');
-      const snap = await db.collection('places').get();
-      allDocs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      window._placesCache = allDocs;
+    // Tunggu cache dari loadDestinations (max 5 detik)
+    let waited = 0;
+    while (!window._placesCache && waited < 5000) {
+      await new Promise(r => setTimeout(r, 200));
+      waited += 200;
+    }
+
+    const allDocs = window._placesCache || [];
+    if (allDocs.length === 0) {
+      showDbg('[Debug] _placesCache kosong — destinasi belum loaded?', '#ffbf5f');
+      S.penginapanOptions = []; S.allPenginapan = []; return;
     }
 
     const all = allDocs.filter(d => {
@@ -1031,9 +1028,9 @@ async function loadPenginapanOptions() {
              t.includes('motel')||t.includes('cottage')||t.includes('wisma');
     });
     S.allPenginapan = all;
-    // Ambil sample type unik untuk debug
+
     const typesSample = [...new Set(allDocs.map(d=>(d.type||d.kategori||'-').toLowerCase()))].slice(0,10).join(', ');
-    showDbg(`[Debug] Total: ${allDocs.length} | Penginapan: ${all.length} | Types: ${typesSample}`);
+    showDbg(`[Debug] Cache: ${allDocs.length} | Penginapan: ${all.length} | Types: ${typesSample}`);
 
     // Hitung terdekat dari destinasi terpilih (jika ada koordinat)
     if (S.destinations.size > 0) {
