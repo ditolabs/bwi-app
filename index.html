@@ -722,7 +722,7 @@ function mapToWandr(id, d) {
 let DESTINATIONS = [];
 
 const DESTINATIONS_FALLBACK = [
-  { id:'ijen',         name:'Kawah Ijen',              cat:'alam',   emoji:'🌋', desc:'Blue fire & kawah asam',          bestTime:'dini hari', zone:'barat',   tiket:5000,  dur:300, isIjen:true,
+  { id:'ijen',         name:'Kawah Ijen',              cat:'alam',   emoji:'🌋', desc:'Blue fire & kawah asam',          bestTime:'dini hari', zone:'barat',   tiket:5000,  dur:360, isIjen:true,
     aliases:['ijen','kawah ijen','blue fire'] },
   { id:'baluran',      name:'TN Baluran',               cat:'alam',   emoji:'🦌', desc:'Afrika van Java',                 bestTime:'pagi',      zone:'utara',   tiket:15000, dur:240,
     aliases:['baluran','taman nasional baluran','tn baluran'] },
@@ -731,7 +731,7 @@ const DESTINATIONS_FALLBACK = [
   { id:'kawah_wurung', name:'Kawah Wurung',              cat:'alam',   emoji:'🏔️', desc:'Kaldera indah & sunrise',         bestTime:'pagi',      zone:'barat',   tiket:5000,  dur:180,
     aliases:['kawah wurung','wurung'] },  { id:'jagir',        name:'Air Terjun Jagir',         cat:'alam',   emoji:'💧', desc:'Air terjun tiga tingkat',         bestTime:'pagi',      zone:'barat',   tiket:10000, dur:120,
     aliases:['jagir','air terjun jagir','curug jagir'] },
-  { id:'red_island',   name:'Red Island',               cat:'pantai', emoji:'🏄', desc:'Tebing merah & sunset ikonik',    bestTime:'sore',      zone:'selatan', tiket:10000, dur:180, isSunset:true,
+  { id:'red_island',   name:'Red Island',               cat:'pantai', emoji:'🏄', desc:'Tebing merah & sunset ikonik',    bestTime:'sore',      zone:'selatan', tiket:10000, dur:120, isSunset:true,
     aliases:['red island','pulau merah','pantai pulau merah'] },
   { id:'green_bay',    name:'Green Bay',                cat:'pantai', emoji:'🌊', desc:'Teluk ijo tersembunyi',           bestTime:'pagi',      zone:'selatan', tiket:10000, dur:240,
     aliases:['green bay','teluk ijo','teluk hijau'] },
@@ -1982,27 +1982,27 @@ const DEST_EXT = {
                  bestTime:'dini hari', openHour:'00:00', closeHour:'12:00',
                  desc:'Trekking ke kawah asam berwarna biru misterius, fenomena langka di dunia. Tiba di puncak sebelum matahari terbit untuk menyaksikan blue fire.',
                  tips:'Wajib bawa masker gas N95. Sewa porter ~150K (opsional). Headlamp adalah mutlak.' },
-  baluran:     { zone:'utara',   tiket:15000, dur:240, lat:-7.8626,  lng:114.3660,
+  baluran:     { zone:'utara',   tiket:15000, dur:150, lat:-7.8626,  lng:114.3660,
                  bestTime:'siang-sore', openHour:'07:00', closeHour:'17:00',
-                 desc:'Jelajahi savana luas "Afrika van Java". Berkendara melalui padang savana untuk melihat banteng, rusa, dan merak liar.',
-                 tips:'Masuk gerbang sebelum jam 06:00 untuk peluang terbaik bertemu satwa. Bawa kamera telephoto.' },
-  alas_purwo:  { zone:'selatan', tiket:5000,  dur:300, lat:-8.6830,  lng:114.3670,
+                 desc:'Savana "Afrika van Java" di Bekol, lanjut Pantai Bama dan mangrove trail. Masuk siang, nikmati golden hour saat keluar ~15:30.',
+                 tips:'Masuk gerbang pukul 14:00–14:30. Jeep safari +650K/jeep. Nikmati sunset di savana Bekol. Bawa kamera telephoto.' },
+  alas_purwo:  { zone:'selatan', tiket:5000,  dur:390, lat:-8.6830,  lng:114.3670,
                  bestTime:'pagi', openHour:'07:00', closeHour:'17:00',
-                 desc:'Menjelajahi hutan purba dengan ekosistem tersier Jawa. Kunjungi Pantai Trianggulasi dan Pura Giri Salaka yang bersejarah.',
-                 tips:'Trek ringan tersedia. Bawa air minum cukup dan repellent nyamuk.' },
-  kawah_wurung:{ zone:'barat',   tiket:5000,  dur:180, lat:-8.1177,  lng:114.2063,
+                 desc:'Pura Giri Salaka, Padang Sadengan (banteng & rusa liar), G-Land, Pantai Trianggulasi. Satu hari penuh petualangan hutan purba.',
+                 tips:'Masuk dari gerbang Rowobendo. Jeep ke G-Land ~150K/orang. Bawa bekal makan siang dan repellent.' },
+  kawah_wurung:{ zone:'barat',   tiket:5000,  dur:150, lat:-8.1177,  lng:114.2063,
                  bestTime:'pagi', openHour:'04:00', closeHour:'10:00',
                  desc:'Kaldera cantik dengan hamparan padang sabana hijau. Sunrise dari sini spektakuler dengan pemandangan 360 derajat.',
-                 tips:'Datang maksimal jam 05:30. Sangat dingin, bawa jaket. Bisa dilanjutkan setelah turun dari Ijen.' },
+                 tips:'Datang maksimal jam 05:30. Sangat dingin, bawa jaket tebal. Biasanya digabung dalam satu hari setelah Ijen (+75K/MPV dari paltuding).' },
   jagir:       { zone:'barat',   tiket:10000, dur:120, lat:-8.2154,  lng:114.1872,
                  bestTime:'pagi', openHour:'07:00', closeHour:'17:00',
                  desc:'Air terjun tiga tingkat di tengah hutan pinus yang sejuk. Kolam alami di bawah air terjun cocok untuk berendam.',
                  tips:'Trek ~1km dari parkir, relatif mudah. Gunakan sandal gunung atau sepatu anti selip.' },
   red_island:  { zone:'selatan', tiket:10000, dur:180, isSunset:true, lat:-8.4386, lng:114.0147,
                  bestTime:'sore-sunset', openHour:'14:00', closeHour:'18:30',
-                 desc:'Pantai dengan tebing merah dramatis yang menjadi ikon Banyuwangi. Sunset di sini adalah yang paling ikonik di Jawa.',
-                 tips:'Datang pukul 15:00 untuk tempat foto terbaik. Gelombang besar, tidak dianjurkan berenang.' },
-  green_bay:   { zone:'selatan', tiket:10000, dur:240, lat:-8.6176,  lng:114.0493,
+                 desc:'Tebing merah dramatis ikonik Banyuwangi. Sunset paling spektakuler di Jawa Timur, wajib diabadikan.',
+                 tips:'Tiba pukul 16:30 untuk golden hour terbaik. Ada warung kelapa muda di tepi pantai. Gelombang besar, tidak untuk berenang.' },
+  green_bay:   { zone:'selatan', tiket:10000, dur:150, lat:-8.6176,  lng:114.0493,
                  bestTime:'pagi', openHour:'07:00', closeHour:'16:00',
                  desc:'Teluk tersembunyi dengan air berwarna hijau toska yang memukau. Snorkeling dan berenang sangat direkomendasikan.',
                  tips:'Trek 30–40 menit dari parkir melewati hutan. Bawa bekal air minum minimal 1.5L.' },
@@ -2010,7 +2010,7 @@ const DEST_EXT = {
                  bestTime:'malam', openHour:'20:00', closeHour:'05:00',
                  desc:'Pantai penangkaran penyu hijau terbesar di Indonesia. Saksikan penyu bertelur secara langsung di malam hari.',
                  tips:'Wajib menginap di sekitar area. Bawa senter dan pakaian berwarna gelap.' },
-  g_land:      { zone:'selatan', tiket:0,     dur:240, lat:-8.6760,  lng:114.3320,
+  g_land:      { zone:'selatan', tiket:0,     dur:90,  lat:-8.6760,  lng:114.3320,
                  bestTime:'pagi', openHour:'06:00', closeHour:'16:00',
                  desc:'Pantai legendaris surganya peselancar kelas dunia, berlokasi di dalam kawasan TN Alas Purwo.',
                  tips:'Akses via perahu dari Pantai Grajagan ~200–300K. Bawa perlengkapan snorkeling.' },
@@ -2035,10 +2035,10 @@ const DEST_EXT = {
                  bestTime:'pagi', openHour:'06:00', closeHour:'17:00',
                  desc:'Pemandian alami dari sumber mata air murni di lereng gunung. Air sejuk sepanjang hari, paling nyaman pagi hari.',
                  tips:'Bawa pakaian ganti. Loker tersedia. Pagi hari air paling jernih.' },
-  djawatan:    { zone:'kota',    tiket:10000, dur:90,  lat:-8.2657,  lng:114.2921,
+  djawatan:    { zone:'kota',    tiket:10000, dur:105, lat:-8.2657,  lng:114.2921,
                  bestTime:'pagi', openHour:'07:00', closeHour:'17:00',
                  desc:'Hutan trembesi raksasa eksotis bergaya The Lord of the Rings. Pagi hari cahaya matahari masuk di sela-sela pohon menciptakan efek dramatis.',
-                 tips:'Tiba sebelum jam 09:00 untuk cahaya terbaik. Opsi naik dokar keliling ~20K/orang.' },
+                 tips:'Tiba sebelum jam 09:00 untuk cahaya terbaik. Opsi naik dokar keliling ~20K/orang. Sesuai itinerary Yukbanyuwangi: 08:30–10:45.' },
 };
 
 // Koordinat titik penting untuk rekomendasi kuliner hari terakhir
@@ -2179,6 +2179,14 @@ function tipsKembaliDaratan() {
   return 'Transportasi umum tidak tersedia di area GWD. Pastikan sudah arrange kendaraan pulang dari H-1.';
 }
 // lat/lng: titik referensi untuk cari kuliner terdekat. Jika null, fallback ke zone DB.
+// Estimasi waktu tempuh (menit) antara dua koordinat
+function travelMinutes(coord1, coord2) {
+  if (!coord1 || !coord2) return 20;
+  const dist = haversineKm(coord1.lat, coord1.lng, coord2.lat, coord2.lng);
+  const speed = hasMotor() ? 35 : hasMobil() ? 40 : 35;
+  return Math.round((dist / speed) * 60) + 10; // +10 buffer parkir/masuk
+}
+
 function buildMakan(waktu, zone, overrideTime, refLat, refLng) {
   const timeMap  = { pagi:'07:00', siang:'12:30', malam:'19:00' };
   const labelMap = { pagi:'Sarapan', siang:'Makan Siang', malam:'Makan Malam' };
@@ -2324,15 +2332,22 @@ function injectArrivalExtras(arrivalDay) {
     return bt.includes('sore') || bt.includes('sunset') || bt.includes('siang');
   });
 
-  // Mulai aktivitas pagi dari ~08:30 (setelah sarapan)
+  // Mulai aktivitas pagi dari setelah sarapan selesai
   let curPagi = addMin(S.waktuTiba, 80); // ~sarapan selesai
-  const pagiActs = pagiSpots.map(d => {
-    const ext = DEST_EXT[d.id]||{};
-    const dur = ext.dur||90;
+  let prevCoord = BWI_COORDS.stasiun; // titik awal = stasiun
+
+  const pagiActs = pagiSpots.map((d, i) => {
+    const ext      = DEST_EXT[d.id]||{};
+    const dur      = ext.dur||90;
+    const dCoord   = getDestCoords(d) || prevCoord;
+    // Tambahkan waktu tempuh dari titik sebelumnya
+    const travelMin = travelMinutes(prevCoord, dCoord);
+    curPagi = addMin(curPagi, travelMin);
     const act = { time:curPagi, name:d.name, location:d.name+', Banyuwangi',
       duration:durLabel(dur), description:ext.desc||d.desc||'',
       tips:ext.tips||'', estimatedCost:ext.tiket||0, type:'aktivitas' };
-    curPagi = addMin(curPagi, dur + 30);
+    curPagi  = addMin(curPagi, dur);
+    prevCoord = dCoord;
     return act;
   });
 
@@ -2609,25 +2624,31 @@ function buildActivityDay(dayNum, spots, zone, form, opts={}) {
     const mainSpots   = sorted.filter(s=>!DEST_EXT[s.id]?.isSunset&&!DEST_EXT[s.id]?.isNight);
     const sunsetSpots = sorted.filter(s=>DEST_EXT[s.id]?.isSunset);
 
+    // Titik awal = penginapan
+    let prevCoord = getHotelCoords();
+
     mainSpots.forEach((spot, i) => {
-      const ext   = DEST_EXT[spot.id]||{};
+      const ext    = DEST_EXT[spot.id]||{};
       const sCoord = getDestCoords(spot);
+      // Waktu tempuh dari titik sebelumnya
+      const travelMin = travelMinutes(prevCoord, sCoord);
+      cur = addMin(cur, i===0 ? 0 : travelMin); // hari pertama sudah include waktu berangkat
       acts.push({ time:cur, name:spot.name,
         location:spot.name+', Banyuwangi', duration:durLabel(ext.dur||180),
         description:ext.desc||spot.desc||'', tips:ext.tips||'',
         estimatedCost:ext.tiket||0, type:'aktivitas' });
-      cur = addMin(cur, (ext.dur||180)+35);
+      cur = addMin(cur, ext.dur||180);
+      prevCoord = sCoord || prevCoord;
 
-      // Insert makan siang di tengah — pakai koordinat midpoint antar spot atau spot saat ini
+      // Insert makan siang di tengah
       if (i===Math.floor((mainSpots.length-1)/2)) {
         const nextSpot  = mainSpots[i+1];
         const nextCoord = nextSpot ? getDestCoords(nextSpot) : null;
         const refCoord  = midpoint(sCoord, nextCoord) || sCoord || getHotelCoords();
         const makan     = buildMakan('siang', zone, cur, refCoord?.lat, refCoord?.lng);
         makan.time      = cur;
-        // Tambah konteks jarak di tips jika kuliner dari DB
         acts.push(makan);
-        cur = addMin(cur, 70);
+        cur = addMin(cur, 60);
       }
     });
 
