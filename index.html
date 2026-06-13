@@ -794,6 +794,10 @@ async function loadDestinations() {
     return;
   }
   try {
+    // Pastikan ada auth session (anonymous) sebelum fetch Firestore
+    if (firebase.auth && !firebase.auth().currentUser) {
+      try { await firebase.auth().signInAnonymously(); } catch(ae) { console.warn('anon auth gagal:', ae.message); }
+    }
     // Fetch semua places tanpa filter — hindari kebutuhan Firestore composite index
     const timeout = new Promise((_,rej) => setTimeout(()=>rej(new Error('timeout')), 10000));
     const query   = db.collection('places').get();
@@ -998,14 +1002,6 @@ function matchScore(term, d) {
 
 // Load penginapan terdekat dari Firebase berdasarkan destinasi terpilih
 async function loadPenginapanOptions() {
-  const showDbg = (msg, color='#8fbf8f') => {
-    const dbg = document.createElement('div');
-    dbg.style.cssText=`position:fixed;bottom:80px;left:12px;right:12px;background:#1a2a1a;border:1px solid #3a5a3a;color:${color};font-size:11px;padding:8px 12px;border-radius:8px;z-index:9999;font-family:monospace;word-break:break-all`;
-    dbg.textContent = msg;
-    document.body.appendChild(dbg);
-    setTimeout(()=>dbg.remove(), 15000);
-  };
-
   try {
     // Tunggu cache dari loadDestinations (max 5 detik)
     let waited = 0;
@@ -1015,10 +1011,7 @@ async function loadPenginapanOptions() {
     }
 
     const allDocs = window._placesCache || [];
-    if (allDocs.length === 0) {
-      showDbg('[Debug] _placesCache kosong — destinasi belum loaded?', '#ffbf5f');
-      S.penginapanOptions = []; S.allPenginapan = []; return;
-    }
+    if (allDocs.length === 0) { S.penginapanOptions = []; S.allPenginapan = []; return; }
 
     const all = allDocs.filter(d => {
       const t = (d.type||d.kategori||'').toLowerCase().replace(/\s+/g,'');
@@ -1028,9 +1021,6 @@ async function loadPenginapanOptions() {
              t.includes('motel')||t.includes('cottage')||t.includes('wisma');
     });
     S.allPenginapan = all;
-
-    const typesSample = [...new Set(allDocs.map(d=>(d.type||d.kategori||'-').toLowerCase()))].slice(0,10).join(', ');
-    showDbg(`[Debug] Cache: ${allDocs.length} | Penginapan: ${all.length} | Types: ${typesSample}`);
 
     // Hitung terdekat dari destinasi terpilih (jika ada koordinat)
     if (S.destinations.size > 0) {
@@ -1052,11 +1042,7 @@ async function loadPenginapanOptions() {
       S.penginapanOptions = all.slice(0, 6);
     }
   } catch(e) {
-    const dbg = document.createElement('div');
-    dbg.style.cssText='position:fixed;bottom:80px;left:12px;right:12px;background:#2a1a1a;border:1px solid #5a3a3a;color:#ff8f8f;font-size:11px;padding:8px 12px;border-radius:8px;z-index:9999;font-family:monospace;word-break:break-all';
-    dbg.textContent = `[Debug ERROR] ${e.message}`;
-    document.body.appendChild(dbg);
-    setTimeout(()=>dbg.remove(), 20000);
+    console.warn('loadPenginapanOptions gagal:', e.message);
     S.penginapanOptions = []; S.allPenginapan = [];
   }
 }
