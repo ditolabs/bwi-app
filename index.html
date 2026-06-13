@@ -2051,13 +2051,16 @@ const BWI_COORDS = {
 
 // ── Rekomendasi kuliner dari cache Firestore (nol query tambahan) ──────────────
 // Ambil max N kuliner terdekat dari titik (lat,lng) dalam radius radiusKm
-function getKulinerNear(lat, lng, radiusKm=2, maxResult=3) {
+function getKulinerNear(lat, lng, radiusKm=1, maxResult=5) {
   if (!lat || !lng) return [];
   const cache = window._placesCache || [];
   return cache
     .filter(d => {
-      const t = (d.type||'').toLowerCase();
-      return ['kuliner','cafe','restoran','warung','rumah makan'].some(k => t.includes(k));
+      const t = ((d.type||'') + ' ' + (d.kategori||'')).toLowerCase();
+      return t.includes('kuliner') || t.includes('cafe') || t.includes('kafe') ||
+             t.includes('restoran') || t.includes('warung') || t.includes('rumah makan') ||
+             t.includes('seafood') || t.includes('makan') || t.includes('kedai') ||
+             t.includes('depot') || t.includes('lesehan') || t.includes('kopi');
     })
     .filter(d => d.lat && d.lng && d.nama)
     .map(d => ({ ...d, dist: haversineKm(lat, lng, d.lat, d.lng) }))
@@ -2201,28 +2204,42 @@ function buildMakan(waktu, zone, overrideTime, refLat, refLng) {
       tips:'Sesuaikan dengan jam operasional tempat makan.', estimatedCost:30000, type:'makan' };
   }
 
-  // Cari dari cache Firestore berdasarkan koordinat terdekat (radius 3km)
-  const coords = (refLat && refLng)
-    ? { lat:refLat, lng:refLng }
-    : getHotelCoords();
-  const nearby = getKulinerNear(coords.lat, coords.lng, 3, 5);
+  // Cari dari cache Firestore — radius 1km dari titik referensi
+  const coords = (refLat && refLng) ? { lat:refLat, lng:refLng } : getHotelCoords();
+  const nearby = getKulinerNear(coords.lat, coords.lng, 1, 5);
+
   if (nearby.length > 0) {
-    const k = pickRand(nearby);
+    // Hindari duplikat — filter yang sudah dipakai hari ini via global tracker
+    if (!window._usedKuliner) window._usedKuliner = new Set();
+    const fresh = nearby.filter(k => !window._usedKuliner.has(k.id||k.nama));
+    const k = fresh.length > 0 ? fresh[0] : nearby[0];
+    window._usedKuliner.add(k.id||k.nama);
     return kulinerActivity(k, waktu, label, zone);
   }
 
-  // Fallback: zone-based static DB
-  const db2 = KULINER_DB[zone] || KULINER_DB.kota;
-  const w   = pickRand(db2);
+  // Radius 1km tidak ada — coba 3km
+  const nearby3 = getKulinerNear(coords.lat, coords.lng, 3, 5);
+  if (nearby3.length > 0) {
+    if (!window._usedKuliner) window._usedKuliner = new Set();
+    const fresh = nearby3.filter(k => !window._usedKuliner.has(k.id||k.nama));
+    const k = fresh.length > 0 ? fresh[0] : nearby3[0];
+    window._usedKuliner.add(k.id||k.nama);
+    return kulinerActivity(k, waktu, label, zone);
+  }
+
+  // Tidak ada di cache sama sekali — tampilkan generik tanpa nama fiktif
+  const genDesc = {
+    pagi:  'Cari warung sarapan lokal di sekitar lokasi — Sego Tempong, nasi pecel, atau lontong sayur khas Banyuwangi.',
+    siang: 'Cari warung makan terdekat di sekitar lokasi. Menu andalan khas Banyuwangi: Rujak Soto, Rawon, atau Pecel Pitik.',
+    malam: 'Cari warung makan malam di sekitar penginapan. Banyak pilihan seafood dan warung kaki lima yang buka hingga malam.',
+  };
   return {
-    time: finalTime,
-    name: `${label} — ${w.name}`,
-    location: w.name,
-    duration: '1 jam',
-    description: `${label} dengan menu ${w.menu}. Warung lokal favorit di kawasan ini.`,
-    tips: 'Datang agak awal kalau ramai. Harga terjangkau, rasa autentik.',
-    estimatedCost: w.est,
-    type: 'makan',
+    time: finalTime, name:`${label} — Warung Lokal Sekitar Lokasi`,
+    location:'Warung terdekat dari lokasi', duration:'1 jam',
+    description: genDesc[waktu],
+    tips:'Tanya rekomendasi ke warga lokal atau penginapan — mereka tahu warung terbaik di area ini.',
+    estimatedCost: waktu==='pagi' ? 20000 : waktu==='siang' ? 25000 : 30000,
+    type:'makan',
   };
 }
 
@@ -3037,8 +3054,7 @@ function generate() {
       const [totalDays] = parseDurasi(S.durasi);
       const spotsPerDay = S.gayaPerjalanan==='santai' ? 2 : 3;
       const kota = S.kotaAsal==='Lainnya' ? S.kotaAsalCustom : S.kotaAsal;
-
-      const days = [];
+      window._usedKuliner = new Set(); // reset tracker kuliner tiap generate
 
       // Day 1: Arrival
       days.push(injectArrivalExtras(buildArrivalDay(kota, S.transport, S.penginapan)));
