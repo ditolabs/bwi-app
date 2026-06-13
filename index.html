@@ -2687,20 +2687,6 @@ function buildActivityDay(dayNum, spots, zone, form, opts={}) {
     // Makan malam — dekat penginapan, pastikan tidak sama dengan makan siang
     const hotelC = getHotelCoords();
     const malamAct = buildMakan('malam', zone, null, hotelC?.lat, hotelC?.lng);
-    // Cek duplikat dengan makan siang
-    const siangAct = acts.find(a => a.type==='makan');
-    if (siangAct && malamAct.location === siangAct.location) {
-      // Ambil kuliner lain dari DB
-      const altDb = KULINER_DB[zone] || KULINER_DB.kota;
-      const used  = acts.filter(a=>a.type==='makan').map(a=>a.location);
-      const alt   = altDb.find(w => !used.includes(w.name));
-      if (alt) {
-        malamAct.name     = `Makan Malam — ${alt.name}`;
-        malamAct.location = alt.name;
-        malamAct.description = `Makan Malam dengan menu ${alt.menu}. Warung lokal favorit di kawasan ini.`;
-        malamAct.estimatedCost = alt.est;
-      }
-    }
     // Set jam makan malam setelah aktivitas terakhir + perjalanan balik
     const lastActTime = acts.filter(a=>a.type==='aktivitas').slice(-1)[0]?.time || '17:00';
     malamAct.time = timeToMin(addMin(lastActTime,90)) > timeToMin('19:00') ? addMin(lastActTime,90) : '19:00';
