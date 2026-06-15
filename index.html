@@ -1024,21 +1024,43 @@ function renderStep0() {
   const terms     = S.destInput.split(',').map(s=>s.trim()).filter(Boolean);
   const unmatched = terms.filter(t => !isTermMatched(t));
 
-  // Category filter state
+  // Shuffle untuk tampilkan urutan berbeda tiap render (kecuali ada filter aktif atau search)
+  const query = (S.destInput||'').toLowerCase().trim();
   const activeCat = S._catFilter || 'semua';
+
+  let displayDests;
+  if (query.length >= 2) {
+    // Search mode: tampilkan semua yang nama/alias cocok, urut by skor
+    displayDests = DESTINATIONS
+      .filter(d => activeCat==='semua' || d.cat===activeCat)
+      .map(d => ({ d, score: matchScore(query, d) }))
+      .filter(x => x.score >= 20 || d_nameContains(x.d, query))
+      .sort((a,b) => b.score - a.score)
+      .map(x => x.d)
+      .slice(0, 10);
+  } else {
+    // Browse mode: shuffle tiap render
+    const pool = DESTINATIONS.filter(d => activeCat==='semua' || d.cat===activeCat);
+    if (!S._shuffledDests || S._shuffledDests.length !== pool.length || S._lastCat !== activeCat) {
+      S._shuffledDests = [...pool].sort(() => Math.random() - 0.5);
+      S._lastCat = activeCat;
+    }
+    displayDests = S._shuffledDests.slice(0, 8);
+  }
+
+  function d_nameContains(d, q) {
+    return d.name.toLowerCase().includes(q) || (d.aliases||[]).some(a=>a.includes(q));
+  }
+
   const cats = ['semua','alam','pantai','diving','budaya'];
-  const catBtns = cats.map(c => `
-    <button data-cat="${c}" style="padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;
+  const catBtns = cats.map(ct => `
+    <button data-cat="${ct}" style="padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;
       cursor:pointer;font-family:inherit;letter-spacing:.05em;transition:all .2s;
-      ${activeCat===c
+      ${activeCat===ct
         ? 'background:#e07b39;color:#fff;border:1px solid #e07b39;box-shadow:0 4px 12px rgba(224,123,57,.3)'
         : 'background:rgba(255,255,255,.05);color:#8fa08f;border:1px solid rgba(255,255,255,.1)'}">
-      ${c.charAt(0).toUpperCase()+c.slice(1)}
+      ${ct.charAt(0).toUpperCase()+ct.slice(1)}
     </button>`).join('');
-
-  const displayDests = DESTINATIONS
-    .filter(d => activeCat==='semua' || d.cat===activeCat)
-    .slice(0, 8);
 
   const cards = displayDests.map(d => {
     const sel = S.destinations.has(d.id);
@@ -1660,8 +1682,9 @@ function updateDestFeedback() {
 
   const warnEl = document.getElementById('dest-warn-area');
   if (warnEl) {
-    warnEl.style.display = (unmatched.length > 0 && S.destInput) ? '' : 'none';
-    if (unmatched.length > 0 && S.destInput) {
+    const show = unmatched.length > 0 && S.destInput;
+    warnEl.style.display = show ? '' : 'none';
+    if (show) {
       warnEl.innerHTML = `⚠️ Tidak ditemukan: <em>${unmatched.join(', ')}</em><br>
         <span style="color:#6a8a6a">Coba: Kawah Ijen, TN Baluran, Red Island, Green Bay, TN Alas Purwo, Kawah Wurung…</span>`;
     }
@@ -1815,19 +1838,27 @@ function attachListeners() {
   const destInput = document.getElementById('dest-input');
   if (destInput) {
     destInput.addEventListener('input', () => {
-      S.destInput = destInput.value;
+      const val = destInput.value;
+      const pos = destInput.selectionStart;
+      S.destInput = val;
+      const q = val.toLowerCase().trim();
       parseDestInput(S.destInput);
-      updateDestFeedback();
-      updateNav();
+      if (q.length >= 2 || q.length === 0) {
+        if (q.length === 0) S._shuffledDests = null;
+        render();
+        // Restore focus + cursor setelah re-render
+        const newInp = document.getElementById('dest-input');
+        if (newInp) { newInp.focus(); try { newInp.setSelectionRange(pos, pos); } catch(e){} }
+      } else {
+        updateDestFeedback();
+        updateNav();
+      }
     });
-    destInput.focus();
   }
   const btnClear = document.getElementById('btn-clear-input');
   if (btnClear) btnClear.addEventListener('click', () => {
-    S.destInput=''; S.destinations.clear();
-    const inp = document.getElementById('dest-input');
-    if (inp) { inp.value = ''; inp.focus(); }
-    updateDestFeedback(); updateNav();
+    S.destInput=''; S.destinations.clear(); S._shuffledDests = null;
+    render();
   });
   c.querySelectorAll('[data-remove]').forEach(el => el.addEventListener('click', () => {
     const id = el.dataset.remove;
