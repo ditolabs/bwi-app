@@ -1072,7 +1072,7 @@ function renderStep0() {
       cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .18s;
       ${sel
         ? 'background:#c0392b;color:#fff;border:1px solid transparent;'
-        : 'background:transparent;color:#444444;border:1px solid rgba(255,255,255,.12);'}">${catEmoji[ct]} ${ct.charAt(0).toUpperCase()+ct.slice(1)}</button>`;
+        : 'background:#f0ede8;color:#444444;border:1px solid #e0dbd4;'}">${catEmoji[ct]} ${ct.charAt(0).toUpperCase()+ct.slice(1)}</button>`;
   }).join('');
 
   const chips = matched.map(d =>
@@ -1092,11 +1092,11 @@ function renderStep0() {
     const dot = CAT_DOT[d.cat]||'#888888';
     return `<div data-dest-card="${d.id}" style="display:flex;align-items:center;gap:12px;
       padding:12px 13px;border-radius:11px;cursor:pointer;transition:all .15s;margin-bottom:5px;
-      background:${sel?'rgba(192,57,43,.07)':'rgba(255,255,255,.025)'};
-      border:1px solid ${sel?'rgba(192,57,43,.38)':'rgba(255,255,255,.07)'};">
+      background:${sel?'rgba(192,57,43,.07)':'#ffffff'};
+      border:1px solid ${sel?'rgba(192,57,43,.38)':'#e0dbd4'};">
       <div style="width:40px;height:40px;border-radius:9px;flex-shrink:0;font-size:20px;
         display:flex;align-items:center;justify-content:center;
-        background:${sel?'rgba(192,57,43,.13)':'rgba(255,255,255,.05)'};">${d.emoji}</div>
+        background:${sel?'rgba(192,57,43,.13)':'#f0ede8'};">${d.emoji}</div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:14px;font-weight:600;margin-bottom:3px;
           white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
@@ -1209,7 +1209,7 @@ function renderStep1() {
       background:${sel?'rgba(107,159,212,.1)':'#ffffff'};
       border:1.5px solid ${sel?'rgba(107,159,212,.5)':'#e0dbd4'}">
       <div style="width:38px;height:38px;border-radius:0;flex-shrink:0;
-        background:${sel?'rgba(107,159,212,.2)':'rgba(255,255,255,.05)'};
+        background:${sel?'rgba(107,159,212,.2)':'#f0ede8'};
         display:flex;align-items:center;justify-content:center;font-size:18px">
         ${icon}
       </div>
@@ -1258,7 +1258,7 @@ function renderStep1() {
             const sel=S.subTransport===t.v;
             return `<div data-sub="${t.v}" style="flex:1;padding:12px 8px;text-align:center;border-radius:0;
               cursor:pointer;transition:all .2s;
-              background:${sel?'rgba(192,57,43,.2)':'rgba(255,255,255,.04)'};
+              background:${sel?'rgba(192,57,43,.2)':'#f0ede8'};
               border:1.5px solid ${sel?'#c0392b':'rgba(0,0,0,0.08)'}">
               <div style="font-size:22px;margin-bottom:5px">${t.e}</div>
               <div style="font-size:11px;font-weight:600;color:${sel?'#c0392b':'#888888'}">${t.l}</div>
@@ -1877,11 +1877,13 @@ function attachListeners() {
       const pos = destInput.selectionStart;
       S.destInput = val;
       const q = val.toLowerCase().trim();
-      parseDestInput(S.destInput);
+      // Hanya parse jika bukan di tengah mengetik setelah koma
+      const lastTerm = val.split(',').pop().trim();
+      const isTyping = lastTerm.length > 0 && lastTerm.length < 3;
+      if (!isTyping) parseDestInput(S.destInput);
       if (q.length >= 2 || q.length === 0) {
         if (q.length === 0) S._shuffledDests = null;
         render();
-        // Restore focus + cursor setelah re-render
         const newInp = document.getElementById('dest-input');
         if (newInp) { newInp.focus(); try { newInp.setSelectionRange(pos, pos); } catch(e){} }
       } else {
@@ -1900,12 +1902,18 @@ function attachListeners() {
     S.destinations.delete(id);
     const d = DESTINATIONS.find(x=>x.id===id);
     if (d) {
-      const parts = S.destInput.split(',').map(s=>s.trim()).filter(s=>!s.toLowerCase().includes(d.name.toLowerCase().split(' ')[0]));
+      // Match alias dan nama penuh, bukan hanya kata pertama
+      const allNames = [d.name.toLowerCase(), ...(d.aliases||[]).map(a=>a.toLowerCase())];
+      const parts = S.destInput.split(',').map(s=>s.trim()).filter(s => {
+        const sl = s.toLowerCase();
+        return !allNames.some(n => sl.includes(n.split(' ')[0]) || n.includes(sl));
+      });
       S.destInput = parts.join(', ');
       const inp = document.getElementById('dest-input');
       if (inp) inp.value = S.destInput;
     }
-    updateDestFeedback(); updateNav();
+    parseDestInput(S.destInput);
+    render();
   }));
   c.querySelectorAll('[data-suggest]').forEach(el => el.addEventListener('click', () => {
     const d = DESTINATIONS.find(x=>x.id===el.dataset.suggest);
@@ -2498,7 +2506,11 @@ function buildActivityDay(dayNum, spots, zone, form, opts={}) {
     acts.push({time:'12:30',name:'Berlabuh di Pulau Tabuhan — Makan Siang',location:'Pulau Tabuhan',duration:'2.5 jam',description:'Makan siang (sudah termasuk paket). Explore pasir putih dan gradasi air biru.',tips:'Ada surau dan toilet di pulau.',estimatedCost:50000,type:'aktivitas'});
     acts.push({time:'15:00',name:'Kembali ke Daratan & Bilas',location:'Pantai Grand Watu Dodol',duration:'1 jam',description:'Perjalanan balik. Fasilitas kamar bilas tersedia.',tips:tipsKembaliDaratan(),estimatedCost:0,type:'transport'});
     acts.push(malamAct);
-    if (sisaSpots.length>0) sisaSpots.forEach((spot,i)=>{const ext=DEST_EXT[spot.id]||{};acts.push({time:addMin('16:30',i*90),name:spot.name,location:spot.name+', Banyuwangi',duration:durLabel(ext.dur||90),description:ext.desc||spot.desc||'',tips:ext.tips||'',estimatedCost:ext.tiket||0,type:'aktivitas'});});
+    // sisaSpots hanya ditambah kalau waktunya cukup (sebelum jamPulang - 2 jam)
+    const jamPulangH = parseInt((S.waktuPulang||'13:00').split(':')[0]);
+    if (sisaSpots.length>0 && jamPulangH >= 18) {
+      sisaSpots.forEach((spot,i)=>{const ext=DEST_EXT[spot.id]||{};acts.push({time:addMin('16:30',i*90),name:spot.name,location:spot.name+', Banyuwangi',duration:durLabel(ext.dur||90),description:ext.desc||spot.desc||'',tips:ext.tips||'',estimatedCost:ext.tiket||0,type:'aktivitas'});});
+    }
     return {day:dayNum,date_label:`Hari ${dayNum}`,title,activities:sortActivities(acts)};
   }
 
