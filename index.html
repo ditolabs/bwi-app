@@ -1599,7 +1599,7 @@ function renderStep2() {
         dir="ltr" lang="en" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false"
         placeholder="🔍 Cari nama penginapan..."
         value="${esc(hotelQuery)}"
-        oninput="S.penginapanSearchQuery=this.value;render();"
+        oninput="S.penginapanSearchQuery=this.value;partialUpdateHotelList();"
         style="padding-right:36px">
       ${hotelQuery ? `<span id="btn-clear-hotel" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#888888;font-size:14px;padding:4px;z-index:1">✕</span>` : ''}
       <div class="autocomplete-dropdown" id="hotel-autocomplete" style="${hotelQuery.length>=1?'display:block':'display:none'}">
@@ -2628,6 +2628,197 @@ function render() {
 }
 
 // ─── LISTENERS ───────────────────────────────────────────────────────────────
+// ─── PARTIAL DOM UPDATES (tanpa full render, keyboard tetap open) ──────────────
+
+function partialUpdateDestList() {
+  const q = S.destInput.toLowerCase().trim();
+  const activeCat = S._catFilter || 'semua';
+
+  // Update chips (selected destinations)
+  const chipsEl = document.getElementById('dest-chips');
+  if (chipsEl) {
+    const matched = DESTINATIONS.filter(d => S.destinations.has(d.id));
+    chipsEl.innerHTML = matched.map(d => `
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;
+        border-radius:20px;white-space:nowrap;flex-shrink:0;
+        background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.35);">
+        <span style="font-size:13px">${d.emoji}</span>
+        <span style="font-size:12px;font-weight:700;color:#c0392b">${esc(d.name)}</span>
+        <span data-remove="${d.id}" style="font-size:11px;color:#888;cursor:pointer;padding:0 2px">✕</span>
+      </div>`).join('');
+    // Re-attach remove handlers
+    chipsEl.querySelectorAll('[data-remove]').forEach(el => el.addEventListener('click', () => {
+      const id = el.dataset.remove;
+      S.destinations.delete(id);
+      const d = DESTINATIONS.find(x => x.id === id);
+      if (d) {
+        const allNames = [d.name.toLowerCase(), ...(d.aliases||[]).map(a=>a.toLowerCase())];
+        const parts = S.destInput.split(',').map(s=>s.trim()).filter(s => {
+          const sl = s.toLowerCase();
+          return !allNames.some(n => sl.includes(n.split(' ')[0]) || n.includes(sl));
+        });
+        S.destInput = parts.join(', ');
+        const inp = document.getElementById('dest-input');
+        if (inp) inp.value = S.destInput;
+      }
+      parseDestInput(S.destInput);
+      partialUpdateDestList();
+      updateNav();
+    }));
+  }
+
+  // Update quick-pick chip states (toggle selected style tanpa rebuild)
+  document.querySelectorAll('[data-dest-card]').forEach(el => {
+    const id = el.dataset.destCard;
+    if (!id) return;
+    const sel = S.destinations.has(id);
+    el.style.background = sel ? 'rgba(192,57,43,.08)' : '#f0ede8';
+    el.style.border = sel ? '1px solid rgba(192,57,43,.5)' : '1px solid #e0dbd4';
+    // Update checkmark
+    const chk = el.querySelector('.dest-check');
+    if (chk) chk.style.opacity = sel ? '1' : '0';
+    // Update name color
+    const nm = el.querySelector('.dest-name');
+    if (nm) nm.style.color = sel ? '#c0392b' : '#111111';
+  });
+
+  // Update dest-cards-list (hasil pencarian)
+  const listEl = document.getElementById('dest-cards-list');
+  if (!listEl) return;
+
+  const queryTerms = q.length >= 2
+    ? q.split(',').map(s => s.trim()).filter(s => s.length >= 2)
+    : [];
+
+  if (queryTerms.length === 0) {
+    listEl.innerHTML = '';
+    return;
+  }
+
+  let displayDests = DESTINATIONS
+    .filter(d => activeCat === 'semua' || d.cat === activeCat)
+    .map(d => {
+      let best = 0;
+      for (const term of queryTerms) {
+        let score = matchScore(term, d);
+        if (d.name.toLowerCase().includes(term) && term.length >= 3) score += 30;
+        if ((d.aliases||[]).some(a => a.includes(term) && term.length >= 3)) score += 20;
+        if (score > best) best = score;
+      }
+      return { d, score: best };
+    })
+    .filter(x => x.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map(x => x.d)
+    .slice(0, 14);
+
+  // Tambahkan selected yang tidak muncul di hasil search
+  const resultIds = new Set(displayDests.map(d => d.id));
+  const selectedNotShown = DESTINATIONS.filter(d => S.destinations.has(d.id) && !resultIds.has(d.id));
+  displayDests = [...selectedNotShown, ...displayDests].slice(0, 16);
+
+  const CAT_DOT = { alam:'#2d8a4a', pantai:'#1a6a9a', diving:'#0a5a4a', budaya:'#8a6010', default:'#888888' };
+
+  listEl.innerHTML = displayDests.map(d => {
+    const sel = S.destinations.has(d.id);
+    const dot = CAT_DOT[d.cat] || CAT_DOT.default;
+    const catLabel = {alam:'Alam',pantai:'Pantai',diving:'Diving',budaya:'Budaya'}[d.cat]||d.cat;
+    return `<div data-dest-card="${d.id}" style="display:flex;align-items:center;gap:12px;
+      padding:12px 13px;border-radius:11px;cursor:pointer;transition:all .15s;margin-bottom:5px;
+      background:${sel ? 'rgba(192,57,43,.07)' : '#ffffff'};
+      border:1px solid ${sel ? 'rgba(192,57,43,.38)' : '#e0dbd4'};">
+      <div style="width:40px;height:40px;border-radius:9px;flex-shrink:0;font-size:20px;
+        display:flex;align-items:center;justify-content:center;
+        background:${sel ? 'rgba(192,57,43,.13)' : '#f0ede8'};">
+        ${d.emoji}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:${sel?'#c0392b':'#111111'};margin-bottom:2px;
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(d.name)}</div>
+        <div style="font-size:11px;color:#888888;display:flex;align-items:center;gap:5px">
+          <span style="width:6px;height:6px;border-radius:50%;background:${dot};display:inline-block;flex-shrink:0"></span>
+          ${catLabel} &middot; ${d.bestTime||''}
+        </div>
+      </div>
+      <div style="width:20px;height:20px;border-radius:3px;flex-shrink:0;
+        background:${sel?'#c0392b':'transparent'};border:1.5px solid ${sel?'#c0392b':'#e0dbd4'};
+        display:flex;align-items:center;justify-content:center;
+        font-size:12px;color:#fff;font-weight:700">
+        ${sel ? '✓' : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Re-attach click handlers untuk card list
+  listEl.querySelectorAll('[data-dest-card]').forEach(el => el.addEventListener('click', () => {
+    const id = el.dataset.destCard;
+    S.destinations.has(id) ? S.destinations.delete(id) : S.destinations.add(id);
+    partialUpdateDestList();
+    updateDestFeedback();
+    updateNav();
+  }));
+
+  // Update warn area
+  const warnEl = document.getElementById('dest-warn-area');
+  if (warnEl) warnEl.style.display = (queryTerms.length > 0 && displayDests.length === 0) ? 'block' : 'none';
+
+  updateNav();
+}
+
+function partialUpdateHotelList() {
+  const q = (S.penginapanSearchQuery || '').toLowerCase().trim();
+  const listEl = document.getElementById('hotel-autocomplete');
+  if (!listEl) return;
+
+  const allHotels = S.penginapanDataList || [];
+
+  const filtered = q.length >= 1
+    ? allHotels.filter(p => {
+        const n = (p.name||'').toLowerCase();
+        const t = (p.tipe||'').toLowerCase();
+        return n.includes(q) || t.includes(q);
+      })
+    : allHotels;
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = `<div style="padding:12px;text-align:center;font-size:12px;
+      color:#888;font-style:italic">Tidak ditemukan — coba kata kunci lain</div>`;
+    return;
+  }
+
+  listEl.innerHTML = filtered.slice(0, 10).map(p => {
+    const sel = S.penginapanIds.has(p.id);
+    return `<div data-hotel-id="${p.id}" style="display:flex;align-items:center;gap:10px;
+      padding:10px 13px;cursor:pointer;border-bottom:1px solid #f0ede8;
+      background:${sel ? 'rgba(192,57,43,.05)' : '#fff'};transition:background .15s">
+      <span style="font-size:20px;flex-shrink:0">${p.emoji||'🏨'}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:${sel?'#c0392b':'#111'};
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name)}</div>
+        <div style="font-size:11px;color:#888">${esc(p.harga||'')}</div>
+      </div>
+      ${sel ? '<span style="color:#c0392b;font-weight:700;flex-shrink:0">✓</span>' : ''}
+    </div>`;
+  }).join('');
+
+  // Attach click
+  listEl.querySelectorAll('[data-hotel-id]').forEach(el => el.addEventListener('click', () => {
+    const id = el.dataset.hotelId;
+    const p = (S.penginapanDataList||[]).find(x => x.id === id);
+    if (!p) return;
+    if (S.penginapanIds.has(id)) {
+      S.penginapanIds.delete(id);
+      if (S.penginapan === p.name) S.penginapan = '';
+    } else {
+      S.penginapanIds.add(id);
+      S.penginapan = p.name;
+    }
+    partialUpdateHotelList();
+    updateNav();
+  }));
+}
+
+
 function attachListeners() {
   const c = document.getElementById('content');
 
@@ -2636,31 +2827,19 @@ function attachListeners() {
     let _destTimer = null;
     destInput.addEventListener('input', () => {
       const val = destInput.value;
-      const pos = destInput.selectionStart;
       S.destInput = val;
       const q = val.toLowerCase().trim();
-
-      // Selalu parse langsung — trim sudah handle spasi
       parseDestInput(S.destInput);
+      if (q.length === 0) S._shuffledDests = null;
 
-      // Debounce render 120ms agar tidak re-render tiap keystroke
+      // Debounce partial update — JANGAN render() penuh agar keyboard tidak close
       clearTimeout(_destTimer);
       _destTimer = setTimeout(() => {
-        if (q.length === 0) S._shuffledDests = null;
-        render();
-        // Restore cursor setelah re-render
-        requestAnimationFrame(() => {
-          const newInp = document.getElementById('dest-input');
-          if (newInp) {
-            newInp.focus();
-            try { newInp.setSelectionRange(pos, pos); } catch(e){}
-          }
-        });
-      }, 120);
-
-      // Langsung update nav tanpa tunggu render
-      updateDestFeedback();
-      updateNav();
+        updateDestFeedback();
+        updateNav();
+        // Update hanya card list dan chips, bukan seluruh DOM
+        partialUpdateDestList();
+      }, 180);
     });
   }
   const btnClear = document.getElementById('btn-clear-input');
