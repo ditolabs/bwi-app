@@ -1386,13 +1386,13 @@ function renderStep0() {
       ${S.destInput?`<span id="btn-clear-input" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);cursor:pointer;color:#888888;font-size:14px;padding:4px;">✕</span>`:''}
     </div>
 
-    ${query?`<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:10px;scrollbar-width:none;" id="cat-btns">${catBtns}</div>`:''}
+    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:${query?10:0}px;scrollbar-width:none;" id="cat-btns">${query?catBtns:''}</div>
 
     <div id="dest-warn-area" style="display:${queryTerms.length>0&&displayDests.length===0?'block':'none'};padding:8px 12px;background:rgba(200,150,30,.07);border:1px solid rgba(200,150,30,.2);border-radius:0;font-size:12px;color:#444444;margin-bottom:10px;">
       ⚠️ Tidak ditemukan untuk "<em>${esc(S.destInput)}</em>"
     </div>
 
-    ${query?`<div id="dest-cards-list">${rows}</div>`:''}
+    <div id="dest-cards-list">${query?rows:''}</div>
 
     ${matched.length>0?`<div style="margin-top:10px;padding:12px;background:#f0ede8;border-radius:0;border:1.5px solid rgba(0,0,0,.15);">
       <div style="font-size:11px;color:#666666;margin-bottom:6px;">🍽️ Kuliner yang diincar? <span style="color:#888888;">(opsional)</span></div>
@@ -1856,16 +1856,24 @@ function renderStep3() {
   }).join('');
 
   // ── Packing checklist ─────────────────────────────────────────────────────────
-  const checklist = (it.packingTips||[]).map((t) => `
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;
-      border-bottom:1px solid #e0dbd4">
-      <div onclick="this.classList.toggle('checked');this.style.background=this.classList.contains('checked')?'#111':'transparent';this.style.borderColor=this.classList.contains('checked')?'#111':'#e0dbd4';this.innerHTML=this.classList.contains('checked')?'✓':'';"
-        style="width:20px;height:20px;border:1.5px solid #e0dbd4;flex-shrink:0;
-        display:flex;align-items:center;justify-content:center;font-size:11px;
-        color:#fff;cursor:pointer;transition:all .2s">
-      </div>
-      <span style="font-size:13px;color:#444">${esc(t)}</span>
-    </div>`).join('');
+  const checklist = (it.packingTips||[]).length > 0 ? `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      ${(it.packingTips||[]).map(t => `
+        <div onclick="this.classList.toggle('done');
+          this.querySelector('.cb').style.background=this.classList.contains('done')?'#111':'transparent';
+          this.querySelector('.cb').style.borderColor=this.classList.contains('done')?'#111':'#e0dbd4';
+          this.querySelector('.cb span').textContent=this.classList.contains('done')?'v':'';
+          this.querySelector('.cb span').style.color='#fff';
+          this.style.opacity=this.classList.contains('done')?'0.55':'1';"
+          style="display:flex;align-items:center;gap:10px;padding:10px 12px;
+          background:#fff;border:1px solid #e0dbd4;cursor:pointer;transition:all .2s;user-select:none">
+          <div class="cb" style="width:18px;height:18px;border:1.5px solid #e0dbd4;flex-shrink:0;
+            display:flex;align-items:center;justify-content:center;transition:all .2s">
+            <span style="font-size:10px;font-weight:700"></span>
+          </div>
+          <span style="font-size:12px;color:#444;line-height:1.4">${esc(t)}</span>
+        </div>`).join('')}
+    </div>` : ''
 
   return `
     ${headerCard}
@@ -2032,6 +2040,19 @@ function buildPrintHTML(it) {
     </div>`;
 }
 
+function stripEmoji(s) {
+  if (!s) return '';
+  return s
+    .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
+    .replace(/[\u{2600}-\u{27FF}]/gu, '')
+    .replace(/[\u{1F300}-\u{1FAFF}]/gu, '')
+    .replace(/[^\x00-\x7F\u00C0-\u024F]/g, function(ch){
+      var m={'\u26A0':'[!]','\u{1F4A1}':'>>','\u{1F392}':''};
+      return m[ch]||'';
+    })
+    .replace(/\s+/g,' ').trim();
+}
+
 async function exportItinerary(format) {
   const it = S.itinerary;
   if (!it) return;
@@ -2138,7 +2159,7 @@ async function exportItinerary(format) {
     pdf.setTextColor(255, 200, 200);
     const destLine = dests.join(' \u00B7 ');
     const destLines = pdf.splitTextToSize(destLine, CW - 20);
-    destLines.forEach((line, i) => pdf.text(line, ML, 58 + i * 5));
+    destLines.forEach((line, i) => pdf.text(stripEmoji(line), ML, 58 + i * 5));
 
     // ── Meta bar ─────────────────────────────────────────────────────────
     const metaY = coverH;
@@ -2216,7 +2237,7 @@ async function exportItinerary(format) {
       pdf.setFont('helvetica','bold');
       pdf.setTextColor(...INK);
       const titleLines = pdf.splitTextToSize(day.title||'', CW - 26);
-      titleLines.forEach((tl, ti) => pdf.text(tl, ML + 22, curY + 12 + ti * 6));
+      titleLines.forEach((tl, ti) => pdf.text(stripEmoji(tl), ML + 22, curY + 12 + ti * 6));
 
       curY += 20;
 
@@ -2258,15 +2279,15 @@ async function exportItinerary(format) {
         pdf.setFontSize(7.5);
         pdf.setFont('helvetica','bold');
         pdf.setTextColor(...RED);
-        pdf.text(timeStr, tx + 3, curY + 1.5);
+        pdf.text(stripEmoji(timeStr), tx + 3, curY + 1.5);
         curY += 6;
 
         // Name
         pdf.setFontSize(11);
         pdf.setFont('helvetica','bold');
         pdf.setTextColor(...INK);
-        const nLines = pdf.splitTextToSize(act.name||'', CW - 14);
-        nLines.forEach((nl, ni) => pdf.text(nl, tx, curY + ni * 5.5));
+        const nLines = pdf.splitTextToSize(stripEmoji(act.name)||'', CW - 14);
+        nLines.forEach((nl, ni) => pdf.text(stripEmoji(nl), tx, curY + ni * 5.5));
         curY += nLines.length * 5.5 + 1;
 
         // Description
@@ -2274,8 +2295,8 @@ async function exportItinerary(format) {
           pdf.setFontSize(9);
           pdf.setFont('helvetica','normal');
           pdf.setTextColor(85, 85, 85);
-          const dLines = pdf.splitTextToSize(act.description, CW - 14);
-          dLines.forEach((dl, di2) => pdf.text(dl, tx, curY + di2 * 4.5));
+          const dLines = pdf.splitTextToSize(stripEmoji(act.description), CW - 14);
+          dLines.forEach((dl, di2) => pdf.text(stripEmoji(dl), tx, curY + di2 * 4.5));
           curY += dLines.length * 4.5 + 1;
         }
 
@@ -2303,7 +2324,7 @@ async function exportItinerary(format) {
           pdf.setFontSize(8.5);
           pdf.setFont('helvetica','normal');
           pdf.setTextColor(85,85,85);
-          tipLn.forEach((tl, ti) => pdf.text(tl, tx + 5, curY + 3.5 + ti * 4.5));
+          tipLn.forEach((tl, ti) => pdf.text(stripEmoji(tl), tx + 5, curY + 3.5 + ti * 4.5));
           curY += tipH + 3;
         }
 
@@ -2328,7 +2349,7 @@ async function exportItinerary(format) {
     pdf.setFontSize(18);
     pdf.setFont('helvetica','bold');
     pdf.setTextColor(...WHITE);
-    pdf.text(budgetStr, ML + 6, curY + 17);
+    pdf.text(stripEmoji(budgetStr), ML + 6, curY + 17);
     pdf.setFontSize(8);
     pdf.setFont('helvetica','normal');
     pdf.setTextColor(160,160,160);
@@ -2367,7 +2388,7 @@ async function exportItinerary(format) {
         pdf.setFontSize(8.5);
         pdf.setFont('helvetica','normal');
         pdf.setTextColor(68,68,68);
-        pdf.text(item, ix + 6, iy + 1);
+        pdf.text(stripEmoji(item), ix + 6, iy + 1);
       });
       curY += Math.ceil(packing.length/3) * 9 + 6;
     }
@@ -2384,7 +2405,7 @@ async function exportItinerary(format) {
       pdf.setFontSize(8.5);
       pdf.setFont('helvetica','normal');
       pdf.setTextColor(85,85,85);
-      noteLines.forEach((nl, ni) => pdf.text(nl, ML + 7, curY + 5 + ni * 4.5));
+      noteLines.forEach((nl, ni) => pdf.text(stripEmoji(nl), ML + 7, curY + 5 + ni * 4.5));
       curY += noteH + 8;
     }
 
