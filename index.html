@@ -985,8 +985,7 @@ function showLoadingDest() {
   const c = document.getElementById('content');
   c.innerHTML = `<div style="text-align:center;padding:60px 0;color:#444444">
     <div style="font-size:40px;margin-bottom:14px;animation:float 2s ease-in-out infinite">🌿</div>
-    <div style="font-size:14px;font-weight:500">Memuat data destinasi...</div>
-    <div style="font-size:12px;color:#888888;margin-top:6px">Menghubungkan ke Firebase</div>
+    <div style="font-size:14px;font-weight:500">Memuat destinasi...</div>
   </div>`;
   document.getElementById('nav').style.display='none';
   document.getElementById('progress-area').style.display='none';
@@ -995,37 +994,23 @@ function showLoadingDest() {
 async function loadDestinations() {
   showLoadingDest();
   if (!db) {
-    DESTINATIONS = DESTINATIONS_FALLBACK; 
+    DESTINATIONS = DESTINATIONS_FALLBACK;
     return;
   }
-  
+
   try {
-    // 1. Pindahkan inisialisasi timeout ke paling atas
-    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Firebase timeout')), 10000));
-    
-    // 2. Bungkus Auth dan Query dalam satu async task
-    const firebaseTask = (async () => {
-      if (firebase.auth && !firebase.auth().currentUser) {
-        try { 
-          await firebase.auth().signInAnonymously(); 
-        } catch(ae) { 
-          console.warn('anon auth gagal:', ae.message); 
-        }
-      }
-      return await db.collection('places').get();
-    })();
-    
-    // 3. Race antara keseluruhan proses Firebase vs Timeout 10 detik
-    const snap = await Promise.race([firebaseTask, timeout]);
-    
+    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000));
+
+    // Auth anonim optional — tidak blocking query utama
+    if (auth && !auth.currentUser) {
+      try { await Promise.race([auth.signInAnonymously(), new Promise(res => setTimeout(res, 1500))]); } catch(ae) {}
+    }
+
+    const snap = await Promise.race([db.collection('places').get(), timeout]);
+
     window._placesCache = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     const loaded = snap.docs.map(doc => mapToWandr(doc.id, doc.data())).filter(Boolean);
-    
-    if (loaded.length > 0) {
-      DESTINATIONS = loaded;
-    } else {
-      DESTINATIONS = DESTINATIONS_FALLBACK;
-    }
+    DESTINATIONS = loaded.length > 0 ? loaded : DESTINATIONS_FALLBACK;
   } catch(e) {
     DESTINATIONS = DESTINATIONS_FALLBACK;
     console.warn('Firebase gagal (' + e.message + '), pakai fallback');
@@ -2342,7 +2327,7 @@ function buildPrintPage(it) {
   window.addEventListener('load', () => {
     setTimeout(() => window.print(), 800);
   });
-</script>
+<\/script>
 </body>
 </html>`;
 }
