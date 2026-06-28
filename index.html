@@ -12,48 +12,53 @@
   <style>
     /* ── TOKENS ────────────────────────────────────────────────────────────── */
     :root {
-      /* Brand — Navy premium travel */
-      --brand:    #0F3460;
-      --brand-2:  #16527a;
-      --brand-lt: #e8f0fa;
+      /* Brand — Warm terracotta (Deepseek) */
+      --primary:      #c0392b;
+      --primary-dark: #a93226;
+      --primary-light:#e74c3c;
+      --surface:      #ffffff;
+      --bg:           #f4f2ee;
+      --text:         #2d2d2d;
+      --text-muted:   #7f8c8d;
+      --border:       #e0dbd4;
+      --shadow:       0 2px 8px rgba(0,0,0,.06);
+      --shadow-lg:    0 8px 24px rgba(0,0,0,.08);
+      --radius:       12px;
 
-      /* Accent — Coral CTA */
-      --accent:   #E94560;
-      --accent-lt:#fdedf0;
+      /* Navy accent for result cards & activity colors */
+      --navy:     #0F3460;
+      --navy-2:   #16527a;
+      --navy-lt:  #e8f0fa;
 
-      /* Neutrals */
-      --ink:      #1a1f36;
-      --ink-2:    #3d4461;
-      --ink-3:    #8892b0;
-      --ink-4:    #c5cbe3;
-      --paper:    #f5f7fa;
-      --paper-2:  #edf0f7;
-      --surface:  #ffffff;
-      --line:     #e4e8f0;
+      /* Compat aliases (for JS inline styles that still ref old tokens) */
+      --brand:    #c0392b;
+      --brand-2:  #a93226;
+      --brand-lt: rgba(192,57,43,.06);
+      --accent:   #c0392b;
+      --accent-lt:rgba(192,57,43,.06);
+      --ink:      #2d2d2d;
+      --ink-2:    #4a4a4a;
+      --ink-3:    #7f8c8d;
+      --ink-4:    #bdc3c7;
+      --paper:    #f4f2ee;
+      --paper-2:  #ede9e2;
+      --line:     #e0dbd4;
       --white:    #ffffff;
-
-      /* Shadows */
-      --sh-sm: 0 2px 8px rgba(15,52,96,.07);
-      --sh-md: 0 4px 20px rgba(15,52,96,.10);
-      --sh-lg: 0 8px 32px rgba(15,52,96,.13);
-
-      /* Radius */
-      --r-sm: 8px;
-      --r-md: 12px;
-      --r-lg: 16px;
-      --r-xl: 24px;
-
-      /* compat aliases */
-      --red:    var(--accent);
-      --red-lt: var(--accent-lt);
+      --sh-sm:    0 2px 8px rgba(0,0,0,.06);
+      --sh-md:    0 4px 20px rgba(0,0,0,.08);
+      --sh-lg:    0 8px 32px rgba(0,0,0,.10);
+      --r-sm:     8px;
+      --r-md:     12px;
+      --r-lg:     16px;
+      --r-xl:     24px;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { font-size: 16px; }
 
     body {
-      background: var(--paper);
-      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      font-family: 'Inter', system-ui, sans-serif;
       color: var(--ink);
       -webkit-font-smoothing: antialiased;
       min-height: 100vh;
@@ -67,134 +72,171 @@
     #header {
       padding: 14px 20px;
       display: flex; align-items: center; gap: 10px;
-      border-bottom: 1px solid var(--line);
+      border-bottom: 1px solid var(--border);
       position: sticky; top: 0; z-index: 50;
-      background: var(--white);
-      box-shadow: var(--sh-sm);
+      background: var(--surface);
+      box-shadow: var(--shadow);
     }
     .logo-icon {
-      width: 34px; height: 34px;
-      background: linear-gradient(135deg, var(--brand), var(--brand-2));
-      border-radius: var(--r-sm);
+      width: 36px; height: 36px;
+      background: var(--primary);
+      border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 16px; flex-shrink: 0;
-      box-shadow: 0 2px 6px rgba(15,52,96,.25);
+      font-size: 18px; flex-shrink: 0; color: #fff;
+      box-shadow: 0 2px 6px rgba(192,57,43,.25);
     }
     .logo-text {
-      font-family: 'Noto Serif', Georgia, serif;
-      font-size: 20px; font-weight: 700; font-style: italic;
-      color: var(--brand); letter-spacing: -0.02em;
+      font-family: 'Inter', sans-serif;
+      font-size: 20px; font-weight: 700;
+      color: var(--text); letter-spacing: -0.02em;
     }
     .logo-badge {
-      font-size: 10px; color: var(--white);
+      font-size: 9px; color: #fff;
       letter-spacing: 0.10em; text-transform: uppercase;
-      font-weight: 600; background: var(--accent);
-      padding: 2px 8px; border-radius: 20px;
-      margin-left: 2px;
+      font-weight: 600; background: var(--primary);
+      padding: 3px 10px; border-radius: 20px;
+      margin-left: 4px;
     }
     .logo-divider {
-      width: 1px; height: 18px;
-      background: var(--line);
+      width: 1px; height: 20px;
+      background: var(--border);
       margin: 0 4px;
     }
 
-    /* ── PROGRESS ──────────────────────────────────────────────────────────── */
+    /* ── PROGRESS (Folder Tabs — Deepseek style) ───────────────────────────── */
     #progress-area { padding: 0 20px; margin: 16px 0 0; }
     .step-labels {
-      display: flex; gap: 4px; margin-bottom: 0;
-      background: var(--white);
-      border: 1px solid var(--line);
-      border-radius: var(--r-xl);
-      padding: 4px;
-      box-shadow: var(--sh-sm);
+      display: flex;
+      gap: 4px;
+      background: var(--bg);
+      padding: 0;
     }
     .step-label {
-      font-size: 10px; font-weight: 500; color: var(--ink-3);
-      letter-spacing: 0.06em; text-transform: uppercase;
-      flex: 1; text-align: center;
-      padding: 7px 4px;
-      border-radius: 20px;
+      flex: 1;
+      text-align: center;
+      padding: 10px 6px 12px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: #e8e4de;
+      border-radius: var(--radius) var(--radius) 0 0;
+      cursor: pointer;
       transition: all .25s cubic-bezier(.4,0,.2,1);
+      border: 1px solid var(--border);
       border-bottom: none;
+      position: relative;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
     .step-label.active {
-      color: var(--white); font-weight: 700;
-      background: linear-gradient(135deg, var(--brand), var(--brand-2));
-      box-shadow: 0 2px 8px rgba(15,52,96,.3);
+      background: var(--surface);
+      color: var(--primary);
+      border-color: var(--border);
+      border-bottom: 2px solid var(--surface);
+      transform: translateY(-2px);
+      box-shadow: 0 -4px 8px rgba(0,0,0,.04);
+      font-weight: 700;
+    }
+    .step-label.active::after {
+      content: "";
+      position: absolute;
+      bottom: -2px; left: 20%; right: 20%;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 4px;
     }
     .step-label.done {
-      color: var(--accent);
-      background: var(--accent-lt);
+      color: var(--primary);
+      background: #ede9e2;
       border-bottom: none;
+    }
+    .step-label:hover:not(.active) {
+      background: #dcd8d0;
+      color: var(--text);
     }
     .progress-bar { display: none; }
 
-    /* ── CONTENT AREA ──────────────────────────────────────────────────────── */
-    #content-wrap { padding: 0 20px; flex: 1; margin-top: 20px; }
+    /* ── CONTENT AREA (Deepseek: floating card below folder tabs) ─────────── */
+    #content-wrap {
+      padding: 0 20px 16px;
+      flex: 1;
+      background: var(--surface);
+      margin: 0 20px;
+      border-radius: 0 0 var(--radius) var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      border-top: none;
+    }
 
     /* ── NAV ───────────────────────────────────────────────────────────────── */
     #nav {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 12px 20px 28px;
-      border-top: 1px solid var(--line);
+      padding: 10px 20px 24px;
+      border-top: 1px solid var(--border);
       margin-top: 8px;
-      background: var(--white);
+      background: var(--surface);
+      box-shadow: 0 -2px 8px rgba(0,0,0,.04);
     }
     .dest-count {
-      font-size: 11px; color: var(--ink-3);
+      font-size: 11px; color: var(--text-muted);
       letter-spacing: 0.04em; font-weight: 500;
     }
 
-    /* ── BUTTONS ───────────────────────────────────────────────────────────── */
+    /* ── BUTTONS (Deepseek rounded + Inter) ────────────────────────────────── */
     .btn-pri {
-      background: linear-gradient(135deg, var(--accent), #d63250);
-      color: var(--white);
+      background: var(--primary);
+      color: #fff;
       border: none; padding: 12px 24px;
-      border-radius: var(--r-xl);
-      font-family: 'DM Sans', sans-serif;
+      border-radius: 40px;
+      font-family: 'Inter', sans-serif;
       font-size: 13px; font-weight: 600;
       cursor: pointer; transition: all .2s;
       display: inline-flex; align-items: center; gap: 8px;
       white-space: nowrap; letter-spacing: 0.02em;
-      box-shadow: 0 4px 12px rgba(233,69,96,.30);
+      box-shadow: 0 4px 12px rgba(192,57,43,.25);
     }
     .btn-pri:hover:not(:disabled) {
       transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(233,69,96,.40);
+      box-shadow: 0 6px 20px rgba(192,57,43,.35);
     }
     .btn-pri:active { transform: translateY(0); }
     .btn-pri:disabled {
-      background: var(--ink-4); cursor: not-allowed;
+      background: var(--border); cursor: not-allowed;
       box-shadow: none; transform: none;
+      color: var(--text-muted);
     }
     .btn-ghost {
-      background: transparent; color: var(--ink-2);
-      border: 1.5px solid var(--line); padding: 11px 20px;
-      border-radius: var(--r-xl);
-      font-family: 'DM Sans', sans-serif;
+      background: transparent; color: var(--text-muted);
+      border: 1.5px solid var(--border); padding: 11px 20px;
+      border-radius: 40px;
+      font-family: 'Inter', sans-serif;
       font-size: 13px; font-weight: 500;
       cursor: pointer; transition: all .2s;
       display: inline-flex; align-items: center; gap: 8px;
       letter-spacing: 0.02em;
     }
-    .btn-ghost:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-lt); }
+    .btn-ghost:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: rgba(192,57,43,.04);
+    }
     .btn-ghost.hidden { visibility: hidden; }
 
     /* ── STEP TYPOGRAPHY ───────────────────────────────────────────────────── */
     .step-title {
-      font-family: 'Noto Serif', Georgia, serif;
-      font-size: 28px; font-weight: 700; font-style: italic;
-      margin-bottom: 6px; line-height: 1.2;
-      color: var(--brand); letter-spacing: -0.02em;
+      font-family: 'Inter', sans-serif;
+      font-size: 26px; font-weight: 700;
+      margin-bottom: 4px; line-height: 1.2;
+      color: var(--text); letter-spacing: -0.02em;
     }
-    .step-title span { color: var(--accent); }
+    .step-title span { color: var(--primary); }
     .step-sub {
-      color: var(--ink-3); font-size: 13px;
+      color: var(--text-muted); font-size: 13px;
       margin-bottom: 20px; line-height: 1.6; font-weight: 400;
     }
     .field-label {
       display: block; font-size: 10px; font-weight: 600;
-      color: var(--ink-3); margin-bottom: 6px;
+      color: var(--text-muted); margin-bottom: 6px;
       text-transform: uppercase; letter-spacing: 0.14em;
     }
     .field-wrap { margin-bottom: 20px; }
@@ -219,40 +261,40 @@
       flex-wrap: wrap;
     }
     .cat-btn {
-      background: var(--white); color: var(--ink-3);
-      border: 1.5px solid var(--line);
-      border-bottom: 1.5px solid var(--line);
+      background: var(--surface); color: var(--text-muted);
+      border: 1.5px solid var(--border);
+      border-bottom: 1.5px solid var(--border);
       padding: 6px 14px; margin-bottom: 0;
       font-size: 11px; font-weight: 500; cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
       letter-spacing: 0.04em; text-transform: uppercase;
       transition: all .18s;
-      border-radius: 20px;
+      border-radius: 30px;
     }
-    .cat-btn:hover { border-color: var(--brand); color: var(--brand); }
+    .cat-btn:hover { border-color: var(--primary); color: var(--primary); }
     .cat-btn.active {
-      color: var(--white); border-color: var(--brand);
-      background: var(--brand); font-weight: 700;
-      box-shadow: 0 2px 8px rgba(15,52,96,.2);
+      color: #fff; border-color: var(--primary);
+      background: var(--primary); font-weight: 600;
+      box-shadow: 0 2px 8px rgba(192,57,43,.2);
     }
 
     /* ── DESTINATION CARDS ─────────────────────────────────────────────────── */
     .dest-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: transparent; border: none; }
     .dest-chip {
       padding: 14px 12px;
-      background: var(--white);
+      background: var(--surface);
       cursor: pointer;
-      transition: all .18s cubic-bezier(.4,0,.2,1);
+      transition: all .18s ease;
       user-select: none;
-      border-radius: var(--r-md);
-      border: 1.5px solid var(--line);
-      box-shadow: var(--sh-sm);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      box-shadow: var(--shadow);
     }
-    .dest-chip:hover { box-shadow: var(--sh-md); transform: translateY(-2px); border-color: var(--brand-lt); }
+    .dest-chip:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); border-color: var(--primary-light); }
     .dest-chip.selected {
-      background: linear-gradient(135deg, var(--brand), var(--brand-2));
-      border-color: var(--brand);
-      box-shadow: 0 4px 16px rgba(15,52,96,.25);
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 4px 16px rgba(192,57,43,.25);
       transform: translateY(-1px);
     }
     .dest-chip-top { display: flex; justify-content: space-between; align-items: flex-start; }
@@ -266,11 +308,11 @@
       opacity: 0; transition: opacity .15s;
       background: var(--white);
     }
-    .dest-chip.selected .dest-check { opacity: 1; background: var(--accent); border-color: var(--accent); color: var(--white); }
-    .dest-name { font-size: 12px; font-weight: 700; color: var(--ink); line-height: 1.3; margin-top: 8px; font-family: 'Noto Serif', serif; }
-    .dest-chip.selected .dest-name { color: var(--white); }
+    .dest-chip.selected .dest-check { opacity: 1; background: #fff; border-color: #fff; color: var(--primary); }
+    .dest-name { font-size: 12px; font-weight: 700; color: var(--ink); line-height: 1.3; margin-top: 8px; font-family: 'Inter', sans-serif; }
+    .dest-chip.selected .dest-name { color: #fff; }
     .dest-desc { font-size: 10px; color: var(--ink-3); margin-top: 2px; line-height: 1.4; }
-    .dest-chip.selected .dest-desc { color: rgba(255,255,255,.6); }
+    .dest-chip.selected .dest-desc { color: rgba(255,255,255,.7); }
     .dest-meta { margin-top: 6px; display: flex; align-items: center; gap: 5px; }
     .cat-tag { font-size: 9px; padding: 2px 7px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border-radius: 20px; }
     .cat-tag.alam   { background: #e6f7ee; color: #1a7a45; }
@@ -293,26 +335,25 @@
     /* ── INPUTS ────────────────────────────────────────────────────────────── */
     select, input[type="text"], input[type="time"],
     input[type="email"], input[type="password"], textarea {
-      background: var(--white);
-      border: 1.5px solid var(--line);
-      border-radius: var(--r-sm);
-      color: var(--ink); padding: 11px 14px;
-      font-family: 'DM Sans', sans-serif; font-size: 14px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text); padding: 11px 14px;
+      font-family: 'Inter', sans-serif; font-size: 14px;
       outline: none; transition: border-color .2s, box-shadow .2s;
       width: 100%; appearance: none; -webkit-appearance: none;
       direction: ltr !important; text-align: left !important;
-      unicode-bidi: isolate !important;
     }
     select:focus, input:focus {
-      border-color: var(--brand);
-      box-shadow: 0 0 0 3px rgba(15,52,96,.10);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(192,57,43,.10);
     }
-    select option { background: var(--white); color: var(--ink); }
+    select option { background: var(--surface); color: var(--text); }
     .select-wrap { position: relative; }
     .select-wrap select { padding-right: 36px; }
     .select-arrow {
       position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-      pointer-events: none; color: var(--ink-3); font-size: 11px;
+      pointer-events: none; color: var(--text-muted); font-size: 11px;
     }
 
     /* ── AUTOCOMPLETE ──────────────────────────────────────────────────────── */
@@ -333,37 +374,37 @@
     }
     .autocomplete-item:last-child { border-bottom: none; border-radius: 0 0 var(--r-md) var(--r-md); }
     .autocomplete-item:first-child { border-radius: var(--r-md) var(--r-md) 0 0; }
-    .autocomplete-item:hover, .autocomplete-item.active { background: var(--brand-lt); }
+    .autocomplete-item:hover, .autocomplete-item.active { background: rgba(192,57,43,.05); }
     .autocomplete-item-name { font-size: 13px; font-weight: 600; color: var(--ink); }
     .autocomplete-item-sub  { font-size: 11px; color: var(--ink-3); margin-top: 1px; }
-    .autocomplete-empty { padding: 14px; text-align: center; font-size: 12px; color: var(--ink-3); font-style: italic; }
+    .autocomplete-empty { padding: 14px; text-align: center; font-size: 12px; color: var(--ink-3);  }
 
     /* ── CARD OPTIONS ──────────────────────────────────────────────────────── */
     .card-list { display: flex; flex-direction: column; gap: 8px; border: none; }
     .card-opt {
       padding: 14px 16px;
-      background: var(--white);
-      border: 1.5px solid var(--line);
-      border-radius: var(--r-md);
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
       cursor: pointer; transition: all .18s;
       display: flex; align-items: center; gap: 14px;
-      box-shadow: var(--sh-sm);
+      box-shadow: var(--shadow);
     }
-    .card-opt:last-child { border-bottom: 1.5px solid var(--line); }
-    .card-opt:hover { border-color: var(--brand); background: var(--brand-lt); transform: translateY(-1px); box-shadow: var(--sh-md); }
+    .card-opt:last-child { border-bottom: 1.5px solid var(--border); }
+    .card-opt:hover { border-color: var(--primary-light); background: rgba(192,57,43,.02); transform: translateY(-1px); box-shadow: var(--shadow-lg); }
     .card-opt.selected {
-      background: linear-gradient(135deg, var(--brand), var(--brand-2));
-      border-color: var(--brand);
-      box-shadow: 0 4px 14px rgba(15,52,96,.22);
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 4px 14px rgba(192,57,43,.2);
     }
     .card-opt.sm { padding: 11px 14px; }
     .card-opt-icon { font-size: 22px; flex-shrink: 0; }
-    .card-opt-title { font-size: 14px; font-weight: 600; color: var(--ink); font-family: 'Noto Serif', serif; }
-    .card-opt.selected .card-opt-title { color: var(--white); }
+    .card-opt-title { font-size: 14px; font-weight: 600; color: var(--ink); font-family: 'Inter', sans-serif; }
+    .card-opt.selected .card-opt-title { color: #fff; }
     .card-opt-sub { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
-    .card-opt.selected .card-opt-sub { color: rgba(255,255,255,.6); }
+    .card-opt.selected .card-opt-sub { color: rgba(255,255,255,.7); }
     .card-opt-check { color: var(--accent); font-size: 16px; flex-shrink: 0; margin-left: auto; opacity: 0; transition: opacity .15s; }
-    .card-opt.selected .card-opt-check { opacity: 1; color: var(--white); }
+    .card-opt.selected .card-opt-check { opacity: 1; color: #fff; }
 
     /* ── SEWA LOKAL ────────────────────────────────────────────────────────── */
     .sewa-wrap { overflow: hidden; max-height: 0; opacity: 0; transition: max-height .35s ease, opacity .35s ease; }
@@ -374,7 +415,7 @@
       border-radius: 0 var(--r-sm) var(--r-sm) 0;
       margin-bottom: 4px;
     }
-    .sewa-title { font-size: 12px; font-weight: 700; color: var(--brand); margin-bottom: 3px; font-family: 'Noto Serif', serif; }
+    .sewa-title { font-size: 12px; font-weight: 700; color: var(--brand); margin-bottom: 3px; font-family: 'Inter', sans-serif; }
     .sewa-sub   { font-size: 11px; color: var(--ink-2); margin-bottom: 10px; line-height: 1.5; }
     .card-opt.sewa-sel { background: var(--brand-lt) !important; border-color: var(--brand) !important; }
     .card-opt.sewa-sel .card-opt-title { color: var(--brand) !important; }
@@ -383,66 +424,66 @@
     .pill-row { display: flex; gap: 8px; flex-wrap: wrap; border: none; }
     .pill-opt {
       padding: 11px 16px;
-      background: var(--white);
-      border: 1.5px solid var(--line);
-      border-radius: var(--r-md);
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
       cursor: pointer; transition: all .18s; text-align: center;
-      box-shadow: var(--sh-sm);
+      box-shadow: var(--shadow);
     }
-    .pill-opt:hover { border-color: var(--brand); background: var(--brand-lt); transform: translateY(-1px); }
+    .pill-opt:hover { border-color: var(--primary-light); background: rgba(192,57,43,.02); transform: translateY(-1px); }
     .pill-opt.selected {
-      background: linear-gradient(135deg, var(--brand), var(--brand-2));
-      border-color: var(--brand);
-      box-shadow: 0 3px 10px rgba(15,52,96,.2);
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 3px 10px rgba(192,57,43,.2);
     }
-    .pill-label { font-size: 13px; font-weight: 700; color: var(--ink); font-family: 'Noto Serif', serif; }
-    .pill-opt.selected .pill-label { color: var(--white); }
+    .pill-label { font-size: 13px; font-weight: 700; color: var(--ink); font-family: 'Inter', sans-serif; }
+    .pill-opt.selected .pill-label { color: #fff; }
     .pill-sub { font-size: 10px; color: var(--ink-3); margin-top: 2px; }
-    .pill-opt.selected .pill-sub { color: rgba(255,255,255,.6); }
+    .pill-opt.selected .pill-sub { color: rgba(255,255,255,.7); }
 
     /* ── GAYA CARDS ────────────────────────────────────────────────────────── */
     .gaya-row { display: flex; gap: 10px; background: transparent; border: none; }
     .gaya-card {
       flex: 1; padding: 18px 12px;
-      background: var(--white);
+      background: var(--surface);
       cursor: pointer; transition: all .18s; text-align: center;
-      border-radius: var(--r-md);
-      border: 1.5px solid var(--line);
-      box-shadow: var(--sh-sm);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      box-shadow: var(--shadow);
     }
-    .gaya-card:hover { border-color: var(--brand); background: var(--brand-lt); transform: translateY(-2px); box-shadow: var(--sh-md); }
+    .gaya-card:hover { border-color: var(--primary-light); background: rgba(192,57,43,.02); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
     .gaya-card.selected {
-      background: linear-gradient(135deg, var(--brand), var(--brand-2));
-      border-color: var(--brand);
-      box-shadow: 0 4px 16px rgba(15,52,96,.25);
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 4px 16px rgba(192,57,43,.25);
       transform: translateY(-2px);
     }
     .gaya-emoji { font-size: 26px; margin-bottom: 8px; }
-    .gaya-label { font-size: 13px; font-weight: 700; color: var(--ink); font-family: 'Noto Serif', serif; }
-    .gaya-card.selected .gaya-label { color: var(--white); }
+    .gaya-label { font-size: 13px; font-weight: 700; color: var(--ink); font-family: 'Inter', sans-serif; }
+    .gaya-card.selected .gaya-label { color: #fff; }
     .gaya-desc  { font-size: 10px; color: var(--ink-3); margin-top: 6px; line-height: 1.6; white-space: pre-line; }
-    .gaya-card.selected .gaya-desc { color: rgba(255,255,255,.6); }
+    .gaya-card.selected .gaya-desc { color: rgba(255,255,255,.7); }
 
     /* ── COUNTER ───────────────────────────────────────────────────────────── */
     .counter-row { display: flex; align-items: center; gap: 16px; }
     .cnt-btn {
       background: var(--white); color: var(--brand);
-      border: 1.5px solid var(--line);
+      border: 1.5px solid var(--border);
       border-radius: 50%;
       width: 38px; height: 38px; font-size: 18px;
       cursor: pointer; transition: all .2s;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: var(--sh-sm);
+      box-shadow: var(--shadow);
     }
-    .cnt-btn:hover { border-color: var(--brand); background: var(--brand); color: var(--white); box-shadow: var(--sh-md); }
-    .cnt-val   { font-size: 26px; font-weight: 700; min-width: 32px; text-align: center; font-family: 'Noto Serif', serif; color: var(--brand); }
+    .cnt-btn:hover { border-color: var(--primary); background: var(--primary); color: #fff; box-shadow: var(--shadow-lg); }
+    .cnt-val   { font-size: 26px; font-weight: 700; min-width: 32px; text-align: center; font-family: 'Inter', sans-serif; color: var(--primary); }
     .cnt-label { font-size: 12px; color: var(--ink-3); }
 
     /* ── LOADING ───────────────────────────────────────────────────────────── */
     .loading-screen { text-align: center; padding: 60px 0; }
     .loading-icon { font-size: 48px; margin-bottom: 20px; animation: float 3s ease-in-out infinite; }
     @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-    .loading-title { font-family: 'Noto Serif', serif; font-size: 22px; font-weight: 700; font-style: italic; margin-bottom: 10px; color: var(--brand); }
+    .loading-title { font-family: 'Inter', sans-serif; font-size: 22px; font-weight: 700;  margin-bottom: 10px; color: var(--brand); }
     .loading-sub  { color: var(--ink-3); font-size: 13px; line-height: 1.6; }
     .loading-tags { display: flex; gap: 6px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
     .loading-tag  { font-size: 10px; color: var(--ink-3); background: var(--white); padding: 4px 12px; border: 1.5px solid var(--line); border-radius: 20px; letter-spacing: 0.06em; text-transform: uppercase; box-shadow: var(--sh-sm); }
@@ -456,15 +497,15 @@
     /* ── RESULT ────────────────────────────────────────────────────────────── */
     .result-summary {
       padding: 20px;
-      background: linear-gradient(135deg, var(--brand), var(--brand-2));
-      border-radius: var(--r-lg);
+      background: var(--primary);
+      border-radius: var(--radius);
       margin-bottom: 24px;
-      box-shadow: 0 6px 24px rgba(15,52,96,.2);
+      box-shadow: 0 6px 24px rgba(192,57,43,.2);
     }
     .result-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
-    .result-title { font-family: 'Noto Serif', serif; font-size: 20px; font-weight: 700; font-style: italic; flex: 1; line-height: 1.25; color: var(--white); }
+    .result-title { font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 700;  flex: 1; line-height: 1.25; color: var(--white); }
     .result-budget-label { font-size: 9px; color: rgba(255,255,255,.6); text-align: right; letter-spacing: 0.12em; text-transform: uppercase; }
-    .result-budget-val   { font-size: 18px; font-weight: 700; color: var(--white); font-family: 'Noto Serif', serif; }
+    .result-budget-val   { font-size: 18px; font-weight: 700; color: var(--white); font-family: 'Inter', sans-serif; }
     .result-desc  { font-size: 13px; color: rgba(255,255,255,.8); line-height: 1.65; margin-bottom: 12px; }
     .highlight-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
     .highlight-tag  { font-size: 10px; padding: 3px 10px; border: 1px solid rgba(255,255,255,.3); color: rgba(255,255,255,.9); border-radius: 20px; letter-spacing: 0.04em; text-transform: uppercase; background: rgba(255,255,255,.12); }
@@ -474,23 +515,23 @@
     .day-section {
       margin-bottom: 16px; animation: fdi .5s ease both;
       background: var(--white); border-radius: var(--r-lg);
-      border: 1px solid var(--line);
-      overflow: hidden; box-shadow: var(--sh-sm);
+      border: 1px solid var(--border);
+      overflow: hidden; box-shadow: var(--shadow);
     }
     @keyframes fdi { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     .day-header {
       display: flex; align-items: center; gap: 12px;
       margin-bottom: 0; padding: 12px 16px;
-      background: var(--paper); border-bottom: 1px solid var(--line);
+      background: var(--bg); border-bottom: 1px solid var(--border);
     }
     .day-num {
-      font-family: 'Noto Serif', serif;
-      font-size: 26px; font-weight: 700; font-style: italic;
-      color: var(--brand); line-height: 1; flex-shrink: 0;
+      font-family: 'Inter', sans-serif;
+      font-size: 26px; font-weight: 700; 
+      color: var(--primary); line-height: 1; flex-shrink: 0;
       min-width: 22px;
     }
     .day-label    { font-size: 9px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.12em; }
-    .day-title-txt { font-family: 'Noto Serif', serif; font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .day-title-txt { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.3; }
 
     /* ── ACTIVITY ──────────────────────────────────────────────────────────── */
     .act-list { padding: 12px 16px 4px; }
@@ -504,7 +545,7 @@
     .act-time     { font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: 0.04em; }
     .act-duration { font-size: 10px; color: var(--ink-3); margin-left: 6px; }
     .act-cost     { font-size: 10px; color: var(--ink-2); background: var(--paper); padding: 2px 8px; flex-shrink: 0; border: 1px solid var(--line); border-radius: 20px; }
-    .act-name     { font-size: 14px; font-weight: 700; color: var(--ink); font-family: 'Noto Serif', serif; line-height: 1.3; }
+    .act-name     { font-size: 14px; font-weight: 700; color: var(--ink); font-family: 'Inter', sans-serif; line-height: 1.3; }
     .act-location { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
     .act-desc     { font-size: 12px; color: var(--ink-2); line-height: 1.6; margin-top: 4px; }
     .act-tip      { margin-top: 7px; padding: 8px 12px; font-size: 11px; line-height: 1.5; border-left: 2px solid; background: var(--paper); border-radius: 0 var(--r-sm) var(--r-sm) 0; }
@@ -514,7 +555,7 @@
     .packing-title { font-size: 11px; font-weight: 700; margin-bottom: 10px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--brand); }
     .packing-tags  { display: flex; gap: 6px; flex-wrap: wrap; }
     .packing-tag   { font-size: 11px; padding: 4px 10px; background: var(--white); border: 1.5px solid var(--line); color: var(--ink-2); border-radius: 20px; }
-    .notes-box { padding: 14px 16px; background: var(--accent-lt); border-left: 3px solid var(--accent); border-radius: 0 var(--r-sm) var(--r-sm) 0; margin-bottom: 24px; font-size: 12px; color: var(--ink-2); line-height: 1.6; }
+    .notes-box { padding: 14px 16px; background: rgba(192,57,43,.04); border-left: 3px solid var(--primary); border-radius: 0 var(--radius) var(--radius) 0; margin-bottom: 24px; font-size: 12px; color: var(--text); line-height: 1.6; }
 
     /* ── SCROLLBAR ─────────────────────────────────────────────────────────── */
     ::-webkit-scrollbar { width: 4px; }
@@ -534,7 +575,7 @@
       display: flex; align-items: center; gap: 8px;
       padding: 10px 14px; font-size: 12px; font-weight: 700;
       color: var(--white); background: linear-gradient(135deg, var(--brand), var(--brand-2));
-      font-family: 'Noto Serif', serif; letter-spacing: 0.02em;
+      font-family: 'Inter', sans-serif; letter-spacing: 0.02em;
     }
     .plan-col-body { padding: 8px; display: flex; flex-direction: column; gap: 6px; min-height: 44px; }
     .plan-day-badge {
@@ -542,10 +583,10 @@
       background: var(--accent); color: var(--white);
       font-size: 10px; font-weight: 700;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      font-family: 'Noto Serif', serif; border-radius: 50%;
+      font-family: 'Inter', sans-serif; border-radius: 50%;
     }
     .plan-warn { font-size: 11px; color: #8a4a0a; background: #fdf0e0; padding: 5px 10px; border-left: 2px solid #c8760a; border-radius: 0 6px 6px 0; }
-    .plan-empty { font-size: 12px; color: var(--ink-4); text-align: center; padding: 12px; font-style: italic; }
+    .plan-empty { font-size: 12px; color: var(--ink-4); text-align: center; padding: 12px;  }
 
     /* ── DRAG CARD ─────────────────────────────────────────────────────────── */
     .drag-item {
@@ -556,7 +597,7 @@
     .drag-handle { font-size: 14px; color: var(--ink-4); flex-shrink: 0; }
     .drag-emoji  { font-size: 20px; flex-shrink: 0; }
     .drag-info   { flex: 1; min-width: 0; }
-    .drag-title  { font-size: 13px; font-weight: 700; color: var(--ink); font-family: 'Noto Serif', serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .drag-title  { font-size: 13px; font-weight: 700; color: var(--ink); font-family: 'Inter', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .drag-zone   { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
 
     /* ── USER MENU ───────────────────────────────────────────────────────────── */
@@ -606,7 +647,7 @@
       box-shadow:0 20px 60px rgba(15,52,96,.25);
     }
     #export-panel-title {
-      background:linear-gradient(135deg,#0F3460,#16527a); color:#fff; padding:14px 18px;
+      background:#c0392b; color:#fff; padding:14px 18px;
       display:flex; align-items:center; justify-content:space-between;
     }
 
@@ -614,7 +655,7 @@
     #itinerary-print {
       position:fixed; left:-9999px; top:0;
       width:794px;
-      background:#fff; font-family:'DM Sans',sans-serif;
+      background:#fff; font-family:'Inter',sans-serif;
       padding:0;
       color:#111;
     }
@@ -635,8 +676,8 @@
       text-transform:uppercase; margin-bottom:10px;
     }
     .print-cover-title {
-      font-family:'Noto Serif',Georgia,serif;
-      font-size:52px; font-weight:700; font-style:italic;
+      font-family:'Inter',sans-serif;
+      font-size:52px; font-weight:700; 
       color:#fff; line-height:1.05; margin-bottom:4px;
     }
     .print-cover-dest {
@@ -669,8 +710,8 @@
       margin-bottom:22px;
     }
     .print-day-num {
-      font-family:'Noto Serif',Georgia,serif;
-      font-size:56px; font-weight:700; font-style:italic;
+      font-family:'Inter',sans-serif;
+      font-size:56px; font-weight:700; 
       color:#0F3460; line-height:1; flex-shrink:0;
       min-width:52px;
     }
@@ -680,7 +721,7 @@
       font-size:9px; color:#888; text-transform:uppercase;
       letter-spacing:.14em; margin-bottom:3px;
     }
-    .print-day-ttl { font-family:'Noto Serif',serif; font-size:18px; font-weight:700; color:#111; }
+    .print-day-ttl { font-family:'Inter',sans-serif; font-size:18px; font-weight:700; color:#111; }
     /* Activity */
     .print-act { display:flex; gap:0; margin-bottom:0; }
     .print-act-line {
@@ -707,7 +748,7 @@
       display:inline-block;
       background:rgba(192,57,43,.08); padding:2px 8px;
     }
-    .print-act-name { font-family:'Noto Serif',serif; font-size:15px; font-weight:700; color:#111; margin-bottom:3px; line-height:1.3; }
+    .print-act-name { font-family:'Inter',sans-serif; font-size:15px; font-weight:700; color:#111; margin-bottom:3px; line-height:1.3; }
     .print-act-desc { font-size:11px; color:#555; line-height:1.6; }
     .print-act-cost {
       display:inline-block; font-size:10px; color:#888;
@@ -730,7 +771,7 @@
       font-size:10px; color:rgba(255,255,255,.6);
       text-transform:uppercase; letter-spacing:.12em; margin-bottom:4px;
     }
-    .print-budget-val { font-family:'Noto Serif',serif; font-size:24px; font-weight:700; color:#fff; }
+    .print-budget-val { font-family:'Inter',sans-serif; font-size:24px; font-weight:700; color:#fff; }
     .print-budget-note { font-size:11px; color:rgba(255,255,255,.5); text-align:right; }
     /* Packing */
     .print-packing { margin-top:28px; }
@@ -739,7 +780,7 @@
       margin-bottom:14px; padding-bottom:10px;
       border-bottom:1.5px solid #111;
     }
-    .print-packing-title { font-family:'Noto Serif',serif; font-size:15px; font-weight:700; }
+    .print-packing-title { font-family:'Inter',sans-serif; font-size:15px; font-weight:700; }
     .print-packing-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
     .print-packing-item {
       font-size:11px; color:#444; padding:7px 10px;
@@ -765,8 +806,8 @@
     }
     .print-footer-left { font-size:10px; color:#888; line-height:1.6; }
     .print-footer-brand {
-      font-family:'Noto Serif',serif;
-      font-size:16px; font-weight:700; font-style:italic; color:#111;
+      font-family:'Inter',sans-serif;
+      font-size:16px; font-weight:700;  color:#111;
     }
   </style>
   <!-- Export libraries -->
@@ -780,22 +821,22 @@
   z-index:9999;align-items:center;justify-content:center;padding:20px">
   <div style="background:#fff;width:100%;max-width:300px;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(15,52,96,.25)">
     <div style="background:linear-gradient(135deg,#0F3460,#16527a);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
-      <span style="font-family:'Noto Serif',serif;font-size:14px;font-weight:700;font-style:italic">Masuk Admin</span>
+      <span style="font-family:'Inter',sans-serif;font-size:14px;font-weight:700;font-style:italic">Masuk Admin</span>
       <button id="closeLogin" style="background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;width:22px;height:22px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
     </div>
     <div style="padding:20px">
       <div style="margin-bottom:16px">
         <label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:6px;letter-spacing:.14em;text-transform:uppercase">Email</label>
         <input type="email" id="loginEmail" placeholder="email@admin.com"
-          style="width:100%;padding:10px 12px;background:#f5f7fa;border:1.5px solid #e4e8f0;border-radius:8px;font-size:14px;outline:none;font-family:'DM Sans',sans-serif;color:#1a1f36;direction:ltr;text-align:left;transition:border-color .2s">
+          style="width:100%;padding:10px 12px;background:#f4f2ee;border:1.5px solid #e0dbd4;border-radius:8px;font-size:14px;outline:none;font-family:'Inter',sans-serif;color:#2d2d2d;direction:ltr;text-align:left;transition:border-color .2s">
       </div>
       <div style="margin-bottom:20px">
         <label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:6px;letter-spacing:.14em;text-transform:uppercase">Password</label>
         <input type="password" id="loginPass" placeholder="••••••••"
-          style="width:100%;padding:10px 12px;background:#f5f7fa;border:1.5px solid #e4e8f0;border-radius:8px;font-size:14px;outline:none;font-family:'DM Sans',sans-serif;color:#1a1f36;direction:ltr;text-align:left;transition:border-color .2s">
+          style="width:100%;padding:10px 12px;background:#f4f2ee;border:1.5px solid #e0dbd4;border-radius:8px;font-size:14px;outline:none;font-family:'Inter',sans-serif;color:#2d2d2d;direction:ltr;text-align:left;transition:border-color .2s">
       </div>
-      <button id="btnDoLogin" style="width:100%;padding:12px;background:linear-gradient(135deg,#E94560,#d63250);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.04em;border-radius:24px;box-shadow:0 4px 12px rgba(233,69,96,.3);transition:all .2s">Masuk</button>
-      <p id="loginErr" style="display:none;font-size:11px;color:#c0392b;margin-top:10px;text-align:center;line-height:1.5"></p>
+      <button id="btnDoLogin" style="width:100%;padding:12px;background:linear-gradient(135deg,#E94560,#d63250);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:0.04em;border-radius:24px;box-shadow:0 4px 12px rgba(233,69,96,.3);transition:all .2s">Masuk</button>
+      <p id="loginErr" style="display:none;font-size:11px;color:#E94560;margin-top:10px;text-align:center;line-height:1.5"></p>
     </div>
   </div>
 </div>
@@ -818,13 +859,13 @@
 <div id="export-modal">
   <div id="export-panel">
     <div id="export-panel-title">
-      <span style="font-family:'Noto Serif',serif;font-size:14px;font-weight:700;font-style:italic">Export Itinerary</span>
+      <span style="font-family:'Inter',sans-serif;font-size:14px;font-weight:700;font-style:italic">Export Itinerary</span>
       <button onclick="document.getElementById('export-modal').classList.remove('open')"
         style="background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;
         width:24px;height:24px;font-size:12px;cursor:pointer">✕</button>
     </div>
     <div style="padding:20px">
-      <p style="font-size:12px;color:#888;margin-bottom:16px;font-family:'DM Sans',sans-serif;line-height:1.6">
+      <p style="font-size:12px;color:#888;margin-bottom:16px;font-family:'Inter',sans-serif;line-height:1.6">
         Pilih format export. File akan otomatis terunduh.
       </p>
       <div style="display:flex;flex-direction:column;gap:8px">
@@ -836,7 +877,7 @@
         </button>
       </div>
       <div id="export-progress" style="display:none;margin-top:14px;text-align:center">
-        <div style="font-size:12px;color:#888;font-family:'DM Sans',sans-serif">
+        <div style="font-size:12px;color:#888;font-family:'Inter',sans-serif">
           <span id="export-progress-text">Menyiapkan...</span>
         </div>
         <div style="margin-top:8px;height:3px;background:#e0dbd4">
@@ -929,8 +970,8 @@ function setAdmin(val, email) {
   if (val) {
     btn.textContent = '🔓';
     btn.title = 'Keluar dari Admin';
-    btn.style.color = '#c0392b';
-    btn.style.borderColor = '#c0392b';
+    btn.style.color = '#E94560';
+    btn.style.borderColor = '#E94560';
     document.getElementById('menu-username').textContent = email || 'Admin';
   } else {
     btn.textContent = '🔐';
@@ -1145,11 +1186,11 @@ const PENGINAPAN = [
   { v:'none',     label:'Tanpa Penginapan',      range:'Day trip only',  emoji:'🚗' },
 ];
 const ACT_STYLE = {
-  aktivitas:  { color:'#c0392b', bg:'rgba(192,57,43,.1)',  icon:'🎯' },
-  makan:      { color:'#4ab06a', bg:'rgba(74,176,106,.1)',  icon:'🍽️' },
-  transport:  { color:'#6b9fd4', bg:'rgba(107,159,212,.1)', icon:'🚌' },
-  penginapan: { color:'#c47bd4', bg:'rgba(196,123,212,.1)', icon:'🏨' },
-  istirahat:  { color:'#888888', bg:'rgba(143,160,143,.1)', icon:'☕' },
+  aktivitas:  { color:'#1d4ed8', bg:'rgba(29,78,216,.08)',   icon:'🎯' },
+  makan:      { color:'#16a34a', bg:'rgba(22,163,74,.08)',   icon:'🍽️' },
+  transport:  { color:'#475569', bg:'rgba(71,85,105,.08)',   icon:'🚌' },
+  penginapan: { color:'#7c3aed', bg:'rgba(124,58,237,.08)',  icon:'🏨' },
+  istirahat:  { color:'#b45309', bg:'rgba(180,83,9,.08)',    icon:'☕' },
 };
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
@@ -1414,7 +1455,7 @@ function renderStep0() {
       padding:6px 13px;border-radius:0;font-size:12px;font-weight:600;flex-shrink:0;
       cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .18s;
       ${sel
-        ? 'background:#c0392b;color:#fff;border:1px solid transparent;'
+        ? 'background:#E94560;color:#fff;border:1px solid transparent;'
         : 'background:#f0ede8;color:#444444;border:1px solid #e0dbd4;'}">${catEmoji[ct]} ${ct.charAt(0).toUpperCase()+ct.slice(1)}</button>`;
   }).join('');
 
@@ -1423,7 +1464,7 @@ function renderStep0() {
       border-radius:18px;white-space:nowrap;flex-shrink:0;
       background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.3);">
       <span style="font-size:12px">${d.emoji}</span>
-      <span style="font-size:11px;font-weight:600;color:#c0392b">${esc(d.name)}</span>
+      <span style="font-size:11px;font-weight:600;color:#E94560">${esc(d.name)}</span>
       <span data-remove="${d.id}" style="font-size:13px;color:#a07050;cursor:pointer;padding:0 2px">✕</span>
     </div>`
   ).join('');
@@ -1443,7 +1484,7 @@ function renderStep0() {
       <div style="flex:1;min-width:0;">
         <div style="font-size:14px;font-weight:600;margin-bottom:3px;
           white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-          color:${sel?'#c0392b':'#888888'};">${esc(d.name)}</div>
+          color:${sel?'#E94560':'#888888'};">${esc(d.name)}</div>
         <div style="display:flex;align-items:center;gap:5px;">
           <span style="width:5px;height:5px;border-radius:0;background:${dot};flex-shrink:0;"></span>
           <span style="font-size:11px;color:#666666;">${DEST_CAT_LABEL[d.cat]||d.cat}</span>
@@ -1453,7 +1494,7 @@ function renderStep0() {
       </div>
       <div style="width:22px;height:22px;border-radius:0;flex-shrink:0;
         display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .15s;
-        ${sel?'background:#c0392b;color:#fff;border:none;':'background:transparent;border:1.5px solid rgba(0,0,0,0.12);color:transparent;'}">${sel?'✓':''}</div>
+        ${sel?'background:#E94560;color:#fff;border:none;':'background:transparent;border:1.5px solid rgba(0,0,0,0.12);color:transparent;'}">${sel?'✓':''}</div>
     </div>`;
   }).join('') : `<div style="text-align:center;padding:28px;color:#444444;font-size:13px;">Tidak ada destinasi</div>`;
 
@@ -1469,13 +1510,13 @@ function renderStep0() {
       border:1.5px solid ${sel?'rgba(192,57,43,.5)':'rgba(0,0,0,.2)'};
       box-shadow:${sel?'0 2px 8px rgba(192,57,43,.15)':'none'};">
       <span style="font-size:15px;line-height:1">${d.emoji}</span>
-      <span style="font-size:13px;font-weight:700;color:${sel?'#c0392b':'#111111'}">${esc(d.name)}</span>
-      ${sel?`<span style="font-size:11px;color:#c0392b;font-weight:700">✓</span>`:''}
+      <span style="font-size:13px;font-weight:700;color:${sel?'#E94560':'#111111'}">${esc(d.name)}</span>
+      ${sel?`<span style="font-size:11px;color:#E94560;font-weight:700">✓</span>`:''}
     </div>`;
   }).join('');
 
   return `
-    <h2 class="step-title" style="font-size:25px;margin-bottom:4px;">Ke Banyuwangi,<br><span style="color:#c0392b;">mau kemana aja?</span></h2>
+    <h2 class="step-title" style="font-size:25px;margin-bottom:4px;">Ke Banyuwangi,<br><span style="color:#E94560;">mau kemana aja?</span></h2>
     <p class="step-sub" style="margin-bottom:14px;">Pilih destinasi — bisa lebih dari satu.</p>
 
     ${matched.length>0?`<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;scrollbar-width:none;" id="dest-chips">${chips}</div>`:''}
@@ -1524,7 +1565,7 @@ function renderStep1() {
     return `<div data-transport="${v}" style="padding:16px;border-radius:0;cursor:pointer;
       transition:all .2s;margin-bottom:10px;
       background:${sel?'rgba(192,57,43,.08)':'#ffffff'};
-      border:${sel?'2px solid #c0392b':'1px solid #e0dbd4'}">
+      border:${sel?'2px solid #E94560':'1px solid #e4e8f0'}">
       <div style="display:flex;align-items:center;gap:14px">
         <div style="width:44px;height:44px;border-radius:0;flex-shrink:0;
           background:${sel?'rgba(192,57,43,.12)':'#f0ede8'};
@@ -1533,13 +1574,13 @@ function renderStep1() {
           ${icon}
         </div>
         <div style="flex:1">
-          <div style="font-size:15px;font-weight:700;color:${sel?'#c0392b':'#111111'};margin-bottom:2px">${label}</div>
+          <div style="font-size:15px;font-weight:700;color:${sel?'#E94560':'#111111'};margin-bottom:2px">${label}</div>
           <div style="font-size:12px;color:#666666">${sub}</div>
           ${tags.length?`<div style="display:flex;gap:5px;margin-top:7px">${tags.map(t=>`<span style="font-size:10px;padding:2px 8px;border-radius:0;background:#f0ede8;color:#666666;border:0.5px solid rgba(0,0,0,0.08)">${t}</span>`).join('')}</div>`:''}
         </div>
-        <div style="width:20px;height:20px;border-radius:0;border:2px solid ${sel?'#c0392b':'rgba(0,0,0,0.15)'};
+        <div style="width:20px;height:20px;border-radius:0;border:2px solid ${sel?'#E94560':'rgba(0,0,0,0.15)'};
           display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          ${sel?`<div style="width:10px;height:10px;border-radius:0;background:#c0392b"></div>`:''}
+          ${sel?`<div style="width:10px;height:10px;border-radius:0;background:#E94560"></div>`:''}
         </div>
       </div>
     </div>`;
@@ -1571,7 +1612,7 @@ function renderStep1() {
   }
 
   return `
-    <div style="font-size:11px;font-weight:700;color:#c0392b;letter-spacing:.1em;margin-bottom:6px">STEP 2 OF 4</div>
+    <div style="font-size:11px;font-weight:700;color:#E94560;letter-spacing:.1em;margin-bottom:6px">STEP 2 OF 4</div>
     <h2 class="step-title">Kota Asal</h2>
 
     <div style="margin-bottom:22px">
@@ -1595,16 +1636,16 @@ function renderStep1() {
 
     <div class="sewa-wrap${S.transport==='umum'?' open':''}" id="sub-trans-wrap" style="margin-bottom:16px">
       <div style="padding:14px;border-radius:0;background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.2)">
-        <div style="font-size:12px;font-weight:700;color:#c0392b;margin-bottom:12px">🎫 PILIH JALUR</div>
+        <div style="font-size:12px;font-weight:700;color:#E94560;margin-bottom:12px">🎫 PILIH JALUR</div>
         <div style="display:flex;gap:8px">
           ${[{v:'kereta',l:'Kereta Api',e:'🚂'},{v:'pesawat',l:'Pesawat',e:'✈️'},{v:'bus',l:'Bus',e:'🚌'}].map(t=>{
             const sel=S.subTransport===t.v;
             return `<div data-sub="${t.v}" style="flex:1;padding:12px 8px;text-align:center;border-radius:0;
               cursor:pointer;transition:all .2s;
               background:${sel?'rgba(192,57,43,.2)':'#f0ede8'};
-              border:1.5px solid ${sel?'#c0392b':'rgba(0,0,0,0.08)'}">
+              border:1.5px solid ${sel?'#E94560':'rgba(0,0,0,0.08)'}">
               <div style="font-size:22px;margin-bottom:5px">${t.e}</div>
-              <div style="font-size:11px;font-weight:600;color:${sel?'#c0392b':'#888888'}">${t.l}</div>
+              <div style="font-size:11px;font-weight:600;color:${sel?'#E94560':'#888888'}">${t.l}</div>
             </div>`;}).join('')}
         </div>
       </div>
@@ -1643,10 +1684,10 @@ function renderStep2() {
     const sel = S.durasi===d.v;
     return `<div data-durasi="${d.v}" style="padding:10px 16px;border-radius:22px;cursor:pointer;
       transition:all .2s;text-align:center;
-      background:${sel?'#c0392b':'rgba(255,255,255,.05)'};
-      border:1.5px solid ${sel?'#c0392b':'rgba(0,0,0,0.08)'};
+      background:${sel?'#E94560':'rgba(255,255,255,.05)'};
+      border:1.5px solid ${sel?'#E94560':'rgba(0,0,0,0.08)'};
       box-shadow:${sel?'0 4px 16px rgba(192,57,43,.35)':'none'}">
-      <div style="font-size:14px;font-weight:700;color:${sel?'#c0392b':'#111111'}">${d.label}</div>
+      <div style="font-size:14px;font-weight:700;color:${sel?'#E94560':'#111111'}">${d.label}</div>
       <div style="font-size:10px;color:${sel?'rgba(255,255,255,.7)':'#5a7a5a'};margin-top:2px">${d.sub}</div>
     </div>`;
   }).join('');
@@ -1659,9 +1700,9 @@ function renderStep2() {
     return `<div data-gaya="${g.v}" style="flex:1;padding:16px;border-radius:0;cursor:pointer;
       transition:all .25s;text-align:center;
       background:${sel?'rgba(192,57,43,.1)':'rgba(255,255,255,.03)'};
-      border:1.5px solid ${sel?'#c0392b':'rgba(0,0,0,0.08)'}">
+      border:1.5px solid ${sel?'#E94560':'rgba(0,0,0,0.08)'}">
       <div style="font-size:30px;margin-bottom:10px">${g.emoji}</div>
-      <div style="font-size:15px;font-weight:700;color:${sel?'#c0392b':'#111111'};margin-bottom:8px">${g.label}</div>
+      <div style="font-size:15px;font-weight:700;color:${sel?'#E94560':'#111111'};margin-bottom:8px">${g.label}</div>
       <div style="font-size:11px;color:#666666;line-height:1.6">${g.desc}</div>
     </div>`;
   }).join('');
@@ -1683,7 +1724,7 @@ function renderStep2() {
       <span class="card-opt-icon">🏨</span>
       <div style="flex:1;min-width:0">
         <div class="card-opt-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.nama)}</div>
-        <div class="card-opt-sub">${p.kawasan||''} ${distTxt?'· <span style="color:#c0392b">~'+distTxt+' dari destinasi</span>':''}${p.harga?' · Rp'+p.harga:''}</div>
+        <div class="card-opt-sub">${p.kawasan||''} ${distTxt?'· <span style="color:#E94560">~'+distTxt+' dari destinasi</span>':''}${p.harga?' · Rp'+p.harga:''}</div>
       </div>
       <span class="card-opt-check">✓</span>
     </div>`;
@@ -1791,11 +1832,11 @@ function renderStep2() {
 
 // ─── RENDER STEP 3 ───────────────────────────────────────────────────────────
 const ACT_ICON_CIRCLE = {
-  aktivitas:  { bg:'#c0392b', icon:'🎯' },
-  makan:      { bg:'#4ab06a', icon:'🍽️' },
-  transport:  { bg:'#6b9fd4', icon:'🚌' },
-  penginapan: { bg:'#c47bd4', icon:'🏨' },
-  istirahat:  { bg:'#888888', icon:'☕' },
+  aktivitas:  { bg:'#1d4ed8', icon:'🎯' },
+  makan:      { bg:'#16a34a', icon:'🍽️' },
+  transport:  { bg:'#475569', icon:'🚌' },
+  penginapan: { bg:'#7c3aed', icon:'🏨' },
+  istirahat:  { bg:'#b45309', icon:'☕' },
 };
 const ACT_TYPE_LABEL = { aktivitas:'Adventure', makan:'Kuliner', transport:'Transport', penginapan:'Menginap', istirahat:'Relax' };
 
@@ -1806,15 +1847,15 @@ function renderStep3() {
   if (S.loading) return `
     <div style="text-align:center;padding:72px 0">
       <div style="font-size:56px;margin-bottom:20px;animation:float 2.5s ease-in-out infinite">🗺️</div>
-      <h3 style="font-family:'Noto Serif',Georgia,serif;font-size:22px;margin-bottom:10px;line-height:1.3">
+      <h3 style="font-family:'Inter',sans-serif;font-size:22px;margin-bottom:10px;line-height:1.3">
         Merencanakan perjalananmu<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
       </h3>
       <p style="color:#888888;font-size:13px;line-height:1.6">Menyusun rute terbaik, estimasi waktu,<br>dan kalkulasi biaya untukmu</p>
       <div style="display:flex;gap:7px;justify-content:center;margin-top:22px;flex-wrap:wrap">
-        <span style="font-size:11px;color:#444;background:#f0ede8;padding:5px 12px;border:1px solid #e0dbd4">📍 Sorting rute</span>
-        <span style="font-size:11px;color:#444;background:#f0ede8;padding:5px 12px;border:1px solid #e0dbd4">🕐 Estimasi waktu</span>
-        <span style="font-size:11px;color:#444;background:#f0ede8;padding:5px 12px;border:1px solid #e0dbd4">💰 Kalkulasi biaya</span>
-        <span style="font-size:11px;color:#c0392b;background:rgba(192,57,43,.08);padding:5px 12px;border:1px solid rgba(192,57,43,.2)">✨ Finalisasi</span>
+        <span style="font-size:11px;color:#3d4461;background:#fff;padding:5px 14px;border:1.5px solid #e4e8f0;border-radius:20px;box-shadow:0 1px 4px rgba(15,52,96,.07)">📍 Sorting rute</span>
+        <span style="font-size:11px;color:#3d4461;background:#fff;padding:5px 14px;border:1.5px solid #e4e8f0;border-radius:20px;box-shadow:0 1px 4px rgba(15,52,96,.07)">🕐 Estimasi waktu</span>
+        <span style="font-size:11px;color:#3d4461;background:#fff;padding:5px 14px;border:1.5px solid #e4e8f0;border-radius:20px;box-shadow:0 1px 4px rgba(15,52,96,.07)">💰 Kalkulasi biaya</span>
+        <span style="font-size:11px;color:#E94560;background:rgba(233,69,96,.08);padding:5px 14px;border:1.5px solid rgba(233,69,96,.2);border-radius:20px">✨ Finalisasi</span>
       </div>
     </div>`;
 
@@ -1839,7 +1880,7 @@ function renderStep3() {
     alam:   { bg: '#d4edda', fg: '#1a4a2a', accent: '#2d8a4a', badge: '#2d8a4a' },
     pantai: { bg: '#fef9c3', fg: '#4a3a00', accent: '#c8980a', badge: '#b8880a' },
     diving: { bg: '#d0eaf8', fg: '#0a2a4a', accent: '#1a6a9a', badge: '#1a6a9a' },
-    budaya: { bg: '#fddccc', fg: '#4a1a0a', accent: '#c0392b', badge: '#c0392b' },
+    budaya: { bg: '#fddccc', fg: '#4a1a0a', accent: '#E94560', badge: '#E94560' },
     kuliner:{ bg: '#fce8f3', fg: '#4a0a2a', accent: '#a0306a', badge: '#a0306a' },
     default:{ bg: '#e8e8f0', fg: '#1a1a2a', accent: '#444466', badge: '#444466' },
   };
@@ -1858,162 +1899,243 @@ function renderStep3() {
     return CAT_COLORS[ACT_CAT[act.type]] || CAT_COLORS.default;
   }
 
-  // ── Summary header (clean, minimal) ──────────────────────────────────────────
+  // ── Summary header — navy gradient card ──────────────────────────────────────
+  const kota = S.kotaAsal==='Lainnya' ? S.kotaAsalCustom : S.kotaAsal;
+  const transportLabel = {motor:'🏍️ Motor',mobil:'🚗 Mobil',umum:'🚌 Kendaraan Umum'}[S.transport]||S.transport||'-';
   const headerCard = `
-    <div style="margin-bottom:20px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:4px">
-        <h2 style="font-family:'Noto Serif',Georgia,serif;font-size:26px;font-weight:700;font-style:italic;
-          color:#111;line-height:1.2;flex:1">Itinerary<br>Banyuwangi</h2>
+    <div style="
+      background:#c0392b;
+      border-radius:16px;
+      padding:22px 20px 18px;
+      margin-bottom:20px;
+      box-shadow:0 8px 28px rgba(192,57,43,.22);
+      position:relative;overflow:hidden;
+    ">
+      <!-- decorative circle -->
+      <div style="position:absolute;right:-30px;top:-30px;width:120px;height:120px;
+        border-radius:50%;border:28px solid rgba(255,255,255,.06);pointer-events:none"></div>
+
+      <!-- eyebrow -->
+      <div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+        color:rgba(255,255,255,.55);margin-bottom:6px;font-weight:500">
+        Wandr · Banyuwangi
+      </div>
+
+      <!-- title row -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px">
+        <div style="font-family:'Inter',sans-serif;font-size:22px;
+          font-weight:700;color:#fff;line-height:1.2;flex:1">
+          ${esc(it.summary?.split('.')[0] || 'Itinerary Banyuwangi')}
+        </div>
         <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:9px;color:#888;letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">Estimasi</div>
-          <div style="font-size:20px;font-weight:700;color:#c0392b;font-family:'Noto Serif',serif">
-            ${((it.estimatedBudget?.min||0)/1000000).toFixed(1)}–${((it.estimatedBudget?.max||0)/1000000).toFixed(1)}<span style="font-size:13px;color:#888;font-weight:400"> JT</span>
+          <div style="font-size:9px;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px">Estimasi</div>
+          <div style="font-size:19px;font-weight:700;color:#fff;font-family:'Inter',sans-serif;line-height:1">
+            ${((it.estimatedBudget?.min||0)/1000000).toFixed(1)}<span style="font-size:11px;opacity:.6">–</span>${((it.estimatedBudget?.max||0)/1000000).toFixed(1)}<span style="font-size:11px;font-weight:400;opacity:.7"> JT</span>
           </div>
         </div>
       </div>
-      <div style="font-size:12px;color:#888;margin-bottom:12px">
-        📅 ${totalDays} Hari${totalDays>1?' · '+(totalDays-1)+' Malam':''} &nbsp;·&nbsp;
-        ${(it.highlights||[]).slice(0,2).join(' · ')}
+
+      <!-- stats pills row -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="background:rgba(255,255,255,.13);border-radius:20px;padding:5px 12px;
+          font-size:11px;color:rgba(255,255,255,.9);font-weight:500">
+          📅 ${totalDays} Hari${totalDays>1?' · '+(totalDays-1)+' Malam':''}
+        </div>
+        <div style="background:rgba(255,255,255,.13);border-radius:20px;padding:5px 12px;
+          font-size:11px;color:rgba(255,255,255,.9);font-weight:500">
+          ${transportLabel}
+        </div>
+        ${kota ? `<div style="background:rgba(255,255,255,.13);border-radius:20px;padding:5px 12px;
+          font-size:11px;color:rgba(255,255,255,.9);font-weight:500">
+          📍 dari ${esc(kota)}
+        </div>` : ''}
+        <div style="background:rgba(233,69,96,.25);border:1px solid rgba(233,69,96,.4);border-radius:20px;padding:5px 12px;
+          font-size:11px;color:#ffb3bf;font-weight:600">
+          ${S.destinations.size} Destinasi
+        </div>
       </div>
-      <div style="height:1.5px;background:#111;margin-bottom:4px"></div>
-      <div style="height:1px;background:#e0dbd4"></div>
     </div>`;
 
-  // ── Day strip (horizontal scroll, pill style) ─────────────────────────────────
+  // ── Day tab strip — larger, more info ────────────────────────────────────────
+  const DAY_ACCENT_COLORS = ['#c0392b','#16527a','#2d8a4a','#c8760a','#6b4ab4'];
   const dayStrip = it.days.map((day, i) => {
-    const sel = i === _activeDay;
-    const label = i===0?'Hari 1':i===it.days.length-1&&totalDays>1?'Pulang':`Hari ${i+1}`;
-    const dest = (day.activities||[]).find(a=>a.type==='aktivitas');
-    const cat  = dest ? (DESTINATIONS.find(d=>dest.name?.toLowerCase().includes(d.name.toLowerCase().split(' ')[0]))?.category||'default') : 'default';
-    const col  = CAT_COLORS[cat]||CAT_COLORS.default;
+    const sel  = i === _activeDay;
+    const acol = DAY_ACCENT_COLORS[i % DAY_ACCENT_COLORS.length];
+    const icon = i===0 ? '✈️' : i===it.days.length-1&&totalDays>1 ? '🏠' : '🗺️';
+    const mainAct = (day.activities||[]).find(a=>a.type==='aktivitas');
+    const shortTitle = mainAct ? mainAct.name.split(' ').slice(0,2).join(' ') : day.title?.split(' ').slice(0,2).join(' ') || '';
     return `<button data-day-tab="${i}" style="
-      padding:10px 18px;border:none;cursor:pointer;white-space:nowrap;
-      font-family:'Noto Serif',Georgia,serif;font-size:13px;font-weight:700;
-      transition:all .2s;
-      background:${sel ? col.accent : '#f0ede8'};
-      color:${sel ? '#fff' : '#888'};
-      border-radius:${sel ? '20px' : '20px'};
-      box-shadow:${sel ? '0 4px 14px '+col.accent+'44' : 'none'};
-    ">${label}</button>`;
+      flex-shrink:0;
+      padding:10px 16px;border:none;cursor:pointer;
+      font-family:'Inter',sans-serif;
+      transition:all .22s cubic-bezier(.4,0,.2,1);
+      background:${sel ? acol : '#ffffff'};
+      color:${sel ? '#fff' : '#8892b0'};
+      border-radius:14px;
+      border:1.5px solid ${sel ? acol : '#e4e8f0'};
+      box-shadow:${sel ? '0 4px 14px '+acol+'55' : '0 1px 4px rgba(15,52,96,.06)'};
+      text-align:left;min-width:80px;
+    ">
+      <div style="font-size:16px;margin-bottom:3px">${icon}</div>
+      <div style="font-size:11px;font-weight:700;margin-bottom:1px">Hari ${i+1}</div>
+      <div style="font-size:10px;opacity:${sel?'.85':'.6'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px">${esc(shortTitle)}</div>
+    </button>`;
   }).join('');
 
-  // ── Activity cards (colorful, per item) ───────────────────────────────────────
+  // ── Activity cards — premium, colorful, reference Image 5 style ───────────────
+  const ACT_COLORS = {
+    aktivitas:  { bg:'#fdf2f0', border:'#f5b8b0', accent:'#c0392b', badge:'#fde8e5', badgeText:'#a02820', icon:'🎯' },
+    makan:      { bg:'#f0fdf4', border:'#86efac', accent:'#16a34a', badge:'#dcfce7', badgeText:'#166534', icon:'🍽️' },
+    transport:  { bg:'#f8f7f4', border:'#d0cbc3', accent:'#7f8c8d', badge:'#ede9e2', badgeText:'#5a6464', icon:'🚌' },
+    penginapan: { bg:'#faf5ff', border:'#d8b4fe', accent:'#7c3aed', badge:'#ede9fe', badgeText:'#6d28d9', icon:'🏨' },
+    istirahat:  { bg:'#fffbeb', border:'#fcd34d', accent:'#b45309', badge:'#fef3c7', badgeText:'#92400e', icon:'☕' },
+  };
   const day  = it.days[_activeDay];
+  const acol = DAY_ACCENT_COLORS[_activeDay % DAY_ACCENT_COLORS.length];
   const acts = (day?.activities||[]).map((act, ai) => {
-    const col     = getActColor(act);
+    const c       = ACT_COLORS[act.type] || ACT_COLORS.aktivitas;
     const isLast  = ai === (day.activities.length - 1);
-    const ci      = ACT_ICON_CIRCLE[act.type] || ACT_ICON_CIRCLE.aktivitas;
     const typeLabel = ACT_TYPE_LABEL[act.type] || 'Aktivitas';
 
     return `
       <div style="
-        border-radius:20px;
-        background:${col.bg};
-        padding:18px;
-        margin-bottom:${isLast?0:12}px;
-        position:relative;
-        animation:fdi .4s ease both;
-        animation-delay:${ai*.07}s;
+        background:#fff;
+        border:1.5px solid ${c.border};
+        border-radius:16px;
+        padding:0;
+        margin-bottom:${isLast?0:10}px;
+        overflow:hidden;
+        box-shadow:0 2px 8px rgba(15,52,96,.06);
+        animation:fdi .35s ease both;
+        animation-delay:${ai*.06}s;
       ">
-        <!-- Badge status pojok kanan atas -->
-        <div style="position:absolute;top:16px;right:16px;
-          background:${col.accent};
-          border-radius:20px;padding:4px 12px;
-          font-size:10px;font-weight:700;color:#fff;
-          letter-spacing:.06em;text-transform:uppercase">
-          ${typeLabel}
+        <!-- color top bar + time + badge -->
+        <div style="
+          background:${c.bg};
+          padding:12px 14px 10px;
+          display:flex;align-items:center;gap:10px;
+          border-bottom:1px solid ${c.border};
+        ">
+          <!-- Icon circle -->
+          <div style="width:36px;height:36px;border-radius:50%;
+            background:${c.accent};
+            display:flex;align-items:center;justify-content:center;
+            font-size:17px;flex-shrink:0;
+            box-shadow:0 2px 6px ${c.accent}44">
+            ${c.icon}
+          </div>
+          <!-- Time + duration -->
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:${c.accent};line-height:1.2">
+              ${esc(act.time||'')}
+              ${act.duration ? `<span style="font-size:10px;font-weight:400;opacity:.7"> · ${esc(act.duration)}</span>` : ''}
+            </div>
+            ${act.location && act.location!==act.name
+              ? `<div style="font-size:10px;color:${c.accent};opacity:.7;margin-top:2px">📍 ${esc(act.location)}</div>`
+              : ''}
+          </div>
+          <!-- Badge -->
+          <div style="
+            background:${c.badge};color:${c.badgeText};
+            border-radius:20px;padding:3px 10px;
+            font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+            flex-shrink:0;white-space:nowrap;
+          ">${typeLabel}</div>
         </div>
 
-        <!-- Waktu -->
-        <div style="font-size:12px;font-weight:700;color:${col.accent};
-          letter-spacing:.05em;margin-bottom:6px">
-          🕐 ${esc(act.time||'')}${act.duration?' · '+act.duration:''}
+        <!-- Body -->
+        <div style="padding:12px 14px">
+          <div style="font-family:'Inter',sans-serif;
+            font-size:16px;font-weight:700;
+            color:#2d2d2d;line-height:1.3;margin-bottom:${act.description?'6px':'0'}">
+            ${esc(act.name)}
+          </div>
+
+          ${act.description ? `<div style="font-size:12px;color:#64748b;line-height:1.6">${esc(act.description)}</div>` : ''}
+
+          ${act.tips ? `
+          <div style="margin-top:10px;padding:9px 12px;
+            background:${c.bg};border-radius:10px;
+            border-left:3px solid ${c.accent};
+            font-size:11px;color:#374151;line-height:1.5">
+            💡 ${esc(act.tips)}
+          </div>` : ''}
+
+          ${act.estimatedCost>0 ? `
+          <div style="margin-top:10px;display:flex;justify-content:flex-end">
+            <span style="
+              background:${c.badge};color:${c.badgeText};
+              border-radius:20px;padding:4px 12px;
+              font-size:11px;font-weight:700;
+            ">~Rp${act.estimatedCost.toLocaleString('id-ID')}</span>
+          </div>` : ''}
         </div>
-
-        <!-- Nama destinasi -->
-        <div style="font-family:'Noto Serif',Georgia,serif;
-          font-size:18px;font-weight:700;font-style:italic;
-          color:${col.fg};line-height:1.25;margin-bottom:4px;
-          padding-right:70px">
-          ${esc(act.name)}
-        </div>
-
-        ${act.location&&act.location!==act.name ? `
-        <div style="font-size:11px;color:${col.accent};margin-bottom:8px;opacity:.8">
-          📍 ${esc(act.location)}
-        </div>` : ''}
-
-        <!-- Deskripsi -->
-        <div style="font-size:12px;color:${col.fg};opacity:.75;
-          line-height:1.6;margin-top:6px">
-          ${esc(act.description||'')}
-        </div>
-
-        ${act.tips ? `
-        <div style="margin-top:10px;padding:9px 12px;
-          background:rgba(255,255,255,.5);border-radius:12px;
-          font-size:11px;color:${col.fg};line-height:1.5;opacity:.9">
-          💡 ${esc(act.tips)}
-        </div>` : ''}
-
-        <!-- Biaya -->
-        ${act.estimatedCost>0 ? `
-        <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
-          <div style="height:1px;flex:1;background:${col.accent};opacity:.2"></div>
-          <span style="font-size:11px;font-weight:700;color:${col.accent}">
-            ~Rp${act.estimatedCost.toLocaleString('id-ID')}
-          </span>
-        </div>` : ''}
       </div>`;
   }).join('');
 
-  // ── Packing checklist ─────────────────────────────────────────────────────────
+  // ── Packing checklist ──────────────────────────────────────────────────────────
   const checklist = (it.packingTips||[]).length > 0 ? `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
       ${(it.packingTips||[]).map(t => `
-        <div onclick="this.classList.toggle('done');
-          this.querySelector('.cb').style.background=this.classList.contains('done')?'#111':'transparent';
-          this.querySelector('.cb').style.borderColor=this.classList.contains('done')?'#111':'#e0dbd4';
-          this.querySelector('.cb span').textContent=this.classList.contains('done')?'v':'';
-          this.querySelector('.cb span').style.color='#fff';
-          this.style.opacity=this.classList.contains('done')?'0.55':'1';"
-          style="display:flex;align-items:center;gap:10px;padding:10px 12px;
-          background:#fff;border:1px solid #e0dbd4;cursor:pointer;transition:all .2s;user-select:none">
-          <div class="cb" style="width:18px;height:18px;border:1.5px solid #e0dbd4;flex-shrink:0;
-            display:flex;align-items:center;justify-content:center;transition:all .2s">
-            <span style="font-size:10px;font-weight:700"></span>
-          </div>
-          <span style="font-size:12px;color:#444;line-height:1.4">${esc(t)}</span>
+        <div onclick="togglePackItem(this)" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border:1.5px solid #e4e8f0;border-radius:10px;cursor:pointer;transition:all .2s;user-select:none">
+          <div class="cb" style="width:18px;height:18px;border:1.5px solid #e4e8f0;border-radius:4px;flex-shrink:0;
+            display:flex;align-items:center;justify-content:center;transition:all .2s"></div>
+          <span style="font-size:12px;color:#374151;line-height:1.4">${esc(t)}</span>
         </div>`).join('')}
-    </div>` : ''
+    </div>` : '';
+
+  // ── Day title strip ────────────────────────────────────────────────────────────
+  const dayMeta = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:14px 16px;
+      background:#fff;border-radius:14px;border:1.5px solid #e4e8f0;box-shadow:0 1px 4px rgba(15,52,96,.06)">
+      <div style="width:40px;height:40px;border-radius:12px;
+        background:${acol};display:flex;align-items:center;justify-content:center;
+        font-family:'Inter',sans-serif;font-size:18px;font-weight:700;color:#fff;
+        flex-shrink:0;box-shadow:0 3px 10px ${acol}44">
+        ${_activeDay+1}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:10px;color:#8892b0;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Hari ke-${_activeDay+1}</div>
+        <div style="font-family:'Inter',sans-serif;font-size:15px;font-weight:700;color:#2d2d2d;
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+          ${esc(day?.title||'')}
+        </div>
+      </div>
+      <div style="font-size:11px;color:#8892b0;flex-shrink:0">
+        ${(day?.activities||[]).length} aktivitas
+      </div>
+    </div>`;
 
   return `
     ${headerCard}
 
     <!-- DAY STRIP -->
     <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:16px;
-      scrollbar-width:none;-webkit-overflow-scrolling:touch">
+      scrollbar-width:none;-webkit-overflow-scrolling:touch;margin:0 -20px;padding-left:20px;padding-right:20px">
       ${dayStrip}
     </div>
 
+    <!-- DAY META CARD -->
+    ${dayMeta}
+
     <!-- ACTIVITY CARDS -->
     <div id="acts-container">
-      ${acts || '<div style="text-align:center;padding:40px;color:#888;font-size:13px;font-style:italic">Tidak ada aktivitas</div>'}
+      ${acts || '<div style="text-align:center;padding:40px;color:#8892b0;font-size:13px;font-style:italic">Tidak ada aktivitas</div>'}
     </div>
 
     <!-- PACKING LIST -->
     ${checklist ? `
-    <div style="margin-top:28px;border-top:2px solid #111;padding-top:18px">
+    <div style="margin-top:24px;padding:18px;background:#f4f2ee;border-radius:12px;border:1.5px solid #e0dbd4">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-        <span style="font-size:18px">🎒</span>
-        <div style="font-family:'Noto Serif',serif;font-size:16px;font-weight:700;font-style:italic;color:#111">Persiapan</div>
+        <span style="font-size:20px">🎒</span>
+        <div style="font-family:'Inter',sans-serif;font-size:15px;font-weight:700;color:#2d2d2d">Persiapan Perjalanan</div>
       </div>
       ${checklist}
     </div>` : ''}
 
     ${it.importantNotes ? `
     <div style="margin-top:14px;padding:12px 14px;border-left:3px solid #c0392b;
-      background:#fdf5f5;font-size:12px;color:#444;line-height:1.5">
+      background:rgba(192,57,43,.04);border-radius:0 12px 12px 0;font-size:12px;color:#2d2d2d;line-height:1.55">
       ⚠️ ${esc(it.importantNotes)}
     </div>` : ''}
 
@@ -2043,7 +2165,7 @@ function buildPrintPage(it) {
   const budStr    = budget ? `Rp${(budget.min/1e6).toFixed(1)}jt \u2013 Rp${(budget.max/1e6).toFixed(1)}jt` : '-';
   const today     = new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
 
-  const DAY_COLORS = ['#c0392b','#1e5a8c','#286346','#784010','#502878'];
+  const DAY_COLORS = ['#c0392b','#7c3aed','#2d8a4a','#c8760a','#16527a'];
 
   function sessionOf(time) {
     if (!time) return 'siang';
@@ -2189,8 +2311,8 @@ function buildPrintPage(it) {
     text-transform:uppercase;margin-bottom:6mm;
   }
   .cover-title {
-    font-family:'Noto Serif',serif;
-    font-size:36pt;font-weight:700;font-style:italic;
+    font-family:'Inter',sans-serif;
+    font-size:36pt;font-weight:700;
     line-height:1.1;margin-bottom:2mm;
   }
   .cover-sub {
@@ -2200,7 +2322,7 @@ function buildPrintPage(it) {
   /* ── Meta bar ────────────────────────────────────────────────── */
   .meta-bar {
     display:grid;grid-template-columns:repeat(4,1fr);
-    border-bottom:1.5pt solid #111;
+    border-bottom:2pt solid #0F3460;
     margin:0 -16mm;padding:5mm 16mm;
     background:#fff;
   }
@@ -2217,15 +2339,15 @@ function buildPrintPage(it) {
   .day-header {
     display:flex;align-items:center;gap:4mm;
     padding-bottom:3mm;
-    border-bottom:1.5pt solid #111;
+    border-bottom:1.5pt solid #e4e8f0;
     margin-bottom:5mm;
     position:relative;
   }
   .day-num {
     width:14mm;height:14mm;border-radius:2mm;
     display:flex;align-items:center;justify-content:center;
-    font-family:'Noto Serif',serif;font-size:20pt;
-    font-weight:700;font-style:italic;color:#fff;
+    font-family:'Inter',sans-serif;font-size:20pt;
+    font-weight:700;color:#fff;
     flex-shrink:0;
   }
   .day-info { flex:1; }
@@ -2234,7 +2356,7 @@ function buildPrintPage(it) {
     text-transform:uppercase;margin-bottom:1mm;
   }
   .day-title {
-    font-family:'Noto Serif',serif;
+    font-family:'Inter',sans-serif;
     font-size:13pt;font-weight:700;color:#111;
   }
 
@@ -2242,7 +2364,7 @@ function buildPrintPage(it) {
   .session-block { margin-bottom:4mm; }
   .session-label {
     display:flex;justify-content:space-between;align-items:center;
-    background:#f8f7f4;padding:2mm 4mm;
+    background:#f5f7fa;padding:2mm 4mm;border-radius:4px;
     font-size:7pt;font-weight:700;letter-spacing:.12em;
     margin-bottom:3mm;
   }
@@ -2270,7 +2392,7 @@ function buildPrintPage(it) {
     letter-spacing:.03em;
   }
   .act-name {
-    font-family:'Noto Serif',serif;
+    font-family:'Inter',sans-serif;
     font-size:11pt;font-weight:700;color:#111;
     margin-bottom:1.5mm;line-height:1.3;
   }
@@ -2290,12 +2412,12 @@ function buildPrintPage(it) {
 
   /* ── Divider ─────────────────────────────────────────────────── */
   .section-divider {
-    border:none;border-top:1.5pt solid #111;margin:8mm 0 6mm;
+    border:none;border-top:2pt solid #0F3460;margin:8mm 0 6mm;
   }
 
   /* ── Budget ──────────────────────────────────────────────────── */
   .budget-bar {
-    background:#111;color:#fff;
+    background:linear-gradient(135deg,#0F3460,#16527a);color:#fff;
     padding:5mm 6mm;margin:6mm 0;
     display:flex;justify-content:space-between;align-items:center;
     print-color-adjust:exact;-webkit-print-color-adjust:exact;
@@ -2305,7 +2427,7 @@ function buildPrintPage(it) {
     text-transform:uppercase;margin-bottom:2mm;
   }
   .budget-val {
-    font-family:'Noto Serif',serif;
+    font-family:'Inter',sans-serif;
     font-size:18pt;font-weight:700;color:#fff;
   }
   .budget-note { font-size:7.5pt;color:#999;text-align:right; }
@@ -2313,7 +2435,7 @@ function buildPrintPage(it) {
   /* ── Packing ─────────────────────────────────────────────────── */
   .packing-section { margin:4mm 0; }
   .section-title {
-    font-family:'Noto Serif',serif;
+    font-family:'Inter',sans-serif;
     font-size:11pt;font-weight:700;margin-bottom:4mm;
   }
   .packing-grid {
@@ -2322,16 +2444,16 @@ function buildPrintPage(it) {
   .pack-item {
     display:flex;align-items:center;gap:2.5mm;
     font-size:8pt;color:#444;
-    padding:2mm 3mm;border:1pt solid #e0dbd4;
+    padding:2mm 3mm;border:1pt solid #e4e8f0;border-radius:4px;
   }
   .pack-cb {
-    width:4mm;height:4mm;border:1pt solid #bbb;flex-shrink:0;
+    width:4mm;height:4mm;border:1pt solid #bbb;border-radius:1mm;flex-shrink:0;
   }
 
   /* ── Notes ───────────────────────────────────────────────────── */
   .notes-box {
     font-size:8.5pt;color:#555;line-height:1.55;
-    border-left:3pt solid #c0392b;background:#fdf8f8;
+    border-left:3pt solid #E94560;background:#fdedf0;
     padding:3mm 4mm;margin-top:4mm;
   }
 
@@ -2343,14 +2465,14 @@ function buildPrintPage(it) {
     font-size:7.5pt;color:#888;
   }
   .footer-brand {
-    font-family:'Noto Serif',serif;
-    font-style:italic;font-weight:700;color:#111;font-size:9pt;
+    font-family:'Inter',sans-serif;
+    font-weight:700;color:#111;font-size:9pt;
   }
 
   /* ── Tombol print (hanya di layar) ──────────────────────────── */
   .no-print {
     position:fixed;top:0;left:0;right:0;
-    background:#111;color:#fff;
+    background:#0F3460;color:#fff;
     padding:14px 20px;
     display:flex;justify-content:space-between;align-items:center;
     z-index:999;
@@ -2358,10 +2480,10 @@ function buildPrintPage(it) {
   }
   .no-print p { font-size:13px;color:rgba(255,255,255,.7); }
   .btn-print {
-    background:#c0392b;color:#fff;border:none;
+    background:#E94560;color:#fff;border:none;
     padding:10px 28px;font-size:14px;font-weight:600;
     cursor:pointer;font-family:'Inter',sans-serif;
-    border-radius:3px;
+    border-radius:24px;
   }
   .btn-close {
     background:transparent;color:rgba(255,255,255,.6);border:none;
@@ -2479,7 +2601,7 @@ async function exportItinerary(format) {
 
     } catch(err) {
       progressText.textContent = 'Gagal: ' + err.message;
-      progressText.style.color = '#c0392b';
+      progressText.style.color = '#E94560';
     } finally {
       btns.forEach(b => b.disabled = false);
       setTimeout(() => {
@@ -2528,7 +2650,7 @@ async function exportItinerary(format) {
 
     } catch(err) {
       progressText.textContent = 'Gagal: ' + err.message;
-      progressText.style.color = '#c0392b';
+      progressText.style.color = '#E94560';
     } finally {
       btns.forEach(b => b.disabled = false);
       setTimeout(() => {
@@ -2559,7 +2681,7 @@ function updateDestFeedback() {
           background:#f0ede8;border:1px solid #111;
           border-radius:20px;margin:3px">
           <span>${d.emoji}</span>
-          <span style="font-size:13px;font-weight:600;color:#c0392b">${esc(d.name)}</span>
+          <span style="font-size:13px;font-weight:600;color:#E94560">${esc(d.name)}</span>
           <span data-remove="${d.id}" style="cursor:pointer;color:#8b6f47;font-size:11px;
             margin-left:2px;padding:1px 3px;border-radius:50%">✕</span>
         </div>`).join('');
@@ -2723,7 +2845,7 @@ function render() {
     }
   } catch(e) {
     console.error('render() error:', e);
-    c.innerHTML = `<div style="padding:20px;color:#c0392b;font-size:13px">
+    c.innerHTML = `<div style="padding:20px;color:#E94560;font-size:13px">
       <b>⚠️ Error render:</b><br><pre style="white-space:pre-wrap;font-size:11px;color:#666666;margin-top:8px">${esc(e.message)}\n${esc(e.stack||'')}</pre>
     </div>`;
   }
@@ -2748,7 +2870,7 @@ function partialUpdateDestList() {
         border-radius:20px;white-space:nowrap;flex-shrink:0;
         background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.35);">
         <span style="font-size:13px">${d.emoji}</span>
-        <span style="font-size:12px;font-weight:700;color:#c0392b">${esc(d.name)}</span>
+        <span style="font-size:12px;font-weight:700;color:#E94560">${esc(d.name)}</span>
         <span data-remove="${d.id}" style="font-size:11px;color:#888;cursor:pointer;padding:0 2px">✕</span>
       </div>`).join('');
     // Re-attach remove handlers
@@ -2784,7 +2906,7 @@ function partialUpdateDestList() {
     if (chk) chk.style.opacity = sel ? '1' : '0';
     // Update name color
     const nm = el.querySelector('.dest-name');
-    if (nm) nm.style.color = sel ? '#c0392b' : '#111111';
+    if (nm) nm.style.color = sel ? '#E94560' : '#111111';
   });
 
   // Update dest-cards-list (hasil pencarian)
@@ -2838,7 +2960,7 @@ function partialUpdateDestList() {
         ${d.emoji}
       </div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:700;color:${sel?'#c0392b':'#111111'};margin-bottom:2px;
+        <div style="font-size:13px;font-weight:700;color:${sel?'#E94560':'#111111'};margin-bottom:2px;
           white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(d.name)}</div>
         <div style="font-size:11px;color:#888888;display:flex;align-items:center;gap:5px">
           <span style="width:6px;height:6px;border-radius:50%;background:${dot};display:inline-block;flex-shrink:0"></span>
@@ -2846,7 +2968,7 @@ function partialUpdateDestList() {
         </div>
       </div>
       <div style="width:20px;height:20px;border-radius:3px;flex-shrink:0;
-        background:${sel?'#c0392b':'transparent'};border:1.5px solid ${sel?'#c0392b':'#e0dbd4'};
+        background:${sel?'#E94560':'transparent'};border:1.5px solid ${sel?'#E94560':'#e0dbd4'};
         display:flex;align-items:center;justify-content:center;
         font-size:12px;color:#fff;font-weight:700">
         ${sel ? '✓' : ''}
@@ -2898,11 +3020,11 @@ function partialUpdateHotelList() {
       background:${sel ? 'rgba(192,57,43,.05)' : '#fff'};transition:background .15s">
       <span style="font-size:20px;flex-shrink:0">${p.emoji||'🏨'}</span>
       <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:700;color:${sel?'#c0392b':'#111'};
+        <div style="font-size:13px;font-weight:700;color:${sel?'#E94560':'#111'};
           white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name)}</div>
         <div style="font-size:11px;color:#888">${esc(p.harga||'')}</div>
       </div>
-      ${sel ? '<span style="color:#c0392b;font-weight:700;flex-shrink:0">✓</span>' : ''}
+      ${sel ? '<span style="color:#E94560;font-weight:700;flex-shrink:0">✓</span>' : ''}
     </div>`;
   }).join('');
 
@@ -3781,7 +3903,7 @@ function renderPlanningBoard() {
         <div class="drag-title">${esc(d.name)}</div>
         <div class="drag-zone">⏰ ${d.bestTime||'pagi'} · ${zone}</div>
       </div>
-      ${id==='ijen'?'<span style="font-size:11px;color:#c0392b" title="Perlu persiapan khusus">⚠️</span>':''}
+      ${id==='ijen'?'<span style="font-size:11px;color:#E94560" title="Perlu persiapan khusus">⚠️</span>':''}
     </div>`;
   }
 
@@ -3862,7 +3984,7 @@ function renderPlanningBoard() {
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div style="font-size:11px;color:#888888">
         ${S.destinations.size} destinasi · ${totalDays} hari
-        ${S.planBacklog.length>0?`<span style="color:#c0392b"> · ${S.planBacklog.length} belum dijadwalkan</span>`:''}
+        ${S.planBacklog.length>0?`<span style="color:#E94560"> · ${S.planBacklog.length} belum dijadwalkan</span>`:''}
       </div>
       <button id="btn-reset-plan" style="font-size:11px;color:#3d4461;background:#ffffff;border:1.5px solid #e4e8f0;border-radius:20px;padding:5px 12px;cursor:pointer;font-family:inherit;box-shadow:0 1px 4px rgba(15,52,96,.08)">
         ↺ Saran Otomatis
@@ -4004,6 +4126,18 @@ function generateFromPlan() {
   document.getElementById('progress-area').style.display='';
   render();
 })();
+
+function togglePackItem(el) {
+  el.classList.toggle('done');
+  const cb = el.querySelector('.cb');
+  const done = el.classList.contains('done');
+  cb.style.background   = done ? '#0F3460' : 'transparent';
+  cb.style.borderColor  = done ? '#0F3460' : '#e4e8f0';
+  cb.textContent        = done ? '✓' : '';
+  cb.style.color        = '#fff';
+  cb.style.fontSize     = '11px';
+  el.style.opacity      = done ? '0.5' : '1';
+}
 </script>
 </body>
 </html>
