@@ -2143,11 +2143,11 @@ function renderStep3() {
     <div style="display:flex;gap:8px;margin-top:24px;padding-bottom:8px;flex-wrap:wrap">
       <button class="btn-pri" id="btn-export"
         style="flex:1;justify-content:center;min-width:120px">
-        ↓ Export
+        ↓ Export PDF
       </button>
-      <button class="btn-ghost" style="flex:1;justify-content:center;min-width:100px"
-        onclick="navigator.share?navigator.share({title:'Itinerary Banyuwangi',text:'Cek itinerary Banyuwangi-ku!'}):alert('Salin URL untuk berbagi')">
-        ↑ Bagikan
+      <button class="btn-ghost" id="btn-back-to-plan"
+        style="flex:1;justify-content:center;min-width:100px">
+        ← Susun Ulang
       </button>
       <button class="btn-ghost" id="btn-restart"
         style="flex:1;justify-content:center;min-width:100px">
@@ -2624,40 +2624,30 @@ async function exportItinerary(format) {
   const btns         = modal.querySelectorAll('button:not([onclick])');
 
   if (format === 'pdf') {
-    // Cara 3: buka halaman print di tab baru
-    progressEl.style.display = 'block';
-    progressBar.style.width = '60%';
-    progressText.textContent = 'Membuka halaman print...';
-    btns.forEach(b => b.disabled = true);
-
-    try {
-      const html = buildPrintPage(it);
-      const blob = new Blob([html], {type:'text/html;charset=utf-8'});
-      const url  = URL.createObjectURL(blob);
-      const win  = window.open(url, '_blank');
-      if (!win) {
-        // Popup blocked — fallback ke same tab
-        document.open(); document.write(html); document.close();
-      }
-      // Cleanup blob URL setelah 60 detik
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-
-      progressBar.style.width = '100%';
-      progressText.textContent = 'Tab baru terbuka — pilih "Save as PDF"';
-      await new Promise(r => setTimeout(r, 1200));
-      modal.classList.remove('open');
-
-    } catch(err) {
-      progressText.textContent = 'Gagal: ' + err.message;
-      progressText.style.color = '#E94560';
-    } finally {
-      btns.forEach(b => b.disabled = false);
+    // Print langsung di tab yang sama — tidak buka tab baru
+    modal.classList.remove('open');
+    
+    // Inject print CSS + content ke dalam halaman sementara
+    const html = buildPrintPage(it);
+    
+    // Buka di iframe tersembunyi lalu print
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:210mm;height:297mm;border:none;';
+    document.body.appendChild(iframe);
+    
+    iframe.onload = () => {
       setTimeout(() => {
-        progressEl.style.display = 'none';
-        progressBar.style.width = '0%';
-        progressText.style.color = '';
-      }, 2000);
-    }
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        // Hapus iframe setelah dialog print ditutup
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 2000);
+      }, 600);
+    };
+    
+    iframe.srcdoc = html;
+    return;
 
   } else {
     // JPG: tetap pakai html2canvas
@@ -3296,6 +3286,11 @@ function attachListeners() {
   const btnReset = document.getElementById('btn-reset-plan');
   if (btnReset) btnReset.addEventListener('click', () => { initPlanDays(); render(); });
 
+  const backToPlan = document.getElementById('btn-back-to-plan');
+  if (backToPlan) backToPlan.addEventListener('click', () => {
+    S.loading = false; S.itinerary = null; S.error = null;
+    render();
+  });
   const retry   = document.getElementById('btn-retry');
   const restart = document.getElementById('btn-restart');
   const exportBtn = document.getElementById('btn-export');
@@ -3765,68 +3760,394 @@ function buildActivityDay(dayNum, spots, zone, form, opts={}) {
   }
 
   if (hasIjen) {
-    const ijenExt=DEST_EXT['ijen']||{};
-    const hotelC=getHotelCoords();
-    const extraSpots=spots.filter(s=>s.id!=='ijen'&&!s.isIjen);
-    const travelToIjen = hasMotor()||hasMobil() ? 90 : 120;
-    const departTime   = addMin('00:00', -(travelToIjen));   // e.g. 22:30 malam sebelumnya
-    const arrPaltuding = '00:30';
-    const acts=[
-      {time:'22:00',name:'Istirahat Awal — Persiapan Ijen',location:getFinalHotelName(),duration:'3 jam',
-        description:'Tidur lebih awal — kamu akan bangun tengah malam. Siapkan tas: jaket tebal, masker N95, headlamp, snack.',
-        tips:'Set alarm 23:30. Simpan barang berharga di hotel. Ijen buka mulai 00:00 WIB.',
-        estimatedCost:0,type:'istirahat'},
-      {time:'23:30',name:'Bangun & Persiapan Keberangkatan',location:getFinalHotelName(),duration:'30 menit',
-        description:'Bangun, pakai jaket paling tebal (suhu turun hingga 5°C di puncak), masker N95, dan headlamp.',
-        tips:'Sarapan ringan atau bawa snack bar. Isi air minum 1L.',
-        estimatedCost:0,type:'istirahat'},
-      {time:'00:00',name:`Perjalanan ke Paltuding (Basecamp Ijen)`,location:`${getFinalHotelName()} → Paltuding, Licin`,
-        duration:`±${Math.round(travelToIjen/60)}.5 jam`,
-        description:'Perjalanan malam menuju Paltuding, basecamp Kawah Ijen. Jalan sempit dan berliku, disarankan pelan-pelan.',
-        tips:`${hasMotor()||hasMobil()?'Pastikan kendaraan prima, isi bensin penuh sebelum berangkat.':'Sewa ojek khusus Ijen ~150-200K dari kota, pesan H-1.'} Parkir di Paltuding 10K/motor.`,
-        estimatedCost:hasMotor()||hasMobil()?10000:175000,type:'transport'},
-      {time:'01:00',name:'Trek Paltuding → Puncak Kawah Ijen',location:'Paltuding (2.025m) → Puncak (2.386m)',
-        duration:'2–2.5 jam',
-        description:'Trek 3km dari Paltuding ke puncak kawah. Jalur cukup terjal di 1km terakhir. Tiba puncak sebelum subuh untuk melihat blue fire.',
-        tips:'Tiket masuk Rp5.000 (WNI) | Rp150.000 (WNA). Masker gas N95 WAJIB di area kawah. Porter opsional ~Rp150K.',
-        estimatedCost:5000,type:'aktivitas'},
-      {time:'03:30',name:'Blue Fire Kawah Ijen 🔵🔥',location:'Kawah Ijen (2.386m dpl)',
-        duration:'1.5–2 jam',
-        description:'Fenomena langka blue fire hanya ada 2 di dunia — salah satunya di sini. Api biru misterius membakar gas sulfur di tepi kawah asam terbesar di dunia.',
-        tips:'Jangan turun ke kawah tanpa ranger. Masker N95 wajib — gas SO₂ berbahaya. Foto terbaik: ISO tinggi, no flash.',
-        estimatedCost:0,type:'aktivitas'},
-      {time:'05:30',name:'Sunrise di Puncak Ijen 🌄',location:'Puncak Kawah Ijen',
-        duration:'1 jam',
-        description:'Matahari terbit dengan backdrop kawah biru toska dan kepulan asap sulfur. Pemandangan paling dramatis di Pulau Jawa.',
-        tips:'Suhu puncak 5–10°C. Tetap pakai masker. Jaga jarak dari tepi kawah.',
-        estimatedCost:0,type:'aktivitas'},
-      {time:'07:00',name:'Turun ke Paltuding',location:'Puncak Kawah Ijen → Paltuding',
-        duration:'1.5 jam',
-        description:'Turun santai sambil menikmati pemandangan hutan hujan tropis Ijen yang spektakuler di siang hari.',
-        tips:'Turunan lebih licin dari tanjakan. Gunakan tongkat jika tersedia. Pintu kawasan tutup jam 12:00.',
-        estimatedCost:0,type:'transport'},
-      {time:'09:00',name:'Sarapan & Istirahat di Paltuding',location:'Warung Paltuding / Area Basecamp',
-        duration:'45 menit',
-        description:'Sarapan di warung sekitar Paltuding sebelum pulang. Menu sederhana: nasi goreng, mi instan, kopi panas.',
-        tips:'Harga warung sedikit lebih mahal karena lokasi. Manfaatkan fasilitas toilet dan bilas.',
-        estimatedCost:20000,type:'makan'},
-    ];
-    const ijenEnd='10:30';
-    if (extraSpots.length>0 && S.gayaPerjalanan==='eksplorasi') {
-      let curTime=addMin(ijenEnd,60);
-      acts.push(buildMakan('siang',zone,curTime,getHotelCoords()?.lat,getHotelCoords()?.lng));
-      curTime=addMin(curTime,60+45);
-      extraSpots.forEach(spot=>{
-        const ext=DEST_EXT[spot.id]||{};
-        const dur=ext.dur||120;
-        acts.push({time:curTime,name:spot.name,location:spot.name+', Banyuwangi',duration:durLabel(dur),description:ext.desc||spot.desc||'',tips:ext.tips||'',estimatedCost:ext.tiket||0,type:'aktivitas'});
-        curTime=addMin(curTime,dur+30);
+    const hotelC       = getHotelCoords();
+    const isUmum       = S.transport === 'umum';
+    const isPribadiOrSewa = hasMotor() || hasMobil();
+
+    // Deteksi apakah penginapan di sekitar Paltuding (< 5km)
+    const PALTUDING = { lat: -8.0584, lng: 114.2422 };
+    const isAreaIjen = hotelC
+      ? haversineKm(hotelC.lat, hotelC.lng, PALTUDING.lat, PALTUDING.lng) < 5
+      : false;
+
+    // Jam tiba user di Banyuwangi (dari input Step 1)
+    const waktuTibaStr = S.waktuTiba || '10:00';
+    const jamTiba      = timeToMin(waktuTibaStr);
+    const JAM_2230     = timeToMin('22:30');
+    const JAM_0600     = timeToMin('06:00');
+
+    // Apakah tiba terlalu mepet/dini hari → tidak bisa naik DAMRI 23:00 malam itu
+    const tibaDiniHari = jamTiba < JAM_0600;  // 00:00–05:59 → dini hari
+    const tibaMepet    = jamTiba >= JAM_2230; // 22:30+ → ketinggalan DAMRI
+    const bisaDamriMalamIni = isUmum && !tibaDiniHari && !tibaMepet;
+
+    // Untuk kendaraan sendiri: bisa berangkat asal tiba sebelum 22:30
+    const bisaIjenMalamIni = isPribadiOrSewa
+      ? (!tibaDiniHari && !tibaMepet)
+      : bisaDamriMalamIni;
+
+    // Jarak & waktu tempuh ke Paltuding
+    const travelMenitKePaltuding = isAreaIjen ? 5
+      : isPribadiOrSewa ? 90
+      : 60; // DAMRI ~60 menit dari Sritanjung ke Paltuding
+
+    const acts = [];
+
+    // ── SKENARIO A: Transport Umum ────────────────────────────────────────────
+    if (isUmum) {
+      if (bisaDamriMalamIni) {
+        // Tiba sebelum 22:30 → naik DAMRI 23:00
+        acts.push({
+          time: addMin(waktuTibaStr, 30),
+          name: 'Tiba & Persiapan Ijen',
+          location: 'Stasiun/Terminal Banyuwangi',
+          duration: '30 menit',
+          description: 'Setelah tiba, segera persiapkan fisik dan perlengkapan untuk trek malam ini. Titip koper di Locker Wangi jika perlu.',
+          tips: 'Locker Wangi: lockerwangi.com | ~Rp25.000/tas. Makan dulu yang cukup — ini makan terakhir sebelum trek.',
+          estimatedCost: 25000, type: 'aktivitas'
+        });
+        acts.push({
+          time: addMin(waktuTibaStr, 90),
+          name: 'Makan Malam & Istirahat Sebelum DAMRI',
+          location: 'Warung sekitar Taman Sritanjung',
+          duration: '1 jam',
+          description: 'Makan malam yang cukup — ini akan jadi energi utama selama trek. Istirahat sebentar sambil menunggu DAMRI.',
+          tips: 'Banyak pilihan warung di sekitar Taman Sritanjung. Hindari makan terlalu kenyang.',
+          estimatedCost: 30000, type: 'makan'
+        });
+        acts.push({
+          time: '23:00',
+          name: 'Naik DAMRI Banyuwangi → Ijen',
+          location: 'Taman Sritanjung / Stasiun Banyuwangi Kota',
+          duration: '±1 jam',
+          description: 'Bus DAMRI khusus rute Banyuwangi–Ijen berangkat dari Taman Sritanjung. Bus juga melewati Stasiun BWI.',
+          tips: 'Tarif DAMRI: Rp15.000–Rp50.000. Siapkan uang pas. Tiba di Paltuding sekitar 00:00–00:30 WIB.',
+          estimatedCost: 50000, type: 'transport'
+        });
+      } else {
+        // Tiba terlambat/dini hari → istirahat, DAMRI 23:00 malam berikutnya
+        // Aktivitas ini akan ditangani di buildArrivalDay, hari Ijen = hari berikutnya
+        acts.push({
+          time: '20:00',
+          name: 'Istirahat Total — Persiapan Mental Ijen',
+          location: getFinalHotelName(),
+          duration: '3 jam',
+          description: 'Istirahat dan tidur lebih awal. Malam ini kamu akan naik DAMRI pukul 23:00 menuju Kawah Ijen.',
+          tips: 'Set alarm 22:30. Siapkan semua perlengkapan dari sekarang: jaket tebal, masker N95, headlamp, snack.',
+          estimatedCost: 0, type: 'istirahat'
+        });
+        acts.push({
+          time: '22:30',
+          name: 'Berangkat ke Titik Penjemputan DAMRI',
+          location: `${getFinalHotelName()} → Taman Sritanjung`,
+          duration: '30 menit',
+          description: 'Menuju Taman Sritanjung untuk naik DAMRI pukul 23:00. Bus juga melewati Stasiun Banyuwangi Kota.',
+          tips: 'Gunakan ojek online atau taksi. Jangan sampai ketinggalan — DAMRI berangkat tepat waktu.',
+          estimatedCost: 20000, type: 'transport'
+        });
+        acts.push({
+          time: '23:00',
+          name: 'Naik DAMRI Banyuwangi → Ijen',
+          location: 'Taman Sritanjung / Stasiun Banyuwangi Kota',
+          duration: '±1 jam',
+          description: 'Bus DAMRI khusus rute Banyuwangi–Ijen berangkat dari Taman Sritanjung.',
+          tips: 'Tarif DAMRI: Rp15.000–Rp50.000. Tiba di Paltuding sekitar 00:00–00:30 WIB.',
+          estimatedCost: 50000, type: 'transport'
+        });
+      }
+
+      // Trek Ijen — sama untuk semua skenario umum
+      acts.push({
+        time: '00:30',
+        name: 'Tiba di Paltuding — Registrasi & Beli Tiket',
+        location: 'Paltuding, Basecamp Kawah Ijen (2.025m)',
+        duration: '30 menit',
+        description: 'Tiba di basecamp Paltuding. Beli tiket masuk, ambil nomor antrian jika ramai, dan lakukan pemanasan singkat.',
+        tips: 'Tiket: Rp5.000 WNI | Rp150.000 WNA. Sewa masker gas di sini kalau belum punya. Porter opsional ~Rp150K.',
+        estimatedCost: 5000, type: 'aktivitas'
       });
+      acts.push({
+        time: '01:00',
+        name: 'Trek Paltuding → Kawah Ijen',
+        location: 'Paltuding → Puncak Kawah Ijen (2.386m)',
+        duration: '2–2.5 jam',
+        description: 'Trek 3km dengan elevasi 361m. Jalur berbatu, makin terjal di 1km terakhir menuju bibir kawah. Jaga kecepatan agar tidak kelelahan sebelum puncak.',
+        tips: 'Bawa senter/headlamp — wajib. Jalan pelan-pelan konsisten lebih baik dari sprint lalu istirahat lama.',
+        estimatedCost: 0, type: 'aktivitas'
+      });
+      acts.push({
+        time: '03:30',
+        name: 'Blue Fire Kawah Ijen 🔵🔥',
+        location: 'Kawah Ijen — Bibir Kawah',
+        duration: '1.5–2 jam',
+        description: 'Fenomena langka — api biru dari pembakaran gas sulfur, hanya ada 2 di dunia. Paling jelas terlihat pukul 03:00–05:00 sebelum matahari terbit.',
+        tips: 'Masker N95 WAJIB di area kawah. Jangan turun ke kawah tanpa ranger. Foto: mode malam, ISO tinggi, no flash.',
+        estimatedCost: 0, type: 'aktivitas'
+      });
+      acts.push({
+        time: '05:30',
+        name: 'Sunrise di Puncak Ijen 🌄',
+        location: 'Puncak Kawah Ijen (2.386m)',
+        duration: '1 jam',
+        description: 'Matahari terbit di atas lautan awan dengan backdrop kawah biru toska. Salah satu sunrise terbaik di Indonesia.',
+        tips: 'Suhu puncak 5–10°C saat subuh. Jaket tebal wajib. Tetap pakai masker di area kawah.',
+        estimatedCost: 0, type: 'aktivitas'
+      });
+      acts.push({
+        time: '07:00',
+        name: 'Turun ke Paltuding',
+        location: 'Puncak Kawah Ijen → Paltuding',
+        duration: '1–1.5 jam',
+        description: 'Turun santai, nikmati pemandangan hutan hujan tropis Ijen di pagi hari yang terang.',
+        tips: 'Turunan lebih licin. Hati-hati di bagian berbatu. Pintu kawasan tutup 12:00 WIB.',
+        estimatedCost: 0, type: 'transport'
+      });
+      acts.push({
+        time: '08:30',
+        name: 'Sarapan di Warung Paltuding',
+        location: 'Area Basecamp Paltuding',
+        duration: '30 menit',
+        description: 'Makan pagi di warung Paltuding sebelum naik DAMRI pulang. Nasi goreng, mi rebus, kopi panas tersedia.',
+        tips: 'Harga sedikit lebih mahal karena lokasi terpencil. Manfaatkan toilet dan fasilitas bilas yang tersedia.',
+        estimatedCost: 20000, type: 'makan'
+      });
+      acts.push({
+        time: '09:00',
+        name: 'DAMRI Pulang: Paltuding → Banyuwangi',
+        location: 'Paltuding → Taman Sritanjung / Stasiun BWI',
+        duration: '±1 jam',
+        description: 'DAMRI kepulangan berangkat dari Paltuding pukul 09:00. Tiba di Banyuwangi kota sekitar 10:00–10:30.',
+        tips: 'Kalau ketinggalan DAMRI 09:00, jadwal berikutnya pukul 14:00. Atau bisa patungan ojek/travel dari Paltuding.',
+        estimatedCost: 50000, type: 'transport'
+      });
+      acts.push({
+        time: '10:30',
+        name: 'Kembali ke Penginapan — Istirahat Total',
+        location: getFinalHotelName(),
+        duration: 'Sisa hari',
+        description: 'Check-in atau kembali ke penginapan. Tidur siang total adalah pilihan terbaik setelah semalaman tanpa tidur.',
+        tips: '🌋 Selamat! Kamu baru saja menyelesaikan salah satu pengalaman terbaik di Indonesia.',
+        estimatedCost: 0, type: 'istirahat'
+      });
+
+    // ── SKENARIO B: Motor/Mobil + Menginap Area Paltuding ────────────────────
+    } else if (isPribadiOrSewa && isAreaIjen) {
+      acts.push({
+        time: '20:00',
+        name: 'Istirahat Awal di Penginapan Paltuding',
+        location: getFinalHotelName(),
+        duration: '4 jam',
+        description: 'Tidur lebih awal — jarak ke pintu loket Ijen hanya beberapa menit jalan kaki dari penginapan ini.',
+        tips: 'Siapkan semua perlengkapan dari sekarang. Set alarm 00:30. Minta wake-up call ke staff penginapan sebagai cadangan.',
+        estimatedCost: 0, type: 'istirahat'
+      });
+      acts.push({
+        time: '00:45',
+        name: 'Jalan Kaki ke Loket Paltuding',
+        location: `${getFinalHotelName()} → Gerbang Paltuding`,
+        duration: '5–10 menit',
+        description: 'Keuntungan menginap di area Paltuding — cukup jalan kaki beberapa menit ke gerbang masuk Kawah Ijen.',
+        tips: 'Beli tiket di gerbang. Headlamp sudah harus dinyalakan. Udara sangat dingin — jaket paling tebal.',
+        estimatedCost: 5000, type: 'transport'
+      });
+      acts.push({
+        time: '01:00',
+        name: 'Trek Paltuding → Kawah Ijen',
+        location: 'Paltuding (2.025m) → Puncak (2.386m)',
+        duration: '2–2.5 jam',
+        description: 'Trek 3km dengan elevasi 361m. Jalur berbatu, makin terjal di 1km terakhir.',
+        tips: 'Masker N95 WAJIB. Porter opsional ~Rp150K. Jaga kecepatan konsisten.',
+        estimatedCost: 0, type: 'aktivitas'
+      });
+      acts.push({
+        time: '03:30',
+        name: 'Blue Fire Kawah Ijen 🔵🔥',
+        location: 'Kawah Ijen — Bibir Kawah',
+        duration: '1.5–2 jam',
+        description: 'Fenomena langka api biru dari gas sulfur. Paling jelas terlihat 03:00–05:00 sebelum matahari terbit.',
+        tips: 'Masker N95 WAJIB. Jangan turun ke kawah tanpa ranger. ISO tinggi, no flash.',
+        estimatedCost: 0, type: 'aktivitas'
+      });
+      acts.push({
+        time: '05:30',
+        name: 'Sunrise di Puncak Ijen 🌄',
+        location: 'Puncak Kawah Ijen (2.386m)',
+        duration: '1 jam',
+        description: 'Matahari terbit di atas lautan awan — salah satu sunrise terbaik di Indonesia.',
+        tips: 'Suhu puncak 5–10°C. Tetap pakai masker di area kawah.',
+        estimatedCost: 0, type: 'aktivitas'
+      });
+      acts.push({
+        time: '07:00',
+        name: 'Turun ke Paltuding',
+        location: 'Puncak → Paltuding',
+        duration: '1–1.5 jam',
+        description: 'Turun santai, nikmati hutan hujan tropis Ijen di pagi hari.',
+        tips: 'Turunan lebih licin. Hati-hati di bagian berbatu.',
+        estimatedCost: 0, type: 'transport'
+      });
+      acts.push({
+        time: '08:30',
+        name: 'Sarapan & Bilas di Penginapan',
+        location: getFinalHotelName(),
+        duration: '1.5 jam',
+        description: 'Kembali ke penginapan — mandi, sarapan, dan istirahat sejenak sebelum lanjut ke Kawah Wurung.',
+        tips: 'Istirahat 1–2 jam dulu. Kawah Wurung hanya 15–20 menit dari Paltuding, tidak perlu terburu-buru.',
+        estimatedCost: 20000, type: 'makan'
+      });
+      // Kawah Wurung bisa dijadwalkan setelah istirahat
+      acts.push({
+        time: '11:00',
+        name: 'Menuju Kawah Wurung',
+        location: 'Paltuding → Kawah Wurung',
+        duration: '15–20 menit',
+        description: 'Perjalanan singkat ke Kawah Wurung — kaldera cantik berupa padang sabana hijau berbentuk mangkok raksasa.',
+        tips: 'Kawah Wurung buka mulai 04:00 WIB. Tiba pukul 11:00 masih oke, kabut biasanya sudah agak turun.',
+        estimatedCost: 10000, type: 'transport'
+      });
+      acts.push({
+        time: '11:20',
+        name: 'Kawah Wurung',
+        location: 'Kawah Wurung, Licin',
+        duration: '2 jam',
+        description: 'Bukit rumput hijau dengan kaldera berbentuk mangkok raksasa. Pemandangan unik yang kontras dengan Ijen.',
+        tips: 'Tiket masuk Rp5.000. Bawa air minum yang cukup — area terbuka dan panas di siang hari.',
+        estimatedCost: 5000, type: 'aktivitas'
+      });
+      acts.push({
+        time: '14:00',
+        name: 'Kembali ke Penginapan — Istirahat Sore',
+        location: getFinalHotelName(),
+        duration: 'Sisa hari',
+        description: 'Kembali ke penginapan. Tidur siang yang panjang sangat disarankan setelah dua aktivitas berat hari ini.',
+        tips: '🌋 Ijen + Kawah Wurung dalam satu hari — pencapaian luar biasa!',
+        estimatedCost: 0, type: 'istirahat'
+      });
+
+    // ── SKENARIO C: Motor/Mobil + Penginapan Luar Area Ijen ──────────────────
     } else {
-      acts.push({time:'10:30',name:'Kembali ke Penginapan — Tidur Siang Total',location:getFinalHotelName(),duration:'Sisa hari',description:'Tidur siang panjang — ini yang paling dibutuhkan setelah trek malam semalam suntuk. Jangan jadwalkan aktivitas sore hari ini.',tips:'🌋 Selamat! Kawah Ijen adalah salah satu pengalaman terbesar di Banyuwangi. Badan kamu butuh istirahat.',estimatedCost:0,type:'istirahat'});
+      const departJam = bisaIjenMalamIni ? '00:00' : '22:00';
+      const travelMenit = 90; // ~90 menit dari kota ke Paltuding
+
+      if (!bisaIjenMalamIni) {
+        // Tiba terlambat/dini hari → trek malam berikutnya
+        acts.push({
+          time: '20:00',
+          name: 'Istirahat Awal — Persiapan Ijen',
+          location: getFinalHotelName(),
+          duration: '3 jam',
+          description: 'Tidur lebih awal. Malam ini kamu akan berangkat ke Paltuding sekitar pukul 23:30.',
+          tips: 'Set alarm 23:00. Siapkan semua perlengkapan: jaket tebal, masker N95, headlamp, snack, air 1L.',
+          estimatedCost: 0, type: 'istirahat'
+        });
+      } else {
+        acts.push({
+          time: '21:00',
+          name: 'Istirahat & Persiapan Ijen',
+          location: getFinalHotelName(),
+          duration: '2 jam',
+          description: 'Istirahat sebentar sebelum berangkat ke Paltuding tengah malam.',
+          tips: 'Set alarm 23:00. Siapkan perlengkapan dari sekarang. Isi bensin penuh sebelum tidur.',
+          estimatedCost: 0, type: 'istirahat'
+        });
+      }
+      acts.push({
+        time: '23:30',
+        name: `Berangkat ke Paltuding dengan ${hasMotor()?'Motor':'Mobil'}`,
+        location: `${getFinalHotelName()} → Paltuding, Licin`,
+        duration: '±1.5 jam',
+        description: 'Perjalanan malam ke Paltuding. Jalan berliku dan sempit di area pegunungan — hati-hati dan pelan-pelan.',
+        tips: `Isi bensin PENUH sebelum berangkat — SPBU terakhir ada di area Licin. ${hasMotor()?'Cek ban dan rantai motor':'Cek ban, oli, dan radiator'} sebelum berangkat malam.`,
+        estimatedCost: hasMotor() ? 20000 : 50000, type: 'transport'
+      });
+      acts.push({
+        time: '01:00',
+        name: 'Tiba di Paltuding — Registrasi & Beli Tiket',
+        location: 'Paltuding, Basecamp Kawah Ijen (2.025m)',
+        duration: '30 menit',
+        description: 'Tiba di basecamp. Beli tiket masuk, sewa masker gas jika belum punya, pemanasan singkat.',
+        tips: 'Tiket: Rp5.000 WNI | Rp150.000 WNA. Parkir motor Rp10.000. Porter opsional ~Rp150K.',
+        estimatedCost: 5000, type: 'aktivitas'
+      });
+      acts.push({
+        time: '01:30',
+        name: 'Trek Paltuding → Kawah Ijen',
+        location: 'Paltuding (2.025m) → Puncak (2.386m)',
+        duration: '2–2.5 jam',
+        description: 'Trek 3km dengan elevasi 361m. Makin terjal di 1km terakhir. Jaga kecepatan konsisten.',
+        tips: 'Headlamp WAJIB. Masker N95 WAJIB di area kawah. Bawa air minum cukup.',
+        estimatedCost: 0, type: 'aktivitas'
+      });
+      acts.push({
+        time: '04:00',
+        name: 'Blue Fire Kawah Ijen 🔵🔥',
+        location: 'Kawah Ijen — Bibir Kawah',
+        duration: '1.5 jam',
+        description: 'Api biru dari pembakaran gas sulfur — fenomena langka yang hanya ada di 2 tempat di dunia.',
+        tips: 'Masker N95 WAJIB. Jangan turun ke kawah tanpa ranger. Foto: ISO tinggi, no flash.',
+        estimatedCost: 0, type: 'aktivitas'
+      });
+      acts.push({
+        time: '05:30',
+        name: 'Sunrise di Puncak Ijen 🌄',
+        location: 'Puncak Kawah Ijen (2.386m)',
+        duration: '1 jam',
+        description: 'Matahari terbit di atas lautan awan — salah satu sunrise terbaik di Indonesia.',
+        tips: 'Suhu puncak 5–10°C. Tetap pakai masker. Jaga jarak dari tepi kawah.',
+        estimatedCost: 0, type: 'aktivitas'
+      });
+      acts.push({
+        time: '07:00',
+        name: 'Turun ke Paltuding',
+        location: 'Puncak → Paltuding',
+        duration: '1–1.5 jam',
+        description: 'Turun santai sambil menikmati pemandangan hutan hujan tropis di pagi hari.',
+        tips: 'Turunan lebih licin. Hati-hati di bagian berbatu. Pintu kawasan tutup 12:00.',
+        estimatedCost: 0, type: 'transport'
+      });
+      acts.push({
+        time: '08:30',
+        name: 'Sarapan di Warung Paltuding',
+        location: 'Area Warung Paltuding',
+        duration: '1 jam',
+        description: 'Sarapan dan istirahat di warung Paltuding. Mandi bilas tersedia di beberapa penginapan sekitar.',
+        tips: 'Manfaatkan waktu ini untuk istirahat sebelum lanjut ke Kawah Wurung atau pulang.',
+        estimatedCost: 20000, type: 'makan'
+      });
+
+      // Kawah Wurung setelah Ijen untuk pengguna motor/mobil
+      acts.push({
+        time: '10:00',
+        name: 'Menuju Kawah Wurung',
+        location: 'Paltuding → Kawah Wurung',
+        duration: '15–20 menit',
+        description: 'Perjalanan singkat ke Kawah Wurung — kaldera sabana hijau yang cantik.',
+        tips: 'Jarak Paltuding ke Kawah Wurung hanya ~15–20 menit. Tiba jam 10 masih bagus sebelum kabut turun.',
+        estimatedCost: 10000, type: 'transport'
+      });
+      acts.push({
+        time: '10:20',
+        name: 'Kawah Wurung',
+        location: 'Kawah Wurung, Licin',
+        duration: '2 jam',
+        description: 'Kaldera berbentuk mangkok dengan padang sabana hijau yang luas. Suasana tenang kontras dengan dramatisnya Ijen.',
+        tips: 'Tiket masuk Rp5.000. Bawa air minum cukup. Area terbuka panas di siang hari.',
+        estimatedCost: 5000, type: 'aktivitas'
+      });
+      acts.push({
+        time: '13:00',
+        name: 'Kembali ke Penginapan — Tidur Siang Total',
+        location: getFinalHotelName(),
+        duration: 'Sisa hari',
+        description: 'Perjalanan pulang ke penginapan. Tidur siang panjang sangat dianjurkan setelah Ijen + Kawah Wurung.',
+        tips: `🌋 Ijen + Kawah Wurung dalam sehari dengan ${hasMotor()?'motor':'mobil'} — luar biasa!`,
+        estimatedCost: hasMotor() ? 20000 : 50000, type: 'transport'
+      });
     }
-    return {day:dayNum,date_label:`Hari ${dayNum}`,title:'Petualangan Kawah Ijen',activities:sortActivities(acts)};
+
+    return {day:dayNum, date_label:`Hari ${dayNum}`, title:'Petualangan Kawah Ijen', activities:sortActivities(acts)};
   }
+
 
   // ── Normal activity day ──────────────────────────────────────────────────────
   const acts = [];
@@ -4149,9 +4470,17 @@ function generate() {
         const spots=byZone[zone];
         if(zone==='barat'&&spots.some(s=>s.id==='ijen'||s.isIjen===true)){
           const ijenSpot=spots.find(s=>s.id==='ijen'||s.isIjen===true),others=spots.filter(s=>s.id!=='ijen'&&!s.isIjen);
-          const ijenGroup=S.gayaPerjalanan==='eksplorasi'&&others.length?[ijenSpot,others[0]]:[ijenSpot];
-          if(dayNum<=actDayLimit) days.push(buildActivityDay(dayNum++,ijenGroup,zone,S));
-          const remaining=S.gayaPerjalanan==='eksplorasi'?others.slice(1):others;
+          // Ijen SELALU hari tersendiri — trekking dini hari, tidak bisa digabung destinasi lain
+          if(dayNum<=actDayLimit) days.push(buildActivityDay(dayNum++,[ijenSpot],zone,S));
+          // Motor/mobil: Kawah Wurung sudah dijadwalkan di dalam hari Ijen
+          // Umum: Kawah Wurung tetap jadi hari tersendiri (tidak ada kendaraan setelah DAMRI)
+          const isPribadiGen = S.transport==='pribadi_motor'||S.transport==='pribadi_mobil'||
+            (S.transport==='sewa'&&(S.sewaLokal.has('motor')||S.sewaLokal.has('mobil')));
+          const wurungAlreadyScheduled = isPribadiGen &&
+            others.some(s=>(s.id||'').includes('wurung')||(s.name||'').toLowerCase().includes('wurung'));
+          const remaining = wurungAlreadyScheduled
+            ? others.filter(s=>!(s.id||'').includes('wurung')&&!(s.name||'').toLowerCase().includes('wurung'))
+            : others;
           for(let i=0;i<remaining.length;i+=spotsPerDay) if(dayNum<=actDayLimit) days.push(buildActivityDay(dayNum++,remaining.slice(i,i+spotsPerDay),zone,S));
           return;
         }
