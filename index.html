@@ -1061,6 +1061,92 @@ const KAWASAN_ZONE = {
   'Pusat Kota':'kota','Glagah':'kota','Rogojampi':'kota','Banyuwangi':'kota',
 };
 
+// ── JADWAL TRANSPORT KE BANYUWANGI ──────────────────────────────────────────
+const JADWAL_TRANSPORT = {
+  kereta: {
+    'surabaya': [
+      { nama:'Sri Tanjung (278)',       berangkat:'13:34', tiba:'19:34', harga:88000,  kelas:'Ekonomi (C)',  catatan:'' },
+      { nama:'Mutiara Timur (209A)',    berangkat:'09:24', tiba:'15:19', harga:245000, kelas:'Ekonomi (CC)', catatan:'' },
+      { nama:'Logawa (248C)',           berangkat:'14:45', tiba:'21:05', harga:260000, kelas:'Ekonomi (CC)', catatan:'' },
+      { nama:'Blambangan Ekspres (146)',berangkat:'22:50', tiba:'04:25', harga:220000, kelas:'Ekonomi (CC)', catatan:'+1 hari' },
+      { nama:'Wijayakusuma (158)',      berangkat:'23:48', tiba:'05:22', harga:225000, kelas:'Ekonomi (CC)', catatan:'+1 hari' },
+      { nama:'Sangkuriang (7044A)',     berangkat:'01:37', tiba:'06:34', harga:200000, kelas:'Ekonomi (CC)', catatan:'+1 hari' },
+    ],
+    'malang': [
+      { nama:'Tawang Jaya Premium',     berangkat:'07:15', tiba:'14:30', harga:195000, kelas:'Eksekutif',    catatan:'via Surabaya' },
+      { nama:'Sri Tanjung (transit)',   berangkat:'10:00', tiba:'20:30', harga:110000, kelas:'Ekonomi',      catatan:'transit Surabaya' },
+    ],
+    'yogyakarta': [
+      { nama:'Sri Tanjung (277)',       berangkat:'07:00', tiba:'20:30', harga:115000, kelas:'Ekonomi (C)',  catatan:'±13 jam' },
+      { nama:'Sritanjung (via Mlg)',    berangkat:'13:00', tiba:'02:30', harga:130000, kelas:'Ekonomi',      catatan:'+1 hari' },
+    ],
+    'jakarta': [
+      { nama:'Sritanjung (via Yk+Sby)', berangkat:'08:00', tiba:'06:00', harga:140000, kelas:'Ekonomi',     catatan:'+1 hari, ±22 jam' },
+      { nama:'Blambangan Ekspres',      berangkat:'15:00', tiba:'14:30', harga:285000, kelas:'Eksekutif',   catatan:'+1 hari, via Sby' },
+    ],
+  },
+  pesawat: {
+    'jakarta': [
+      { nama:'Super Air Jet IU 370',    berangkat:'08:30', tiba:'10:15', harga:1400000, kelas:'Ekonomi', catatan:'CGK→BWX langsung' },
+      { nama:'Super Air Jet (sore)',    berangkat:'15:00', tiba:'16:45', harga:1600000, kelas:'Ekonomi', catatan:'CGK→BWX langsung' },
+    ],
+    'surabaya': [
+      { nama:'Wings Air (pagi)',        berangkat:'08:00', tiba:'09:00', harga:1466000, kelas:'Ekonomi', catatan:'SUB→BWX, Sen/Jum/Min' },
+      { nama:'Wings Air (sore)',        berangkat:'15:25', tiba:'16:25', harga:1466000, kelas:'Ekonomi', catatan:'SUB→BWX harian' },
+    ],
+    'lombok': [
+      { nama:'Wings Air',              berangkat:'11:30', tiba:'12:30', harga:900000,  kelas:'Ekonomi', catatan:'LOP→BWX, Rab/Min' },
+    ],
+    'bali': [
+      { nama:'Transit via Surabaya',   berangkat:'07:00', tiba:'12:00', harga:1200000, kelas:'Ekonomi', catatan:'DPS→SUB→BWX' },
+    ],
+  },
+  bus: {
+    'surabaya': [
+      { nama:'Bus Pagi (Sinar Jaya dll)',  berangkat:'07:00', tiba:'15:00', harga:120000, kelas:'Eksekutif', catatan:'±8 jam via Jember' },
+      { nama:'Bus Sore (Gunung Harta)',    berangkat:'14:00', tiba:'22:30', harga:100000, kelas:'Ekonomi',   catatan:'±8.5 jam' },
+      { nama:'Bus Malam (Setiawan)',       berangkat:'17:00', tiba:'23:30', harga:90000,  kelas:'Ekonomi',   catatan:'±6.5 jam' },
+    ],
+    'malang': [
+      { nama:'Restu Mulya / Travel',      berangkat:'14:00', tiba:'22:00', harga:150000, kelas:'Eksekutif', catatan:'±8 jam' },
+      { nama:'Bus Malam',                 berangkat:'19:00', tiba:'03:00', harga:120000, kelas:'Ekonomi',   catatan:'+1 hari' },
+    ],
+    'yogyakarta': [
+      { nama:'Sinar Jaya / Gunung Harta', berangkat:'12:00', tiba:'02:00', harga:280000, kelas:'Eksekutif', catatan:'+1 hari, ±14 jam' },
+      { nama:'Bus Malam',                 berangkat:'15:00', tiba:'04:00', harga:250000, kelas:'Ekonomi',   catatan:'+1 hari' },
+    ],
+    'jakarta': [
+      { nama:'Pandawa 87 / Handoyo',      berangkat:'10:00', tiba:'09:00', harga:480000, kelas:'Eksekutif', catatan:'+1 hari, ±23 jam' },
+      { nama:'Damri / DB Trans',          berangkat:'12:00', tiba:'11:00', harga:455000, kelas:'Sleeper',   catatan:'+1 hari' },
+    ],
+    'bali': [
+      { nama:'Damri Denpasar-BWI',        berangkat:'08:00', tiba:'14:00', harga:185000, kelas:'Ekonomi', catatan:'termasuk feri' },
+      { nama:'Sarwonadhi / Purnayasa',    berangkat:'16:00', tiba:'22:00', harga:200000, kelas:'Ekonomi', catatan:'termasuk feri' },
+      { nama:'Bus Malam',                 berangkat:'22:00', tiba:'04:00', harga:175000, kelas:'Ekonomi', catatan:'+1 hari' },
+    ],
+    'semarang': [
+      { nama:'Nusantara / Sinar Jaya',    berangkat:'16:00', tiba:'04:00', harga:320000, kelas:'Eksekutif', catatan:'+1 hari, ±12 jam' },
+    ],
+    'bandung': [
+      { nama:'Pahala Kencana / Grt Harta',berangkat:'08:00', tiba:'06:00', harga:500000, kelas:'Eksekutif', catatan:'+1 hari, ±22 jam' },
+    ],
+  }
+};
+
+// Kota yang tersedia per moda
+const KOTA_PER_MODA = {
+  kereta:  ['surabaya','malang','yogyakarta','jakarta'],
+  pesawat: ['jakarta','surabaya','lombok','bali'],
+  bus:     ['surabaya','malang','yogyakarta','jakarta','bali','semarang','bandung'],
+};
+
+const KOTA_LABEL = {
+  surabaya:'Surabaya', malang:'Malang', yogyakarta:'Yogyakarta',
+  jakarta:'Jakarta', bali:'Bali/Denpasar', lombok:'Lombok',
+  semarang:'Semarang', bandung:'Bandung',
+};
+
+
 function mapToWandr(id, d) {
   if (d.type !== 'wisata' || d.status === 'pending') return null;
   const nama = (d.nama||'').toLowerCase();
@@ -1660,18 +1746,71 @@ function renderStep1() {
 
     <div style="margin-bottom:20px">
       <div style="font-size:11px;font-weight:700;color:#888888;letter-spacing:.08em;margin-bottom:10px">JAM PERJALANAN</div>
-      <div style="display:flex;gap:10px">
-        <div style="flex:1">
-          <div style="font-size:11px;color:#444444;margin-bottom:6px">Tiba di BWI</div>
-          <input type="time" id="input-waktu-tiba" value="${S.waktuTiba}"
-            style="width:100%;padding:12px;background:#f0ede8;border:1.5px solid rgba(0,0,0,.22);color:#111111;border-radius:0;font-family:inherit;font-size:15px;outline:none">
-        </div>
-        <div style="flex:1">
-          <div style="font-size:11px;color:#444444;margin-bottom:6px">Pulang dari BWI</div>
-          <input type="time" id="input-waktu-pulang" value="${S.waktuPulang}"
-            style="width:100%;padding:12px;background:#f0ede8;border:1.5px solid rgba(0,0,0,.22);color:#111111;border-radius:0;font-family:inherit;font-size:15px;outline:none">
-        </div>
-      </div>
+
+      ${(()=>{
+        // Jadwal picker — hanya tampil jika transport umum & ada subTransport
+        const moda  = S.subTransport; // kereta/pesawat/bus
+        const kota  = (S.kotaAsal||'').toLowerCase().trim().replace('/','');
+        const kotaKey = Object.keys(KOTA_LABEL).find(k=>kota.includes(k)||k.includes(kota.split(' ')[0])) || '';
+        const jadwals = moda && kotaKey && JADWAL_TRANSPORT[moda]?.[kotaKey];
+        const hasIjenDest = Array.from(S.destinations||[]).some(id=>{
+          const d = DESTINATIONS.find(x=>x.id===id); return d?.isIjen||false;
+        });
+
+        const jadwalHTML = jadwals ? `
+          <div style="margin-bottom:12px;background:rgba(192,57,43,.04);border:1.5px solid rgba(192,57,43,.15);border-radius:12px;overflow:hidden">
+            <div style="padding:10px 14px;background:rgba(192,57,43,.08);font-size:11px;font-weight:700;color:#c0392b;letter-spacing:.06em;display:flex;align-items:center;gap:6px">
+              ${{kereta:'🚂',pesawat:'✈️',bus:'🚌'}[moda]||'🎫'} JADWAL ${moda.toUpperCase()} ${KOTA_LABEL[kotaKey]?.toUpperCase()||''} → BANYUWANGI
+            </div>
+            <div style="padding:8px">
+              ${jadwals.map((j,i)=>{
+                const isMalamAtauSubuh = (()=>{
+                  const h = parseInt((j.tiba||'').split(':')[0]);
+                  return h < 6;
+                })();
+                const ijenWarn = hasIjenDest && isMalamAtauSubuh;
+                return `<div onclick="autoFillJam('${j.tiba}')" style="
+                  display:flex;align-items:center;gap:10px;
+                  padding:10px 12px;
+                  border-radius:8px;margin-bottom:${i<jadwals.length-1?'4px':'0'};
+                  background:${S.waktuTiba===j.tiba?'rgba(192,57,43,.12)':'#fff'};
+                  border:1.5px solid ${S.waktuTiba===j.tiba?'#c0392b':'#e8e4de'};
+                  cursor:pointer;transition:all .18s">
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:12px;font-weight:700;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(j.nama)}</div>
+                    <div style="font-size:10px;color:#888;margin-top:2px">${j.kelas}${j.catatan?' · <span style="color:#c0392b">'+esc(j.catatan)+'</span>':''}</div>
+                    ${ijenWarn?`<div style="font-size:10px;color:#b45309;margin-top:2px">⚠️ Tiba dini hari — Ijen dijadwalkan malam berikutnya</div>`:''}
+                  </div>
+                  <div style="text-align:right;flex-shrink:0">
+                    <div style="font-size:11px;color:#888">${j.berangkat} → <span style="font-weight:700;color:#c0392b">${j.tiba}</span></div>
+                    <div style="font-size:11px;color:#444;margin-top:2px">~Rp${(j.harga/1000).toFixed(0)}K</div>
+                  </div>
+                  ${S.waktuTiba===j.tiba?`<div style="color:#c0392b;font-size:14px;flex-shrink:0">✓</div>`:''}
+                </div>`;
+              }).join('')}
+            </div>
+            <div style="padding:8px 14px 12px;font-size:10px;color:#aaa">
+              * Jadwal referensi — selalu cek ketersediaan di KAI Access / Traveloka sebelum berangkat
+            </div>
+          </div>` : '';
+
+        return jadwalHTML + `
+          <div style="font-size:11px;font-weight:600;color:#888888;margin-bottom:8px">
+            ${jadwals ? '✏️ Atau isi manual:' : '⏰ Jam Perjalanan'}
+          </div>
+          <div style="display:flex;gap:10px">
+            <div style="flex:1">
+              <div style="font-size:11px;color:#444444;margin-bottom:6px">Tiba di BWI</div>
+              <input type="time" id="input-waktu-tiba" value="${S.waktuTiba}"
+                style="width:100%;padding:12px;background:#f4f2ee;border:1.5px solid rgba(0,0,0,.15);color:#111111;border-radius:8px;font-family:inherit;font-size:15px;outline:none">
+            </div>
+            <div style="flex:1">
+              <div style="font-size:11px;color:#444444;margin-bottom:6px">Pulang dari BWI</div>
+              <input type="time" id="input-waktu-pulang" value="${S.waktuPulang}"
+                style="width:100%;padding:12px;background:#f4f2ee;border:1.5px solid rgba(0,0,0,.15);color:#111111;border-radius:8px;font-family:inherit;font-size:15px;outline:none">
+            </div>
+          </div>`;
+      })()}
     </div>
 
     <div class="sewa-wrap${S.transport==='umum'?' open':''}" id="sewa-wrap">
@@ -3769,7 +3908,9 @@ function buildActivityDay(dayNum, spots, zone, form, opts={}) {
   if (hasIjen) {
     const hotelC       = getHotelCoords();
     const isUmum       = S.transport === 'umum';
-    const isPribadiOrSewa = hasMotor() || hasMobil();
+    // Sewa lokal motor/mobil override skenario DAMRI
+    const isPribadiOrSewa = hasMotor() || hasMobil()
+      || S.sewaLokal.has('motor') || S.sewaLokal.has('mobil');
 
     // Deteksi apakah penginapan di sekitar Paltuding (< 5km)
     const PALTUDING = { lat: -8.0584, lng: 114.2422 };
@@ -4064,7 +4205,7 @@ function buildActivityDay(dayNum, spots, zone, form, opts={}) {
         location: `${getFinalHotelName()} → Paltuding, Licin`,
         duration: '±1.5 jam',
         description: 'Perjalanan malam ke Paltuding. Jalan berliku dan sempit di area pegunungan — hati-hati dan pelan-pelan.',
-        tips: `Isi bensin PENUH sebelum berangkat — SPBU terakhir ada di area Licin. ${hasMotor()?'Cek ban dan rantai motor':'Cek ban, oli, dan radiator'} sebelum berangkat malam.`,
+        tips: `Isi bensin PENUH sebelum berangkat — SPBU terakhir ada di area Licin. ${hasMotor()||S.sewaLokal.has('motor')?'Cek ban dan rantai motor':'Cek ban, oli, dan radiator'} sebelum berangkat malam.`,
         estimatedCost: hasMotor() ? 20000 : 50000, type: 'transport'
       });
       acts.push({
@@ -4147,7 +4288,7 @@ function buildActivityDay(dayNum, spots, zone, form, opts={}) {
         location: getFinalHotelName(),
         duration: 'Sisa hari',
         description: 'Perjalanan pulang ke penginapan. Tidur siang panjang sangat dianjurkan setelah Ijen + Kawah Wurung.',
-        tips: `🌋 Ijen + Kawah Wurung dalam sehari dengan ${hasMotor()?'motor':'mobil'} — luar biasa!`,
+        tips: `🌋 Ijen + Kawah Wurung dalam sehari — luar biasa!`,
         estimatedCost: hasMotor() ? 20000 : 50000, type: 'transport'
       });
     }
@@ -4482,6 +4623,7 @@ function generate() {
           // Motor/mobil: Kawah Wurung sudah dijadwalkan di dalam hari Ijen
           // Umum: Kawah Wurung tetap jadi hari tersendiri (tidak ada kendaraan setelah DAMRI)
           const isPribadiGen = S.transport==='pribadi_motor'||S.transport==='pribadi_mobil'||
+            S.sewaLokal.has('motor')||S.sewaLokal.has('mobil')||
             (S.transport==='sewa'&&(S.sewaLokal.has('motor')||S.sewaLokal.has('mobil')));
           const wurungAlreadyScheduled = isPribadiGen &&
             others.some(s=>(s.id||'').includes('wurung')||(s.name||'').toLowerCase().includes('wurung'));
@@ -4560,6 +4702,30 @@ function togglePackItem(el) {
   cb.style.fontSize     = '11px';
   el.style.opacity      = done ? '0.5' : '1';
 }
+
+function autoFillJam(tiba) {
+  S.waktuTiba = tiba;
+  // Update input field langsung
+  const el = document.getElementById('input-waktu-tiba');
+  if (el) el.value = tiba;
+  // Re-render section jadwal agar checkmark muncul
+  partialUpdateTransportSchedule();
+}
+
+function partialUpdateTransportSchedule() {
+  // Re-render hanya bagian JAM PERJALANAN tanpa full render
+  // Cukup trigger render step1 partial
+  const step1content = document.getElementById('content-wrap');
+  if (step1content && S.step === 1) {
+    render();
+    // Scroll ke posisi jadwal
+    setTimeout(() => {
+      const jamEl = document.querySelector('[data-section="jam"]');
+      if (jamEl) jamEl.scrollIntoView({behavior:'smooth', block:'nearest'});
+    }, 100);
+  }
+}
+
 </script>
 </body>
 </html>
