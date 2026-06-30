@@ -2785,32 +2785,86 @@ async function exportItinerary(format) {
   const btns         = modal.querySelectorAll('button:not([onclick])');
 
   if (format === 'pdf') {
-    modal.classList.remove('open');
-    const html = buildPrintPage(it);
-    // Blob URL + iframe lebih reliable di Android Chrome dibanding srcdoc
-    const blob = new Blob([html], {type:'text/html;charset=utf-8'});
-    const url  = URL.createObjectURL(blob);
+    // Generate PDF asli via jsPDF + html2canvas — langsung download, TANPA dialog print
+    progressEl.style.display = 'block';
+    progressBar.style.width  = '15%';
+    progressText.textContent = 'Menyiapkan halaman...';
+    btns.forEach(b => b.disabled = true);
 
-    let iframe = document.getElementById('_print_iframe');
-    if (iframe) iframe.remove();
-    iframe = document.createElement('iframe');
-    iframe.id = '_print_iframe';
-    iframe.style.cssText = 'position:fixed;width:1px;height:1px;top:-999px;left:-999px;border:none;opacity:0;';
-    document.body.appendChild(iframe);
+    try {
+      const printEl = document.getElementById('itinerary-print');
+      const fullHTML = buildPrintPage(it);
 
-    iframe.onload = () => {
+      // Ambil hanya isi <div class="print-wrap">...</div> (tanpa no-print bar & script)
+      const bodyMatch = fullHTML.match(/<div class="print-wrap">([\s\S]*?)<\/div>\s*<script>/);
+      printEl.innerHTML = `<div class="print-wrap" style="max-width:210mm;padding:14mm;background:#fff;font-family:'Inter',sans-serif">${bodyMatch ? bodyMatch[1] : ''}</div>`;
+
+      // Inject style block dari buildPrintPage agar styling tetap konsisten
+      const styleMatch = fullHTML.match(/<style>([\s\S]*?)<\/style>/);
+      let styleEl = document.getElementById('_pdf_temp_style');
+      if (styleEl) styleEl.remove();
+      if (styleMatch) {
+        styleEl = document.createElement('style');
+        styleEl.id = '_pdf_temp_style';
+        styleEl.textContent = styleMatch[1];
+        document.head.appendChild(styleEl);
+      }
+
+      await new Promise(r => setTimeout(r, 500));
+      progressBar.style.width = '35%';
+      progressText.textContent = 'Merender halaman...';
+
+      const canvas = await html2canvas(printEl, {
+        scale: 2, useCORS: true, backgroundColor: '#fff',
+        width: printEl.scrollWidth, windowWidth: printEl.scrollWidth,
+      });
+
+      progressBar.style.width = '65%';
+      progressText.textContent = 'Membuat PDF...';
+
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageW = 210, pageH = 297;
+      const imgW = pageW;
+      const imgH = (canvas.height * imgW) / canvas.width;
+
+      let heightLeft = imgH;
+      let position = 0;
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+      pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+      heightLeft -= pageH;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgH;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+        heightLeft -= pageH;
+      }
+
+      progressBar.style.width = '90%';
+      pdf.save('itinerary-banyuwangi-' + new Date().toISOString().slice(0,10) + '.pdf');
+
+      if (styleEl) styleEl.remove();
+      printEl.innerHTML = '';
+
+      progressBar.style.width = '100%';
+      progressText.textContent = 'PDF berhasil diunduh!';
+      await new Promise(r => setTimeout(r, 900));
+      modal.classList.remove('open');
+
+    } catch(err) {
+      progressText.textContent = 'Gagal: ' + err.message;
+      progressText.style.color = '#E94560';
+      console.error(err);
+    } finally {
+      btns.forEach(b => b.disabled = false);
       setTimeout(() => {
-        try {
-          iframe.contentWindow.focus();
-          iframe.contentWindow.print();
-        } catch(e) {
-          window.open(url, '_blank');
-        }
-        setTimeout(() => URL.revokeObjectURL(url), 60000);
-      }, 400);
-    };
-    iframe.src = url;
-    return;
+        progressEl.style.display = 'none';
+        progressBar.style.width = '0%';
+        progressText.style.color = '';
+      }, 1800);
+    }
 
   } else {
     // JPG: tetap pakai html2canvas
@@ -4423,18 +4477,24 @@ function initPlanDays() {
   S.planArrivalExtras=[];
   const byZone={};
   selected.forEach(d=>{const z=DEST_EXT[d.id]?.zone||d.zone||'kota';if(!byZone[z])byZone[z]=[];byZone[z].push(d.id);});
-  if(byZone.barat){const ord=['ijen','kawah_wurung','jagir'];const ordIds=['ijen','kawah_ijen','kawah ijen'];
-  const ordFn=(x)=>{const n=(x.name||x.id||'').toLowerCase();return ordIds.findIndex(k=>x.id===k||n.includes('ijen'));};
-  byZone.barat.sort((a,b)=>ordFn(a)-ordFn(b));}
+  // byZone.barat berisi array of ID (string). Cari ID asli Ijen dari DESTINATIONS via isIjen flag.
+  const ijenRealId = (DESTINATIONS.find(d=>d.isIjen)||{}).id;
+  if(byZone.barat){
+    byZone.barat.sort((a,b)=>{
+      const aIjen=(a===ijenRealId)?-1:0, bIjen=(b===ijenRealId)?-1:0;
+      return aIjen-bIjen;
+    });
+  }
   if(byZone.selatan){byZone.selatan.sort((a,b)=>(a==='sukamade'?1:0)-(b==='sukamade'?1:0));}
   let di=0;
   ['barat','utara','selatan','kota'].forEach(zone=>{
     if(!byZone[zone]||di>=actDays) return;
     const spots=byZone[zone];
-    if(zone==='barat'&&spots.includes('ijen')){
-      const ig=S.gayaPerjalanan==='eksplorasi'?['ijen',...spots.filter(s=>s!=='ijen').slice(0,1)]:['ijen'];
+    if(zone==='barat'&&ijenRealId&&spots.includes(ijenRealId)){
+      // Ijen SELALU hari tersendiri — tidak pernah digabung destinasi lain di planning board
+      const ig=[ijenRealId];
       if(di<actDays) S.planDays[di++]=ig;
-      const rem=spots.filter(s=>!ig.includes(s));
+      const rem=spots.filter(s=>s!==ijenRealId);
       if(rem.length>0&&di<actDays) S.planDays[di++]=rem;
       return;
     }
@@ -4675,6 +4735,20 @@ function generateFromPlan() {
     const hotelNames=getHotelNames();
     const days=[];
     days.push(injectArrivalExtras(buildArrivalDay(kota,S.transport,S.penginapan)));
+
+    // Defensive: pastikan Ijen hanya muncul SEKALI di seluruh planDays.
+    // Kalau user (sengaja/tidak sengaja) menaruh Ijen di >1 hari, hanya hari pertama yang dipertahankan.
+    const ijenRealId2 = (DESTINATIONS.find(d=>d.isIjen)||{}).id;
+    if (ijenRealId2) {
+      let ijenSeen = false;
+      S.planDays = S.planDays.map(dayIds => {
+        if (!dayIds.includes(ijenRealId2)) return dayIds;
+        if (ijenSeen) return dayIds.filter(id => id !== ijenRealId2); // buang duplikat
+        ijenSeen = true;
+        return dayIds;
+      });
+    }
+
     S.planDays.forEach((allIds,i)=>{
       const dayNum=i+2;
       if(dayNum>=totalDays||allIds.length===0) return;
@@ -4685,10 +4759,15 @@ function generateFromPlan() {
       const zone=spots[0]?.zone||'kota';
       const builtDay=buildActivityDay(dayNum,spots,zone,S,{honorOrder:true});
       if(hotelCheckIns.length>0){
+        const isIjenDay=spots.some(s=>s.id==='ijen'||s.isIjen===true);
         const isMenjanganTabuhanDay=spots.some(s=>s.id==='menjangan'||s.id==='tabuhan'||(s.name||'').toLowerCase().includes('menjangan')||(s.name||'').toLowerCase().includes('tabuhan'));
         const lastAct=builtDay.activities.filter(a=>a.type==='aktivitas'||a.type==='transport').slice(-1)[0];
         let checkInHour='14:00';
-        if(isMenjanganTabuhanDay){checkInHour='16:00';}
+        if(isIjenDay){
+          // Hari Ijen sudah padat sampai sekitar jam 10:30/14:00 — checkin ditaruh setelah istirahat
+          const lastIjenAct=builtDay.activities.slice(-1)[0];
+          checkInHour=lastIjenAct?.time?addMin(lastIjenAct.time,30):'15:00';
+        } else if(isMenjanganTabuhanDay){checkInHour='16:00';}
         else if(lastAct?.time){const afterLast=addMin(lastAct.time,(lastAct.duration?.includes('jam')?parseInt(lastAct.duration)*60:60)+30);checkInHour=timeToMin(afterLast)>timeToMin('14:00')?afterLast:'14:00';}
         const checkinActs=hotelCheckIns.map(h=>({time:checkInHour,name:h.name,location:h.hotelName,duration:'1 jam',description:`Check-in ${h.hotelName}.`,tips:'Siapkan dokumen booking.',estimatedCost:0,type:'penginapan'}));
         builtDay.activities=sortActivities([...builtDay.activities,...checkinActs]);
