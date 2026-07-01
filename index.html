@@ -2832,11 +2832,14 @@ async function exportItinerary(format) {
       let heightLeft = imgH;
       let position = 0;
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      // Toleransi minimal sisa konten (mm) — kalau sisa lebih kecil dari ini,
+      // anggap sudah habis dan jangan buat halaman baru (mencegah halaman kosong di akhir)
+      const MIN_CONTENT_MM = 5;
 
       pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
       heightLeft -= pageH;
 
-      while (heightLeft > 0) {
+      while (heightLeft > MIN_CONTENT_MM) {
         position = heightLeft - imgH;
         pdf.addPage();
         pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
@@ -3845,8 +3848,11 @@ function buildMakan(waktu, zone, overrideTime, refLat, refLng) {
 }
 
 function getHotelCoords() {
-  const h = (S.penginapanDataList||[]).find(p=>p.lat&&p.lng);
-  if (h) return {lat:h.lat, lng:h.lng};
+  // Konsisten dengan getFinalHotelName(): selalu pakai hotel index [0]
+  // (custom text tidak punya koordinat, jadi fallback ke pusat kota)
+  if (S.penginapanCustom.trim()) return BWI_COORDS.pusat;
+  const h = (S.penginapanDataList||[])[0];
+  if (h && h.lat && h.lng) return {lat:h.lat, lng:h.lng};
   return BWI_COORDS.pusat;
 }
 
@@ -4016,7 +4022,7 @@ function buildActivityDay(dayNum, spots, zone, form, opts={}) {
   }
 
   if (hasIjen) {
-    const hotelName     = opts.hotelNameOverride || hotelName;
+    const hotelName     = opts.hotelNameOverride || getFinalHotelName();
     const hotelC       = getHotelCoords();
     // Sewa lokal motor/mobil override skenario DAMRI
     const isPribadiOrSewa = hasMotor() || hasMobil()
@@ -4793,7 +4799,7 @@ function generateFromPlan() {
     S.planDays.forEach((allIds,i)=>{
       const dayNum=i+2;
       if(dayNum>=totalDays||allIds.length===0) return;
-      const hotelCheckIns=allIds.filter(id=>id.startsWith('hotel_checkin_')).map(id=>{const idx=parseInt(id.split('_')[2]);return{id,name:`Check-in: ${hotelNames[idx]||'Penginapan'}`,hotelName:hotelNames[idx]||'Penginapan',type:'penginapan'};});
+      const hotelCheckIns=allIds.filter(id=>id.startsWith('hotel_checkin_')).map(id=>{const idx=parseInt(id.split('_')[2]);return{id,name:`Check-in: ${hotelNames[idx]||'Penginapan'}`,hotelName:hotelNames[idx]||'Penginapan',type:'penginapan'};}).filter(h=>h.hotelName!==currentHotelName);
       const spots=allIds.filter(id=>!id.startsWith('hotel_checkin_')).map(id=>DESTINATIONS.find(d=>d.id===id)).filter(Boolean).map(d=>({...d,...(DEST_EXT[d.id]||{})}));
       if(spots.length===0&&hotelCheckIns.length>0){const act=hotelCheckIns.map(h=>({time:'14:00',name:h.name,location:h.hotelName,duration:'1 jam',description:`Check-in ${h.hotelName}.`,tips:'Siapkan dokumen booking.',estimatedCost:0,type:'penginapan'}));days.push({day:dayNum,date_label:`Hari ${dayNum}`,title:'Check-in Penginapan',activities:sortActivities(act)});return;}
       if(spots.length===0) return;
